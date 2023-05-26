@@ -381,6 +381,7 @@ namespace Mi
                         ZWFUN_LIST_ENTRY Entry{};
                         Entry.CmpMode  = 0;
                         Entry.NameHash = Fnv1aHash(Name, NameLength);
+                        Entry.Address  = FastEncodePointer(static_cast<void*>(nullptr));
 
                     #if _AMD64_
                         Entry.Index = *reinterpret_cast<const uint32_t*>(OpCodeBase + 4);
@@ -389,6 +390,9 @@ namespace Mi
                     #else
                     #error Unsupported architecture
                     #endif
+
+                        DbgPrintEx(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL,
+                            "0x%04X -> %s \n", Entry.Index, Name);
 
                     #if DBG
                         Entry.Name = static_cast<char*>(ExAllocatePoolZero(NonPagedPool, NameLength + sizeof(""), MI_TAG));
@@ -422,14 +426,18 @@ namespace Mi
             constexpr auto NameOfZwCreateFile = UNICODE_STRING RTL_CONSTANT_STRING(L"ZwCreateFile");
             const auto AddressOfZwCreateFile  = static_cast<const uint8_t*>(MmGetSystemRoutineAddress(const_cast<PUNICODE_STRING>(&NameOfZwCreateFile)));
 
-            const auto ZwCodeTemplate = *reinterpret_cast<const uint64_t*>(AddressOfZwCreateFile);
+            size_t SizeOfZwRoutine        = 0;
+            size_t OffsetOfZwRoutineIndex = 0;
+            size_t OffsetOfTemplate       = 0;
 
-            size_t   SizeOfZwRoutine      = 0;
-            size_t   IdxOffsetOfZwRoutine = 0;
+        #if _X86_
+            OffsetOfTemplate = 5; // skip move eax, imm32
+        #endif
 
-            for (size_t Idx = 1; Idx < 0x100; ++Idx) {
+            const auto ZwCodeTemplate = *reinterpret_cast<const uint64_t*>(AddressOfZwCreateFile + OffsetOfTemplate);
+            for (size_t Idx = OffsetOfTemplate + 1; Idx < 0x100; ++Idx) {
                 if (*reinterpret_cast<const uint64_t*>(AddressOfZwCreateFile + Idx) == ZwCodeTemplate) {
-                    SizeOfZwRoutine = Idx;
+                    SizeOfZwRoutine = Idx - OffsetOfTemplate;
                     break;
                 }
             }
@@ -438,12 +446,13 @@ namespace Mi
             for (size_t Idx = 0; Idx < 0x100; ++Idx) {
                 if (*(AddressOfZwCreateFile + SizeOfZwRoutine - (Idx + 0)) == 0xE9 &&  // jmp imm32
                     *(AddressOfZwCreateFile + SizeOfZwRoutine - (Idx + 5)) == 0xB8) {  // mov rax, imm32
-                    IdxOffsetOfZwRoutine = SizeOfZwRoutine - (Idx + 5) + 1;
+
+                    OffsetOfZwRoutineIndex = SizeOfZwRoutine - (Idx + 5) + 1;
                     break;
                 }
             }
         #elif _X86_
-            ZwIndexOffset = 1;
+            OffsetOfZwRoutineIndex = 1;
         #else
         #error Unsupported architecture
         #endif
@@ -470,22 +479,25 @@ namespace Mi
             const uint8_t* FirstZwRoutine = nullptr;
             for (size_t Idx = 0; Idx < CodeSectionSize; ++Idx) {
                 if (*reinterpret_cast<const uint64_t*>(CodeSectionBase + Idx) == ZwCodeTemplate) {
-                    FirstZwRoutine = CodeSectionBase + Idx;
+                    FirstZwRoutine = CodeSectionBase + Idx - OffsetOfTemplate;
                     break;
                 }
             }
 
-            auto CountOfZwRoutine = RtlNumberGenericTableElementsAvl(&ZwFunTable);
+            const auto CountOfZwRoutine = RtlNumberGenericTableElementsAvl(&ZwFunTable);
             for (size_t Idx = 0; Idx < CountOfZwRoutine; ++Idx) {
                 const auto ZwRoutine = FirstZwRoutine + (Idx * SizeOfZwRoutine);
 
                 ZWFUN_LIST_ENTRY Entry{};
                 Entry.CmpMode = 0;
-                Entry.Index   = *reinterpret_cast<const uint32_t*>(ZwRoutine + IdxOffsetOfZwRoutine);
+                Entry.Index   = *reinterpret_cast<const uint32_t*>(ZwRoutine + OffsetOfZwRoutineIndex);
 
                 auto MatchEntry = static_cast<PZWFUN_LIST_ENTRY>(RtlLookupElementGenericTableAvl(&ZwFunTable, &Entry));
                 if (MatchEntry) {
                     MatchEntry->Address = FastEncodePointer(ZwRoutine);
+                }
+                else {
+                    __debugbreak();
                 }
             }
 
@@ -495,7 +507,7 @@ namespace Mi
                 Entry = static_cast<const ZWFUN_LIST_ENTRY*>(RtlEnumerateGenericTableAvl(&ZwFunTable, FALSE))) {
 
                 DbgPrintEx(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL,
-                    "0x%04X -> 0x%p, %s \n", Entry->Index, Entry->Address, Entry->Name);
+                    "0x%04X -> 0x%p, %s \n", Entry->Index, FastDecodePointer(Entry->Address), Entry->Name);
             }
         #endif
 
