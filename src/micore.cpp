@@ -130,7 +130,7 @@ namespace Mi
         T FastDecodePointer(T const Ptr) noexcept
         {
             return reinterpret_cast<T>(RotatePointerValue(reinterpret_cast<uintptr_t>(Ptr) ^ __security_cookie,
-                    __security_cookie % MAXIMUM_POINTER_SHIFT));
+                    static_cast<int>(__security_cookie % MAXIMUM_POINTER_SHIFT)));
         }
 
         template <typename T>
@@ -221,7 +221,7 @@ namespace Mi
                 const uint32_t ExportOrdinal = Ordinal + ExportEntry->Base;
                 const void*    ExportAddress = static_cast<void*>(static_cast<uint8_t*>(BaseOfImage) + AddressOfFuncs[Ordinal]);
 
-                for (uint32_t Idx = 0u; Idx <= Ordinal; ++Idx) {
+                for (uint32_t Idx = 0u; Idx <= ExportEntry->NumberOfNames; ++Idx) {
                     if (Ordinal == AddressOfOrdis[Idx]) {
                         ExportName = reinterpret_cast<const char*>(static_cast<uint8_t*>(BaseOfImage) + AddressOfNames[Idx]);
                         break;
@@ -378,7 +378,7 @@ namespace Mi
                         const auto OpCodeBase = static_cast<const uint8_t*>(Address);
                         const auto NameLength = strlen(Name);
 
-                        ZWFUN_LIST_ENTRY Entry{};
+                        ZWFUN_LIST_ENTRY Entry;
                         Entry.CmpMode  = 0;
                         Entry.NameHash = Fnv1aHash(Name, NameLength);
                         Entry.Address  = FastEncodePointer(static_cast<void*>(nullptr));
@@ -390,9 +390,6 @@ namespace Mi
                     #else
                     #error Unsupported architecture
                     #endif
-
-                        DbgPrintEx(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL,
-                            "0x%04X -> %s \n", Entry.Index, Name);
 
                     #if DBG
                         Entry.Name = static_cast<char*>(ExAllocatePoolZero(NonPagedPool, NameLength + sizeof(""), MI_TAG));
@@ -495,9 +492,6 @@ namespace Mi
                 auto MatchEntry = static_cast<PZWFUN_LIST_ENTRY>(RtlLookupElementGenericTableAvl(&ZwFunTable, &Entry));
                 if (MatchEntry) {
                     MatchEntry->Address = FastEncodePointer(ZwRoutine);
-                }
-                else {
-                    __debugbreak();
                 }
             }
 
