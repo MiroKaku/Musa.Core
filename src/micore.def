@@ -1,0 +1,3 @@
+EXPORTS
+  DllInitialize PRIVATE
+  DllUnload     PRIVATE

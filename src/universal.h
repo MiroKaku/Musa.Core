@@ -1,3 +1,15 @@
 #pragma once
-#include <veil/Veil.h>
+#pragma warning(suppress: 4117)
+#define _KERNEL_MODE    1
+#define POOL_NX_OPTIN   1
+#define POOL_ZERO_DOWN_LEVEL_SUPPORT 1
 
+#include <Veil/Veil.h>
+
+#include <stdlib.h>
+#include <string.h>
+
+EXTERN_C_START
+extern uintptr_t __security_cookie;
+constexpr unsigned long MI_TAG = '-iM-';
+EXTERN_C_END
