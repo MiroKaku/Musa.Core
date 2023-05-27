@@ -43,13 +43,13 @@ DefaultDestDir      = 12
 ; Each filename entry must specify the exact name of a file on the source disk. 
 ;     You cannot use a %strkey% token to specify the file name.
 [SourceDisksFiles]
-micore.test.sys        = 1,,
+micore_test.sys        = 1,,
 
 
 ; Copyfiles MSDN:
 ;     https://docs.microsoft.com/en-us/windows-hardware/drivers/install/inf-copyfiles-directive
 [Install.Drivers]
-micore.sys,micore.test.sys,,0x00004002 ; COPYFLG_NOSKIP | COPYFLG_IN_USE_RENAME
+micore.sys,micore_test.sys,,0x00004002 ; COPYFLG_NOSKIP | COPYFLG_IN_USE_RENAME
 
 
 ; Delfiles MSDN:

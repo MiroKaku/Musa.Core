@@ -4,6 +4,32 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                              X86
+//  ntdll.dll
+// 
+// .text:77F04A10                                               public _ZwCreateFile@44
+// .text:77F04A10                               _ZwCreateFile@44 proc near
+// .text:77F04A10 B8 42 00 00 00                                mov     eax, 42h ; Index
+//                   ^^ ^^ ^^ ^^
+// .text:77F04A15 BA 00 03 FE 7F                                mov     edx, 7FFE0300h
+// .text:77F04A1A FF 12                                         call    dword ptr [edx]
+// .text:77F04A1C C2 2C 00                                      retn    2Ch
+// .text:77F04A1C                               _ZwCreateFile@44 endp
+//
+//  ntoskrnl.exe
+// 
+// .text:00433228                                               public _ZwCreateFile@44
+// .text:00433228                               _ZwCreateFile@44 proc near
+// .text:00433228 B8 42 00 00 00                                mov     eax, 42h ; Index
+//                   ^^ ^^ ^^ ^^
+// .text:0043322D 8D 54 24 04                                   lea     edx, [esp+4]
+// .text:00433231 9C                                            pushf
+// .text:00433232 6A 08                                         push    8
+// .text:00433234 E8 65 23 00 00                                call    _KiSystemService
+// .text:00433239 C2 2C 00                                      retn    2Ch
+// .text:00433239                               _ZwCreateFile@44 endp
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                              X64
 //  ntdll.dll
 // 
@@ -41,32 +67,6 @@
 // .text:00000001404254C9 E9 B2 7A 01 00                                jmp     KiServiceInternal
 // .text:00000001404254CE C3                                            retn
 // .text:00000001404254CE                               ZwCreateFile    endp
-//
-///////////////////////////////////////////////////////////////////////////////////////////////////////
-//                                              X86
-//  ntdll.dll
-// 
-// .text:77F04A10                                               public _ZwCreateFile@44
-// .text:77F04A10                               _ZwCreateFile@44 proc near
-// .text:77F04A10 B8 42 00 00 00                                mov     eax, 42h ; Index
-//                   ^^ ^^ ^^ ^^
-// .text:77F04A15 BA 00 03 FE 7F                                mov     edx, 7FFE0300h
-// .text:77F04A1A FF 12                                         call    dword ptr [edx]
-// .text:77F04A1C C2 2C 00                                      retn    2Ch
-// .text:77F04A1C                               _ZwCreateFile@44 endp
-//
-//  ntoskrnl.exe
-// 
-// .text:00433228                                               public _ZwCreateFile@44
-// .text:00433228                               _ZwCreateFile@44 proc near
-// .text:00433228 B8 42 00 00 00                                mov     eax, 42h ; Index
-//                   ^^ ^^ ^^ ^^
-// .text:0043322D 8D 54 24 04                                   lea     edx, [esp+4]
-// .text:00433231 9C                                            pushf
-// .text:00433232 6A 08                                         push    8
-// .text:00433234 E8 65 23 00 00                                call    _KiSystemService
-// .text:00433239 C2 2C 00                                      retn    2Ch
-// .text:00433239                               _ZwCreateFile@44 endp
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                              ARM64
@@ -119,7 +119,7 @@ namespace Mi
 
         uintptr_t RotatePointerValue(uintptr_t Value, int const Shift) noexcept
         {
-        #if _WIN64
+        #if defined(_WIN64)
             return RotateRight64(Value, Shift);
         #else
             return RotateRight32(Value, Shift);
@@ -246,7 +246,7 @@ namespace Mi
         uint32_t    CmpMode; // 0: Index; 1: NameHash
         uint32_t    Index;
         size_t      NameHash;
-    #if DBG
+    #if defined(DBG)
         char*       Name;
     #endif
         const void* Address;
@@ -301,10 +301,10 @@ namespace Mi
         {
             UNREFERENCED_PARAMETER(Table);
 
-        #if DBG
-            auto Entry = reinterpret_cast<PZWFUN_LIST_ENTRY>(static_cast<uint8_t*>(Buffer) + sizeof(RTL_BALANCED_LINKS));
+        #if defined(DBG)
+            const auto Entry = reinterpret_cast<PZWFUN_LIST_ENTRY>(static_cast<uint8_t*>(Buffer) + sizeof(RTL_BALANCED_LINKS));
             if (Entry->Name){
-                ExFreePoolWithTag(const_cast<char*>(Entry->Name), MI_TAG);
+                ExFreePoolWithTag(Entry->Name, MI_TAG);
             }
         #endif
 
@@ -329,8 +329,8 @@ namespace Mi
             constexpr auto NameOfZwOpenSection          = UNICODE_STRING RTL_CONSTANT_STRING(L"ZwOpenSection");
             constexpr auto NameOfZwOpenDirectoryObject  = UNICODE_STRING RTL_CONSTANT_STRING(L"ZwOpenDirectoryObject");
 
-            ZwClose               = static_cast<decltype(ZwClose)>(MmGetSystemRoutineAddress(const_cast<PUNICODE_STRING>(&NameOfZwClose)));
-            ZwOpenSection         = static_cast<decltype(ZwOpenSection)>(MmGetSystemRoutineAddress(const_cast<PUNICODE_STRING>(&NameOfZwOpenSection)));
+            ZwClose               = static_cast<decltype(ZwClose)              >(MmGetSystemRoutineAddress(const_cast<PUNICODE_STRING>(&NameOfZwClose)));
+            ZwOpenSection         = static_cast<decltype(ZwOpenSection)        >(MmGetSystemRoutineAddress(const_cast<PUNICODE_STRING>(&NameOfZwOpenSection)));
             ZwOpenDirectoryObject = static_cast<decltype(ZwOpenDirectoryObject)>(MmGetSystemRoutineAddress(const_cast<PUNICODE_STRING>(&NameOfZwOpenDirectoryObject)));
 
             if (ZwClose               == nullptr ||
@@ -383,15 +383,19 @@ namespace Mi
                         Entry.NameHash = Fnv1aHash(Name, NameLength);
                         Entry.Address  = FastEncodePointer(static_cast<void*>(nullptr));
 
-                    #if _AMD64_
-                        Entry.Index = *reinterpret_cast<const uint32_t*>(OpCodeBase + 4);
-                    #elif _X86_
+                    #if defined(_X86_)
+                        // B8 42 00 00 00   mov eax, 42h
                         Entry.Index = *reinterpret_cast<const uint32_t*>(OpCodeBase + 1);
-                    #else
-                    #error Unsupported architecture
+                    #elif defined(_AMD64_)
+                        // 4C 8B D1         mov r10, rcx
+                        // B8 55 00 00 00   mov eax, 55h
+                        Entry.Index = *reinterpret_cast<const uint32_t*>(OpCodeBase + 4);
+                    #elif defined(_ARM64_)
+                        // A1 0A 00 D4      SVC 0x55 ; imm16(5~20 bit)
+                        Entry.Index = (*reinterpret_cast<const uint32_t*>(OpCodeBase) >> 5) & 0xFFFF;
                     #endif
 
-                    #if DBG
+                    #if defined(DBG)
                         Entry.Name = static_cast<char*>(ExAllocatePoolZero(NonPagedPool, NameLength + sizeof(""), MI_TAG));
                         if (Entry.Name == nullptr){
                             Status = STATUS_INSUFFICIENT_RESOURCES;
@@ -401,7 +405,7 @@ namespace Mi
                     #endif
 
                         if (!RtlInsertElementGenericTableAvl(&ZwFunTable, &Entry, sizeof(ZWFUN_LIST_ENTRY), nullptr)) {
-                        #if DBG
+                        #if defined(DBG)
                             ExFreePoolWithTag(Entry.Name, MI_TAG);
                         #endif
 
@@ -418,44 +422,61 @@ namespace Mi
                 break;
             }
 
-            // dump ntoskrnl Zw routines.
+            // dump NTOS Zw routines.
 
             constexpr auto NameOfZwCreateFile = UNICODE_STRING RTL_CONSTANT_STRING(L"ZwCreateFile");
-            const auto AddressOfZwCreateFile  = static_cast<const uint8_t*>(MmGetSystemRoutineAddress(const_cast<PUNICODE_STRING>(&NameOfZwCreateFile)));
+            const     auto BaseOfZwCreateFile = static_cast<const uint8_t*>(MmGetSystemRoutineAddress(const_cast<PUNICODE_STRING>(&NameOfZwCreateFile)));
 
-            size_t SizeOfZwRoutine        = 0;
-            size_t OffsetOfZwRoutineIndex = 0;
-            size_t OffsetOfTemplate       = 0;
+        #if defined(_X86_)
+            size_t SizeOfZwRoutine = 0;
+            constexpr size_t OffsetOfZwIndex  = 1;
+            constexpr size_t OffsetOfTemplate = 5;
 
-        #if _X86_
-            OffsetOfTemplate = 5; // skip move eax, imm32
-        #endif
-
-            const auto ZwCodeTemplate = *reinterpret_cast<const uint64_t*>(AddressOfZwCreateFile + OffsetOfTemplate);
+            const auto ZwCodeTemplate = *reinterpret_cast<const uint64_t*>(BaseOfZwCreateFile + OffsetOfTemplate);
             for (size_t Idx = OffsetOfTemplate + 1; Idx < 0x100; ++Idx) {
-                if (*reinterpret_cast<const uint64_t*>(AddressOfZwCreateFile + Idx) == ZwCodeTemplate) {
+                if (*reinterpret_cast<const uint64_t*>(BaseOfZwCreateFile + Idx) == ZwCodeTemplate) {
+                    SizeOfZwRoutine = Idx - OffsetOfTemplate;
+                    break;
+                }
+            }
+        #elif defined(_AMD64_)
+            size_t SizeOfZwRoutine = 0;
+            size_t OffsetOfZwIndex = 0;
+            constexpr size_t OffsetOfTemplate = 0;
+
+            const auto ZwCodeTemplate = *reinterpret_cast<const uint64_t*>(BaseOfZwCreateFile + OffsetOfTemplate);
+            for (size_t Idx = OffsetOfTemplate + 1; Idx < 0x100; ++Idx) {
+                if (*reinterpret_cast<const uint64_t*>(BaseOfZwCreateFile + Idx) == ZwCodeTemplate) {
                     SizeOfZwRoutine = Idx - OffsetOfTemplate;
                     break;
                 }
             }
 
-        #if _AMD64_
             for (size_t Idx = 0; Idx < 0x100; ++Idx) {
-                if (*(AddressOfZwCreateFile + SizeOfZwRoutine - (Idx + 0)) == 0xE9 &&  // jmp imm32
-                    *(AddressOfZwCreateFile + SizeOfZwRoutine - (Idx + 5)) == 0xB8) {  // mov rax, imm32
+                if (*(BaseOfZwCreateFile + SizeOfZwRoutine - (Idx + 0)) == 0xE9 &&  // jmp imm32
+                    *(BaseOfZwCreateFile + SizeOfZwRoutine - (Idx + 5)) == 0xB8) {  // mov rax, imm32
 
-                    OffsetOfZwRoutineIndex = SizeOfZwRoutine - (Idx + 5) + 1;
+                    OffsetOfZwIndex = SizeOfZwRoutine - (Idx + 5) + 1;
                     break;
                 }
             }
-        #elif _X86_
-            OffsetOfZwRoutineIndex = 1;
-        #else
-        #error Unsupported architecture
+        #elif defined(_ARM64_)
+            size_t SizeOfZwRoutine = 0;
+
+            // 10 00 80 D2  0xD2800010   MOV X16, #n  imm16(5~20)
+            // 00 00 00 14  0x14000000   B   #offset  imm26(0~25)
+            constexpr auto ZwCodeTemplate     = 0x14000000D2800010ull;
+            constexpr auto ZwCodeTemplateMask = 0xFC000000FFE0001Full;
+            for (size_t Idx = 1; Idx < 0x100; ++Idx) {
+                if ((*reinterpret_cast<const uint64_t*>(BaseOfZwCreateFile + Idx) & ZwCodeTemplateMask) == ZwCodeTemplate) {
+                    SizeOfZwRoutine = Idx;
+                    break;
+                }
+            }
         #endif
 
             PVOID ImageBaseOfNtos = nullptr;
-            RtlPcToFileHeader(const_cast<uint8_t*>(AddressOfZwCreateFile), &ImageBaseOfNtos);
+            RtlPcToFileHeader(const_cast<uint8_t*>(BaseOfZwCreateFile), &ImageBaseOfNtos);
 
             auto NtHeaderOfNtos = RtlImageNtHeader(ImageBaseOfNtos);
             if (NtHeaderOfNtos == nullptr){
@@ -463,8 +484,8 @@ namespace Mi
                 break;
             }
 
-            auto SectionOfNtos = RtlImageRvaToSection(NtHeaderOfNtos, ImageBaseOfNtos,
-                static_cast<ULONG>(AddressOfZwCreateFile - static_cast<const uint8_t*>(ImageBaseOfNtos)));
+            auto SectionOfNtos = _VEIL_IMPL_RtlImageRvaToSection(NtHeaderOfNtos, ImageBaseOfNtos,
+                static_cast<ULONG>(BaseOfZwCreateFile - static_cast<const uint8_t*>(ImageBaseOfNtos)));
             if (SectionOfNtos == nullptr) {
                 Status = STATUS_INVALID_IMAGE_FORMAT;
                 break;
@@ -475,10 +496,17 @@ namespace Mi
 
             const uint8_t* FirstZwRoutine = nullptr;
             for (size_t Idx = 0; Idx < CodeSectionSize; ++Idx) {
+            #if defined(_X86_) || defined(_AMD64_)
                 if (*reinterpret_cast<const uint64_t*>(CodeSectionBase + Idx) == ZwCodeTemplate) {
                     FirstZwRoutine = CodeSectionBase + Idx - OffsetOfTemplate;
                     break;
                 }
+            #elif defined(_ARM64_)
+                if ((*reinterpret_cast<const uint64_t*>(CodeSectionBase + Idx) & ZwCodeTemplateMask) == ZwCodeTemplate) {
+                    FirstZwRoutine = CodeSectionBase + Idx;
+                    break;
+                }
+            #endif
             }
 
             const auto CountOfZwRoutine = RtlNumberGenericTableElementsAvl(&ZwFunTable);
@@ -487,15 +515,26 @@ namespace Mi
 
                 ZWFUN_LIST_ENTRY Entry{};
                 Entry.CmpMode = 0;
-                Entry.Index   = *reinterpret_cast<const uint32_t*>(ZwRoutine + OffsetOfZwRoutineIndex);
 
-                auto MatchEntry = static_cast<PZWFUN_LIST_ENTRY>(RtlLookupElementGenericTableAvl(&ZwFunTable, &Entry));
-                if (MatchEntry) {
+            #if defined(_X86_) || defined(_AMD64_)
+                if (*reinterpret_cast<const uint64_t*>(ZwRoutine + OffsetOfTemplate) != ZwCodeTemplate) {
+                    break;
+                }
+                Entry.Index   = *reinterpret_cast<const uint32_t*>(ZwRoutine + OffsetOfZwIndex);
+            #elif defined(_ARM64_)
+                if ((*reinterpret_cast<const uint64_t*>(ZwRoutine) & ZwCodeTemplateMask) != ZwCodeTemplate) {
+                    break;
+                }
+                // B0 0A 80 D2      MOV X16, #0x55 ; imm16(5~20 bit)
+                Entry.Index   = (*reinterpret_cast<const uint32_t*>(ZwRoutine) >> 5) & 0xFFFF;
+            #endif
+
+                if (const auto MatchEntry = static_cast<PZWFUN_LIST_ENTRY>(RtlLookupElementGenericTableAvl(&ZwFunTable, &Entry))) {
                     MatchEntry->Address = FastEncodePointer(ZwRoutine);
                 }
             }
 
-        #if DBG
+        #if defined(DBG)
             for (auto Entry = static_cast<const ZWFUN_LIST_ENTRY*>(RtlEnumerateGenericTableAvl(&ZwFunTable, TRUE));
                 Entry;
                 Entry = static_cast<const ZWFUN_LIST_ENTRY*>(RtlEnumerateGenericTableAvl(&ZwFunTable, FALSE))) {

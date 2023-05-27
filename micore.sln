@@ -7,7 +7,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "micore", "msvc\micore.vcxpr
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "micore_dll", "msvc\micore_dll.vcxproj", "{BC6BB10D-0A8D-452F-A13D-492FD875428A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "micore.test", "msvc\micore.test.vcxproj", "{A9501CDA-AC96-43D1-BBBE-3C8D7F04096C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "micore_test", "msvc\micore_test.vcxproj", "{A9501CDA-AC96-43D1-BBBE-3C8D7F04096C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
