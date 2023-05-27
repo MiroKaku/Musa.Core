@@ -1,5 +1,6 @@
 #include "universal.h"
 #include "micore.hpp"
+#include "miutil.hpp"
 
 
 
@@ -91,54 +92,11 @@
 
 namespace Mi
 {
-    static decltype(::ZwClose)*                 ZwClose;
-    static decltype(::ZwOpenDirectoryObject)*   ZwOpenDirectoryObject;
-    static decltype(::ZwOpenSection)*           ZwOpenSection;
-
     namespace /*anonymous namespace*/
     {
-        constexpr size_t Fnv1aHash(_In_ const char* const Buffer, _In_ const size_t Count)
-        {
-        #if defined(_WIN64)
-            constexpr size_t FnvOffsetBasis = 14695981039346656037ULL;
-            constexpr size_t FnvPrime       = 1099511628211ULL;
-        #else
-            constexpr size_t FnvOffsetBasis = 2166136261U;
-            constexpr size_t FnvPrime       = 16777619U;
-        #endif
-
-            auto Value = FnvOffsetBasis;
-            for (size_t Idx = 0; Idx < Count; ++Idx) {
-                Value ^= static_cast<size_t>(Buffer[Idx]);
-                Value *= FnvPrime;
-            }
-            return Value;
-        }
-
-        constexpr int MAXIMUM_POINTER_SHIFT = sizeof(uintptr_t) * 8;
-
-        uintptr_t RotatePointerValue(uintptr_t Value, int const Shift) noexcept
-        {
-        #if defined(_WIN64)
-            return RotateRight64(Value, Shift);
-        #else
-            return RotateRight32(Value, Shift);
-        #endif
-        }
-
-        template <typename T>
-        T FastDecodePointer(T const Ptr) noexcept
-        {
-            return reinterpret_cast<T>(RotatePointerValue(reinterpret_cast<uintptr_t>(Ptr) ^ __security_cookie,
-                    static_cast<int>(__security_cookie % MAXIMUM_POINTER_SHIFT)));
-        }
-
-        template <typename T>
-        T FastEncodePointer(T const Ptr) noexcept
-        {
-            return reinterpret_cast<T>(RotatePointerValue(reinterpret_cast<uintptr_t>(Ptr),
-                MAXIMUM_POINTER_SHIFT - static_cast<int>(__security_cookie % MAXIMUM_POINTER_SHIFT)) ^ __security_cookie);
-        }
+        decltype(::ZwClose)*                 ZwClose;
+        decltype(::ZwOpenDirectoryObject)*   ZwOpenDirectoryObject;
+        decltype(::ZwOpenSection)*           ZwOpenSection;
 
         NTSTATUS GetKnownDllSectionHandle(
             _In_  PCWSTR  DllName,
@@ -193,54 +151,9 @@ namespace Mi
 
             return Status;
         }
-
-        NTSTATUS ImageEnumerateExports(
-            _In_ void* BaseOfImage,
-            _In_ bool(CALLBACK *Callback)(uint32_t Ordinal, const char* Name, const void* Address, void* Context),
-            _In_opt_ void* Context
-        )
-        {
-            ULONG DataEntrySize   = 0;
-            const void* DataEntry = RtlImageDirectoryEntryToData(BaseOfImage, TRUE,
-                IMAGE_DIRECTORY_ENTRY_EXPORT, &DataEntrySize);
-            if (DataEntry == nullptr) {
-                return STATUS_INVALID_IMAGE_FORMAT;
-            }
-
-            const auto ExportEntry    = static_cast<PCIMAGE_EXPORT_DIRECTORY>(DataEntry);
-            const auto AddressOfNames = reinterpret_cast<uint32_t*>(static_cast<uint8_t*>(BaseOfImage) + ExportEntry->AddressOfNames);
-            const auto AddressOfFuncs = reinterpret_cast<uint32_t*>(static_cast<uint8_t*>(BaseOfImage) + ExportEntry->AddressOfFunctions);
-            const auto AddressOfOrdis = reinterpret_cast<uint16_t*>(static_cast<uint8_t*>(BaseOfImage) + ExportEntry->AddressOfNameOrdinals);
-
-            for (uint32_t Ordinal = 0; Ordinal < ExportEntry->NumberOfFunctions; ++Ordinal) {
-                if (0 == AddressOfFuncs[Ordinal]) {
-                    continue;
-                }
-
-                const char*    ExportName    = nullptr;
-                const uint32_t ExportOrdinal = Ordinal + ExportEntry->Base;
-                const void*    ExportAddress = static_cast<void*>(static_cast<uint8_t*>(BaseOfImage) + AddressOfFuncs[Ordinal]);
-
-                for (uint32_t Idx = 0u; Idx <= ExportEntry->NumberOfNames; ++Idx) {
-                    if (Ordinal == AddressOfOrdis[Idx]) {
-                        ExportName = reinterpret_cast<const char*>(static_cast<uint8_t*>(BaseOfImage) + AddressOfNames[Idx]);
-                        break;
-                    }
-                }
-
-                if (Callback(ExportOrdinal, ExportName, ExportAddress, Context)) {
-                    break;
-                }
-            }
-
-            return STATUS_SUCCESS;
-        }
-
     }
-}
 
-namespace Mi
-{
+
     typedef struct _ZWFUN_LIST_ENTRY{
 
         uint32_t    CmpMode; // 0: Index; 1: NameHash
@@ -253,8 +166,9 @@ namespace Mi
 
     } ZWFUN_LIST_ENTRY, * PZWFUN_LIST_ENTRY;
 
-    static RTL_AVL_TABLE         ZwFunTable;
-    static NPAGED_LOOKASIDE_LIST ZwFunTablePool;
+    RTL_AVL_TABLE         ZwFunTable;
+    NPAGED_LOOKASIDE_LIST ZwFunTablePool;
+
 
     namespace ZwFunTableRoutines
     {
@@ -312,6 +226,11 @@ namespace Mi
         }
     }
 
+}
+
+
+namespace Mi
+{
     EXTERN_C_START
 
     NTSTATUS MiCoreStartup()
@@ -366,7 +285,7 @@ namespace Mi
                 break;
             }
 
-            Status = ImageEnumerateExports(ImageBaseOfNtdll, [](uint32_t Ordinal, const char* Name, const void* Address, void* Context)->bool
+            Status = Util::ImageEnumerateExports(ImageBaseOfNtdll, [](const uint32_t Ordinal, const char* Name, const void* Address, void* Context)->bool
             {
                 UNREFERENCED_PARAMETER(Ordinal);
 
@@ -374,14 +293,10 @@ namespace Mi
 
                 if (Name) {
                     if (Name[0] == 'Z' && Name[1] == 'w') {
+                        ZWFUN_LIST_ENTRY Entry;
+                        Entry.CmpMode = 0;
 
                         const auto OpCodeBase = static_cast<const uint8_t*>(Address);
-                        const auto NameLength = strlen(Name);
-
-                        ZWFUN_LIST_ENTRY Entry;
-                        Entry.CmpMode  = 0;
-                        Entry.NameHash = Fnv1aHash(Name, NameLength);
-                        Entry.Address  = FastEncodePointer(static_cast<void*>(nullptr));
 
                     #if defined(_X86_)
                         // B8 42 00 00 00   mov eax, 42h
@@ -395,11 +310,15 @@ namespace Mi
                         Entry.Index = (*reinterpret_cast<const uint32_t*>(OpCodeBase) >> 5) & 0xFFFF;
                     #endif
 
+                        const auto NameLength = strlen(Name);
+                        Entry.NameHash = Util::Fnv1aHash(Name, NameLength);
+                        Entry.Address  = Util::FastEncodePointer(static_cast<void*>(nullptr));
+
                     #if defined(DBG)
                         Entry.Name = static_cast<char*>(ExAllocatePoolZero(NonPagedPool, NameLength + sizeof(""), MI_TAG));
                         if (Entry.Name == nullptr){
                             Status = STATUS_INSUFFICIENT_RESOURCES;
-                            return false;
+                            return true;
                         }
                         strcpy_s(Entry.Name, NameLength + _countof(""), Name);
                     #endif
@@ -410,7 +329,7 @@ namespace Mi
                         #endif
 
                             Status = STATUS_INSUFFICIENT_RESOURCES;
-                            return false;
+                            return true;
                         }
                     }
                 }
@@ -423,18 +342,16 @@ namespace Mi
             }
 
             // dump NTOS Zw routines.
-
-            constexpr auto NameOfZwCreateFile = UNICODE_STRING RTL_CONSTANT_STRING(L"ZwCreateFile");
-            const     auto BaseOfZwCreateFile = static_cast<const uint8_t*>(MmGetSystemRoutineAddress(const_cast<PUNICODE_STRING>(&NameOfZwCreateFile)));
+            const auto BaseOfZwClose = reinterpret_cast<const uint8_t*>(ZwClose);
 
         #if defined(_X86_)
             size_t SizeOfZwRoutine = 0;
             constexpr size_t OffsetOfZwIndex  = 1;
             constexpr size_t OffsetOfTemplate = 5;
 
-            const auto ZwCodeTemplate = *reinterpret_cast<const uint64_t*>(BaseOfZwCreateFile + OffsetOfTemplate);
+            const auto ZwCodeTemplate = *reinterpret_cast<const uint64_t*>(BaseOfZwClose + OffsetOfTemplate);
             for (size_t Idx = OffsetOfTemplate + 1; Idx < 0x100; ++Idx) {
-                if (*reinterpret_cast<const uint64_t*>(BaseOfZwCreateFile + Idx) == ZwCodeTemplate) {
+                if (*reinterpret_cast<const uint64_t*>(BaseOfZwClose + Idx) == ZwCodeTemplate) {
                     SizeOfZwRoutine = Idx - OffsetOfTemplate;
                     break;
                 }
@@ -444,17 +361,17 @@ namespace Mi
             size_t OffsetOfZwIndex = 0;
             constexpr size_t OffsetOfTemplate = 0;
 
-            const auto ZwCodeTemplate = *reinterpret_cast<const uint64_t*>(BaseOfZwCreateFile + OffsetOfTemplate);
+            const auto ZwCodeTemplate = *reinterpret_cast<const uint64_t*>(BaseOfZwClose + OffsetOfTemplate);
             for (size_t Idx = OffsetOfTemplate + 1; Idx < 0x100; ++Idx) {
-                if (*reinterpret_cast<const uint64_t*>(BaseOfZwCreateFile + Idx) == ZwCodeTemplate) {
+                if (*reinterpret_cast<const uint64_t*>(BaseOfZwClose + Idx) == ZwCodeTemplate) {
                     SizeOfZwRoutine = Idx - OffsetOfTemplate;
                     break;
                 }
             }
 
             for (size_t Idx = 0; Idx < 0x100; ++Idx) {
-                if (*(BaseOfZwCreateFile + SizeOfZwRoutine - (Idx + 0)) == 0xE9 &&  // jmp imm32
-                    *(BaseOfZwCreateFile + SizeOfZwRoutine - (Idx + 5)) == 0xB8) {  // mov rax, imm32
+                if (*(BaseOfZwClose + SizeOfZwRoutine - (Idx + 0)) == 0xE9 &&  // jmp imm32
+                    *(BaseOfZwClose + SizeOfZwRoutine - (Idx + 5)) == 0xB8) {  // mov rax, imm32
 
                     OffsetOfZwIndex = SizeOfZwRoutine - (Idx + 5) + 1;
                     break;
@@ -468,7 +385,7 @@ namespace Mi
             constexpr auto ZwCodeTemplate     = 0x14000000D2800010ull;
             constexpr auto ZwCodeTemplateMask = 0xFC000000FFE0001Full;
             for (size_t Idx = 1; Idx < 0x100; ++Idx) {
-                if ((*reinterpret_cast<const uint64_t*>(BaseOfZwCreateFile + Idx) & ZwCodeTemplateMask) == ZwCodeTemplate) {
+                if ((*reinterpret_cast<const uint64_t*>(BaseOfZwClose + Idx) & ZwCodeTemplateMask) == ZwCodeTemplate) {
                     SizeOfZwRoutine = Idx;
                     break;
                 }
@@ -476,7 +393,7 @@ namespace Mi
         #endif
 
             PVOID ImageBaseOfNtos = nullptr;
-            RtlPcToFileHeader(const_cast<uint8_t*>(BaseOfZwCreateFile), &ImageBaseOfNtos);
+            RtlPcToFileHeader(const_cast<uint8_t*>(BaseOfZwClose), &ImageBaseOfNtos);
 
             auto NtHeaderOfNtos = RtlImageNtHeader(ImageBaseOfNtos);
             if (NtHeaderOfNtos == nullptr){
@@ -485,7 +402,7 @@ namespace Mi
             }
 
             auto SectionOfNtos = _VEIL_IMPL_RtlImageRvaToSection(NtHeaderOfNtos, ImageBaseOfNtos,
-                static_cast<ULONG>(BaseOfZwCreateFile - static_cast<const uint8_t*>(ImageBaseOfNtos)));
+                static_cast<ULONG>(BaseOfZwClose - static_cast<const uint8_t*>(ImageBaseOfNtos)));
             if (SectionOfNtos == nullptr) {
                 Status = STATUS_INVALID_IMAGE_FORMAT;
                 break;
@@ -530,7 +447,7 @@ namespace Mi
             #endif
 
                 if (const auto MatchEntry = static_cast<PZWFUN_LIST_ENTRY>(RtlLookupElementGenericTableAvl(&ZwFunTable, &Entry))) {
-                    MatchEntry->Address = FastEncodePointer(ZwRoutine);
+                    MatchEntry->Address = Util::FastEncodePointer(ZwRoutine);
                 }
             }
 
@@ -540,7 +457,7 @@ namespace Mi
                 Entry = static_cast<const ZWFUN_LIST_ENTRY*>(RtlEnumerateGenericTableAvl(&ZwFunTable, FALSE))) {
 
                 DbgPrintEx(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL,
-                    "0x%04X -> 0x%p, %s \n", Entry->Index, FastDecodePointer(Entry->Address), Entry->Name);
+                    "0x%04X -> 0x%p, %s \n", Entry->Index, Util::FastDecodePointer(Entry->Address), Entry->Name);
             }
         #endif
 

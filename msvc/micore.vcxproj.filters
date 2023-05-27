@@ -16,12 +16,18 @@
     <ClCompile Include="..\src\nothing.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\miutil.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\micore.hpp">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="..\src\universal.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\miutil.hpp">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

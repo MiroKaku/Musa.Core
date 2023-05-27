@@ -28,12 +28,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\micore.cpp" />
+    <ClCompile Include="..\src\miutil.cpp" />
     <ClCompile Include="..\src\nothing.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\micore.hpp" />
+    <ClInclude Include="..\src\miutil.hpp" />
     <ClInclude Include="..\src\universal.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
