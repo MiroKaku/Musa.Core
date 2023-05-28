@@ -293,10 +293,13 @@ namespace Mi
 
                 if (Name) {
                     if (Name[0] == 'Z' && Name[1] == 'w') {
-                        ZWFUN_LIST_ENTRY Entry;
-                        Entry.CmpMode = 0;
-
                         const auto OpCodeBase = static_cast<const uint8_t*>(Address);
+                        const auto NameLength = strlen(Name);
+
+                        ZWFUN_LIST_ENTRY Entry;
+                        Entry.CmpMode  = 0;
+                        Entry.NameHash = Util::Fnv1aHash(Name, NameLength);
+                        Entry.Address  = Util::FastEncodePointer(static_cast<void*>(nullptr));
 
                     #if defined(_X86_)
                         // B8 42 00 00 00   mov eax, 42h
@@ -309,10 +312,6 @@ namespace Mi
                         // A1 0A 00 D4      SVC 0x55 ; imm16(5~20 bit)
                         Entry.Index = (*reinterpret_cast<const uint32_t*>(OpCodeBase) >> 5) & 0xFFFF;
                     #endif
-
-                        const auto NameLength = strlen(Name);
-                        Entry.NameHash = Util::Fnv1aHash(Name, NameLength);
-                        Entry.Address  = Util::FastEncodePointer(static_cast<void*>(nullptr));
 
                     #if defined(DBG)
                         Entry.Name = static_cast<char*>(ExAllocatePoolZero(NonPagedPool, NameLength + sizeof(""), MI_TAG));
@@ -401,7 +400,7 @@ namespace Mi
                 break;
             }
 
-            auto SectionOfNtos = _VEIL_IMPL_RtlImageRvaToSection(NtHeaderOfNtos, ImageBaseOfNtos,
+            auto SectionOfNtos = RtlImageRvaToSection(NtHeaderOfNtos, ImageBaseOfNtos,
                 static_cast<ULONG>(BaseOfZwClose - static_cast<const uint8_t*>(ImageBaseOfNtos)));
             if (SectionOfNtos == nullptr) {
                 Status = STATUS_INVALID_IMAGE_FORMAT;
