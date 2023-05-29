@@ -49,7 +49,16 @@ EXTERN_C_START
     9,  8,  7,  6,  5,  4,  3,  2,  1,  0))
 
 #if defined _M_IX86
-#define _MI_DEFINE_STUB(StackT, ReturnT, ConventionT, FunctionT,...) \
+#define _MI_SIZEOF_ARGS(...) _MI_EXPAND_ARGS(_MI_COUNTOF_ARGS_HELPER(0, __VA_ARGS__,\
+    256, 252, 248, 244, 240, \
+    236, 232, 228, 224, 220, 216, 212, 208, 204, 200, \
+    196, 192, 188, 184, 180, 176, 172, 168, 164, 160, \
+    156, 152, 148, 144, 140, 136, 132, 128, 124, 120, \
+    116, 112, 108, 104, 100, 96,  92,  88,  84,  80, \
+    76,  72,  68,  64,  60,  56,  52,  48,  44,  40, \
+    36,  32,  28,  24,  20,  16,  12,   8,   4,   0))
+
+#define _MI_DEFINE_STUB(ReturnT, ConventionT, FunctionT,...) \
     ReturnT ConventionT MI_NAME(FunctionT)(_MI_PARAM_DEFINE_FOR_EACH(_MI_EXPAND_ARGS(_MI_COUNTOF_ARGS(__VA_ARGS__)),__VA_ARGS__)) \
     { \
         constexpr auto NameHash = Util::Fnv1aHash(_VEIL_STRINGIZE(FunctionT)); \
@@ -58,9 +67,9 @@ EXTERN_C_START
         } \
         return STATUS_NOT_SUPPORTED; \
     } \
-    _VEIL_DEFINE_IAT_RAW_SYMBOL(FunctionT ## @ ## StackT, MI_NAME(FunctionT))
+    _VEIL_DEFINE_IAT_RAW_SYMBOL(FunctionT ## @ ## _MI_EXPAND_ARGS(_MI_SIZEOF_ARGS(__VA_ARGS__)), MI_NAME(FunctionT))
 #else
-#define _MI_DEFINE_STUB(StackT, ReturnT, ConventionT, FunctionT,...) \
+#define _MI_DEFINE_STUB(ReturnT, ConventionT, FunctionT,...) \
     ReturnT ConventionT MI_NAME(FunctionT)(_MI_PARAM_DEFINE_FOR_EACH(_MI_EXPAND_ARGS(_MI_COUNTOF_ARGS(__VA_ARGS__)),__VA_ARGS__)) \
     { \
         constexpr auto NameHash = Util::Fnv1aHash(_VEIL_STRINGIZE(FunctionT)); \
@@ -80,7 +89,7 @@ namespace Mi
     //    return reinterpret_cast<NTSTATUS(NTAPI*)(U...)>(Routine)(Args...);
     //}
 
-    _MI_DEFINE_STUB(32, NTSTATUS, NTAPI, ZwAccessCheck,
+    _MI_DEFINE_STUB(NTSTATUS, NTAPI, ZwAccessCheck,
         PSECURITY_DESCRIPTOR,
         HANDLE,
         ACCESS_MASK,
@@ -90,10 +99,10 @@ namespace Mi
         PACCESS_MASK,
         PNTSTATUS);
 
-    _MI_DEFINE_STUB(4, NTSTATUS, NTAPI, ZwWorkerFactoryWorkerReady,
+    _MI_DEFINE_STUB(NTSTATUS, NTAPI, ZwWorkerFactoryWorkerReady,
         HANDLE);
 
-    _MI_DEFINE_STUB(24, NTSTATUS, NTAPI, ZwAcceptConnectPort,
+    _MI_DEFINE_STUB(NTSTATUS, NTAPI, ZwAcceptConnectPort,
         PHANDLE,
         PVOID,
         PPORT_MESSAGE,
@@ -101,22 +110,22 @@ namespace Mi
         PPORT_VIEW,
         PREMOTE_PORT_VIEW);
 
-    _MI_DEFINE_STUB(12, NTSTATUS, NTAPI, ZwMapUserPhysicalPagesScatter,
+    _MI_DEFINE_STUB(NTSTATUS, NTAPI, ZwMapUserPhysicalPagesScatter,
         PVOID*,
         ULONG_PTR,
         PULONG_PTR);
 
-    _MI_DEFINE_STUB(12, NTSTATUS, NTAPI, ZwWaitForSingleObject,
+    _MI_DEFINE_STUB(NTSTATUS, NTAPI, ZwWaitForSingleObject,
         HANDLE,
         BOOLEAN,
         PLARGE_INTEGER);
 
-    _MI_DEFINE_STUB(12, NTSTATUS, NTAPI, ZwCallbackReturn,
+    _MI_DEFINE_STUB(NTSTATUS, NTAPI, ZwCallbackReturn,
         PVOID,
         ULONG,
         NTSTATUS);
 
-    _MI_DEFINE_STUB(36, NTSTATUS, NTAPI, ZwReadFile,
+    _MI_DEFINE_STUB(NTSTATUS, NTAPI, ZwReadFile,
         HANDLE,
         HANDLE,
         PIO_APC_ROUTINE,
@@ -127,7 +136,7 @@ namespace Mi
         PLARGE_INTEGER,
         PULONG);
 
-    _MI_DEFINE_STUB(40, NTSTATUS, NTAPI, ZwDeviceIoControlFile,
+    _MI_DEFINE_STUB(NTSTATUS, NTAPI, ZwDeviceIoControlFile,
         HANDLE,
         HANDLE,
         PIO_APC_ROUTINE,
@@ -139,7 +148,7 @@ namespace Mi
         PVOID,
         ULONG);
 
-    _MI_DEFINE_STUB(36, NTSTATUS, NTAPI, ZwWriteFile,
+    _MI_DEFINE_STUB(NTSTATUS, NTAPI, ZwWriteFile,
         HANDLE,
         HANDLE,
         PIO_APC_ROUTINE,
@@ -150,19 +159,19 @@ namespace Mi
         PLARGE_INTEGER,
         PULONG);
 
-    _MI_DEFINE_STUB(20, NTSTATUS, NTAPI, ZwRemoveIoCompletion,
+    _MI_DEFINE_STUB(NTSTATUS, NTAPI, ZwRemoveIoCompletion,
         HANDLE,
         PVOID*,
         PVOID*,
         PIO_STATUS_BLOCK,
         PLARGE_INTEGER);
     
-    _MI_DEFINE_STUB(12, NTSTATUS, NTAPI, ZwReleaseSemaphore,
+    _MI_DEFINE_STUB(NTSTATUS, NTAPI, ZwReleaseSemaphore,
         HANDLE,
         LONG,
         PLONG);
 
-    _MI_DEFINE_STUB(16, NTSTATUS, NTAPI, ZwReplyWaitReceivePort,
+    _MI_DEFINE_STUB(NTSTATUS, NTAPI, ZwReplyWaitReceivePort,
         HANDLE,
         PVOID*,
         PPORT_MESSAGE,
