@@ -127,7 +127,7 @@ namespace Mi
         PLARGE_INTEGER,
         PULONG);
 
-    _MI_DEFINE_STUB(32, NTSTATUS, NTAPI, ZwDeviceIoControlFile,
+    _MI_DEFINE_STUB(40, NTSTATUS, NTAPI, ZwDeviceIoControlFile,
         HANDLE,
         HANDLE,
         PIO_APC_ROUTINE,
@@ -138,6 +138,38 @@ namespace Mi
         ULONG,
         PVOID,
         ULONG);
+
+    _MI_DEFINE_STUB(36, NTSTATUS, NTAPI, ZwWriteFile,
+        HANDLE,
+        HANDLE,
+        PIO_APC_ROUTINE,
+        PVOID,
+        PIO_STATUS_BLOCK,
+        PVOID,
+        ULONG,
+        PLARGE_INTEGER,
+        PULONG);
+
+    _MI_DEFINE_STUB(20, NTSTATUS, NTAPI, ZwRemoveIoCompletion,
+        HANDLE,
+        PVOID*,
+        PVOID*,
+        PIO_STATUS_BLOCK,
+        PLARGE_INTEGER);
+    
+    _MI_DEFINE_STUB(12, NTSTATUS, NTAPI, ZwReleaseSemaphore,
+        HANDLE,
+        LONG,
+        PLONG);
+
+    _MI_DEFINE_STUB(16, NTSTATUS, NTAPI, ZwReplyWaitReceivePort,
+        HANDLE,
+        PVOID*,
+        PPORT_MESSAGE,
+        PPORT_MESSAGE);
+
+
+
 }
 
 #undef _MI_DEFINE_STUB
