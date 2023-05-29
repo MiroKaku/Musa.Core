@@ -13,3 +13,5 @@ EXTERN_C_START
 extern uintptr_t __security_cookie;
 constexpr unsigned long MI_TAG = '-iM-';
 EXTERN_C_END
+
+#define MI_NAME(name) _VEIL_CONCATENATE(_Mi_, name)

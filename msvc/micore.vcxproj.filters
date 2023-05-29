@@ -19,6 +19,9 @@
     <ClCompile Include="..\src\miutil.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\thunks\stubs.cpp">
+      <Filter>src\thunks</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\micore.hpp">

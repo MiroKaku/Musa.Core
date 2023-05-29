@@ -226,6 +226,19 @@ namespace Mi
         }
     }
 
+    PVOID MICORE_API GetZwRoutineAddress(const size_t NameHash)
+    {
+        ZWFUN_LIST_ENTRY Entry{};
+        Entry.CmpMode  = 1;
+        Entry.NameHash = NameHash;
+
+        if (const auto MatchEntry = static_cast<PZWFUN_LIST_ENTRY>(RtlLookupElementGenericTableAvl(&ZwFunTable, &Entry))) {
+             return const_cast<void*>(Util::FastDecodePointer(MatchEntry->Address));
+        }
+
+        return nullptr;
+    }
+
 }
 
 

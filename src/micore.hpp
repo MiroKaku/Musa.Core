@@ -13,5 +13,9 @@ namespace Mi
     NTSTATUS MICORE_API MiCoreStartup ();
     NTSTATUS MICORE_API MiCoreShutdown();
 
+    PVOID MICORE_API GetZwRoutineAddress(
+        _In_ size_t NameHash
+    );
+
     EXTERN_C_END
 }

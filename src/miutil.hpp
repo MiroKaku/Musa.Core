@@ -46,6 +46,12 @@ namespace Mi::Util
         return Value;
     }
 
+    template<size_t Size>
+    constexpr size_t Fnv1aHash(const char(&Buffer)[Size]) noexcept
+    {
+        return Fnv1aHash(Buffer, Size - _countof(""));
+    }
+
     NTSTATUS ImageEnumerateExports(
         _In_ void* BaseOfImage,
         _In_ bool(CALLBACK *Callback)(uint32_t Ordinal, const char* Name, const void* Address, void* Context),
