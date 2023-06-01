@@ -6,8 +6,14 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "micore", "msvc\micore.vcxproj", "{3FCEDBC3-A6E0-473B-BF17-55403D3D6C1A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "micore_dll", "msvc\micore_dll.vcxproj", "{BC6BB10D-0A8D-452F-A13D-492FD875428A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3FCEDBC3-A6E0-473B-BF17-55403D3D6C1A} = {3FCEDBC3-A6E0-473B-BF17-55403D3D6C1A}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "micore_test", "msvc\micore_test.vcxproj", "{A9501CDA-AC96-43D1-BBBE-3C8D7F04096C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3FCEDBC3-A6E0-473B-BF17-55403D3D6C1A} = {3FCEDBC3-A6E0-473B-BF17-55403D3D6C1A}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

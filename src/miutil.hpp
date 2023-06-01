@@ -3,6 +3,11 @@
 
 namespace Mi::Util
 {
+    template <class, class>
+    inline constexpr bool IS_SAME_TYPE = false; // determine whether arguments are the same type
+    template <class T>
+    inline constexpr bool IS_SAME_TYPE<T, T> = true;
+
     constexpr int MAXIMUM_POINTER_SHIFT = sizeof(uintptr_t) * 8;
 
     inline uintptr_t RotatePointerValue(uintptr_t Value, int const Shift) noexcept

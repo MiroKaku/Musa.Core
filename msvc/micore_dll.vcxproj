@@ -118,6 +118,7 @@
     <ClCompile />
     <Link>
       <ModuleDefinitionFile>$(SolutionDir)src\micore.def</ModuleDefinitionFile>
+      <AdditionalDependencies>$(OutDir)micore.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ClCompile />
     <ClCompile>
@@ -131,6 +132,7 @@
     <ClCompile />
     <Link>
       <ModuleDefinitionFile>$(SolutionDir)src\micore.def</ModuleDefinitionFile>
+      <AdditionalDependencies>$(OutDir)micore.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ClCompile />
     <ClCompile>
@@ -144,6 +146,7 @@
     <ClCompile />
     <Link>
       <ModuleDefinitionFile>$(SolutionDir)src\micore.def</ModuleDefinitionFile>
+      <AdditionalDependencies>$(OutDir)micore.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ClCompile />
     <ClCompile>
@@ -157,6 +160,7 @@
     <ClCompile />
     <Link>
       <ModuleDefinitionFile>$(SolutionDir)src\micore.def</ModuleDefinitionFile>
+      <AdditionalDependencies>$(OutDir)micore.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ClCompile />
     <ClCompile>
@@ -167,6 +171,7 @@
     <ClCompile />
     <Link>
       <ModuleDefinitionFile>$(SolutionDir)src\micore.def</ModuleDefinitionFile>
+      <AdditionalDependencies>$(OutDir)micore.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ClCompile />
     <ClCompile>
@@ -177,6 +182,7 @@
     <ClCompile />
     <Link>
       <ModuleDefinitionFile>$(SolutionDir)src\micore.def</ModuleDefinitionFile>
+      <AdditionalDependencies>$(OutDir)micore.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ClCompile />
     <ClCompile>
@@ -188,11 +194,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="micore.vcxproj">
-      <Project>{3fcedbc3-a6e0-473b-bf17-55403d3d6c1a}</Project>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\micore.def" />
