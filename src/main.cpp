@@ -14,12 +14,12 @@ namespace Main
     {
         UNREFERENCED_PARAMETER(RegistryPath);
 
-        return Mi::MiCoreStartup();
+        return MiCoreStartup();
     }
 
     NTSTATUS DllUnload()
     {
-        return Mi::MiCoreShutdown();
+        return MiCoreShutdown();
     }
 
     NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath)

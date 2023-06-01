@@ -6,16 +6,13 @@
 
 #define MICORE_API __stdcall
 
-namespace Mi
-{
-    EXTERN_C_START
+EXTERN_C_START
 
-    NTSTATUS MICORE_API MiCoreStartup ();
-    NTSTATUS MICORE_API MiCoreShutdown();
+NTSTATUS MICORE_API MiCoreStartup();
+NTSTATUS MICORE_API MiCoreShutdown();
 
-    PVOID MICORE_API GetZwRoutineAddress(
-        _In_ size_t NameHash
-    );
+PVOID    MICORE_API MiGetZwRoutineAddress(
+    _In_ size_t NameHash
+);
 
-    EXTERN_C_END
-}
+EXTERN_C_END
