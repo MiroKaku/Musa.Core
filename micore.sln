@@ -15,6 +15,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "micore_test", "msvc\micore_
 		{3FCEDBC3-A6E0-473B-BF17-55403D3D6C1A} = {3FCEDBC3-A6E0-473B-BF17-55403D3D6C1A}
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ReadMe", "ReadMe", "{F3A5057D-DA0C-408E-919E-1522E4DC76FC}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+		README.zh-CN.md = README.zh-CN.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
