@@ -24,7 +24,7 @@
       <ForcedIncludeFiles>%(PrecompiledHeaderFile);%(ForcedIncludeFiles)</ForcedIncludeFiles>
       -->
     </ClCompile>
-    <PostBuildEvent>
+    <PostBuildEvent Condition="'$(MSBuildProjectName)' == 'micore'">
       <Command>xcopy /D /Y /V /F "$(SolutionDir)README.md" "$(SolutionDir)micore\"
 xcopy /D /Y /V /F "$(SolutionDir)LICENSE" "$(SolutionDir)micore\"
 xcopy /D /Y /V /F "$(SolutionDir)src\micore.hpp" "$(SolutionDir)micore\include\"
