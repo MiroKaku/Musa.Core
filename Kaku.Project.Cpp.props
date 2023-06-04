@@ -24,6 +24,12 @@
       <ForcedIncludeFiles>%(PrecompiledHeaderFile);%(ForcedIncludeFiles)</ForcedIncludeFiles>
       -->
     </ClCompile>
+    <PostBuildEvent>
+      <Command>xcopy /D /Y /V /F "$(SolutionDir)README.md" "$(SolutionDir)micore\"
+xcopy /D /Y /V /F "$(SolutionDir)LICENSE" "$(SolutionDir)micore\"
+xcopy /D /Y /V /F "$(SolutionDir)src\micore.hpp" "$(SolutionDir)micore\include\"
+xcopy /D /S /Y /V /F "$(SolutionDir)build" "$(SolutionDir)micore\lib\" /EXCLUDE:$(SolutionDir)exclusion.txt</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
 
 </Project>
