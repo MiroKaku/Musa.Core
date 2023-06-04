@@ -1,12 +1,12 @@
 # [Mi Core](https://github.com/MiroKaku/micore)
 
 [![Actions Status](https://img.shields.io/github/actions/workflow/status/MiroKaku/micore/build.svg)](https://github.com/MiroKaku/micore/actions)
-[![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/MiroKaku/micore/blob/master/LICENSE)
+[![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/MiroKaku/micore/blob/main/LICENSE)
 ![Visual Studio](https://img.shields.io/badge/Visual%20Studio-2022-purple.svg)
 ![Windows](https://img.shields.io/badge/Windows-7+-orange.svg)
 ![Platform](https://img.shields.io/badge/Windows-X86%7CX64%7CARM64-%23FFBCD9)
 
-* [简体中文](https://github.com/MiroKaku/micore/blob/master/README.zh-CN.md)
+* [简体中文](https://github.com/MiroKaku/micore/blob/main/README.zh-CN.md)
 
 ## Introduction
 
