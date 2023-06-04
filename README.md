@@ -9,13 +9,18 @@
 * [简体中文](https://github.com/MiroKaku/micore/blob/master/README.zh-CN.md)
 
 ## Introduction
+
+> **Warning**
+> 
+> MiCore is still in development stage ...
+
 MiCore is a derivative of the underlying API implementation of MiUCRT (formerly [ucxxrt](https://github.com/MiroKaku/ucxxrt)).
 
 It is mainly the implementation of user-level functions in the kernel on the Windows platform.
 Recommended for use with [Veil](https://github.com/MiroKaku/Veil).
 
 ## Thanks & References
-* Thanks: The scheme to export ZwRoutines is provided by @xiaobfly.
+* Thanks: The scheme to export ZwRoutines is provided by @[xiaobfly](https://github.com/xiaobfly).
 * References: [systeminformer](https://github.com/winsiderss/systeminformer)/phnt
 * References: [Windows_OS_Internals_Curriculum_Resource_Kit-ACADEMIC](https://github.com/MeeSong/Windows_OS_Internals_Curriculum_Resource_Kit-ACADEMIC)
 

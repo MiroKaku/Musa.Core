@@ -9,12 +9,17 @@
 * [English](https://github.com/MiroKaku/micore/blob/master/README.md)
 
 ## 简介
+
+> **Warning**
+> 
+> MiCore 处于开发阶段中 ...
+
 MiCore 是 MiUCRT (原 [ucxxrt](https://github.com/MiroKaku/ucxxrt)) 的底层API实现的衍生物。
 
 主要是 Windows 平台上用户层函数在内核的实现。推荐与 [Veil](https://github.com/MiroKaku/Veil) 一起食用。
 
 ## 感谢 & 参考
-* 感谢：Zw 例程获取方案由 @xiaobfly 提供。
+* 感谢：Zw 例程获取方案由 @[xiaobfly](https://github.com/xiaobfly) 提供。
 * 参考：[systeminformer](https://github.com/winsiderss/systeminformer)/phnt
 * 参考：[Windows_OS_Internals_Curriculum_Resource_Kit-ACADEMIC](https://github.com/MeeSong/Windows_OS_Internals_Curriculum_Resource_Kit-ACADEMIC)
 
