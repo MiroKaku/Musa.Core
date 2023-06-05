@@ -274,7 +274,7 @@ EXPORTS
   ZwPropagationComplete=_Mi_ZwPropagationComplete
   ZwPropagationFailed=_Mi_ZwPropagationFailed
   ZwProtectVirtualMemory=_Mi_ZwProtectVirtualMemory
-  ;ZwPssCaptureVaSpaceBulk=_Mi_ZwPssCaptureVaSpaceBulk
+  ZwPssCaptureVaSpaceBulk=_Mi_ZwPssCaptureVaSpaceBulk
   ZwPulseEvent=_Mi_ZwPulseEvent
   ZwQueryAttributesFile=_Mi_ZwQueryAttributesFile
   ZwQueryAuxiliaryCounterFrequency=_Mi_ZwQueryAuxiliaryCounterFrequency
@@ -761,7 +761,7 @@ EXPORTS
   NtPropagationComplete=_Mi_ZwPropagationComplete
   NtPropagationFailed=_Mi_ZwPropagationFailed
   NtProtectVirtualMemory=_Mi_ZwProtectVirtualMemory
-  ;NtPssCaptureVaSpaceBulk=_Mi_ZwPssCaptureVaSpaceBulk
+  NtPssCaptureVaSpaceBulk=_Mi_ZwPssCaptureVaSpaceBulk
   NtPulseEvent=_Mi_ZwPulseEvent
   NtQueryAttributesFile=_Mi_ZwQueryAttributesFile
   NtQueryAuxiliaryCounterFrequency=_Mi_ZwQueryAuxiliaryCounterFrequency
