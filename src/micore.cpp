@@ -156,7 +156,6 @@ namespace Mi
 
     typedef struct _ZWFUN_LIST_ENTRY{
 
-        uint32_t    CmpMode; // 0: Index; 1: NameHash
         uint32_t    Index;
         size_t      NameHash;
     #if defined(DBG)
@@ -166,13 +165,14 @@ namespace Mi
 
     } ZWFUN_LIST_ENTRY, * PZWFUN_LIST_ENTRY;
 
-    RTL_AVL_TABLE         ZwFunTable;
-    NPAGED_LOOKASIDE_LIST ZwFunTablePool;
+    RTL_AVL_TABLE         ZwFuncTableByName;
+    RTL_AVL_TABLE         ZwFuncTableByIndex;
+    NPAGED_LOOKASIDE_LIST ZwTablePool;
 
 
     namespace ZwFunTableRoutines
     {
-        RTL_GENERIC_COMPARE_RESULTS NTAPI Compare(
+        RTL_GENERIC_COMPARE_RESULTS NTAPI CompareByIndex(
             _In_ RTL_AVL_TABLE* Table,
             _In_ PVOID First,
             _In_ PVOID Second
@@ -183,18 +183,25 @@ namespace Mi
             const auto Entry1 = static_cast<PZWFUN_LIST_ENTRY>(First);
             const auto Entry2 = static_cast<PZWFUN_LIST_ENTRY>(Second);
 
-            if (Entry1->CmpMode == 1 || Entry2->CmpMode == 1){
+            return Entry1->Index == Entry2->Index
+                ? GenericEqual
+                : (Entry1->Index > Entry2->Index ? GenericGreaterThan : GenericLessThan);
+        }
 
-                return Entry1->NameHash == Entry2->NameHash
-                    ? GenericEqual
-                    : (Entry1->NameHash > Entry2->NameHash ? GenericGreaterThan : GenericLessThan);
-            }
-            else{
+        RTL_GENERIC_COMPARE_RESULTS NTAPI CompareByNameHash(
+            _In_ RTL_AVL_TABLE* Table,
+            _In_ PVOID First,
+            _In_ PVOID Second
+        )
+        {
+            UNREFERENCED_PARAMETER(Table);
 
-                return Entry1->Index == Entry2->Index
-                    ? GenericEqual
-                    : (Entry1->Index > Entry2->Index ? GenericGreaterThan : GenericLessThan);
-            }
+            const auto Entry1 = static_cast<PZWFUN_LIST_ENTRY>(First);
+            const auto Entry2 = static_cast<PZWFUN_LIST_ENTRY>(Second);
+
+            return Entry1->NameHash == Entry2->NameHash
+                ? GenericEqual
+                : (Entry1->NameHash > Entry2->NameHash ? GenericGreaterThan : GenericLessThan);
         }
 
         PVOID NTAPI Allocate(
@@ -205,7 +212,7 @@ namespace Mi
             UNREFERENCED_PARAMETER(Table);
             UNREFERENCED_PARAMETER(Size);
 
-            return ExAllocateFromNPagedLookasideList(&ZwFunTablePool);
+            return ExAllocateFromNPagedLookasideList(&ZwTablePool);
         }
 
         VOID NTAPI Free(
@@ -222,7 +229,7 @@ namespace Mi
             }
         #endif
 
-            return ExFreeToNPagedLookasideList(&ZwFunTablePool, Buffer);
+            return ExFreeToNPagedLookasideList(&ZwTablePool, Buffer);
         }
     }
 
@@ -259,10 +266,13 @@ NTSTATUS MiCoreStartup()
         }
 
         constexpr auto ZwFunEntrySize = ROUND_TO_SIZE(sizeof(Mi::ZWFUN_LIST_ENTRY) + sizeof(RTL_BALANCED_LINKS), sizeof(void*));
-        ExInitializeNPagedLookasideList(&Mi::ZwFunTablePool, nullptr, nullptr,
+        ExInitializeNPagedLookasideList(&Mi::ZwTablePool, nullptr, nullptr,
             POOL_NX_ALLOCATION, ZwFunEntrySize, MI_TAG, 0);
 
-        RtlInitializeGenericTableAvl(&Mi::ZwFunTable, &Mi::ZwFunTableRoutines::Compare, &Mi::ZwFunTableRoutines::Allocate,
+        RtlInitializeGenericTableAvl(&Mi::ZwFuncTableByName, &Mi::ZwFunTableRoutines::CompareByNameHash, &Mi::ZwFunTableRoutines::Allocate,
+            &Mi::ZwFunTableRoutines::Free, nullptr);
+
+        RtlInitializeGenericTableAvl(&Mi::ZwFuncTableByIndex, &Mi::ZwFunTableRoutines::CompareByIndex, &Mi::ZwFunTableRoutines::Allocate,
             &Mi::ZwFunTableRoutines::Free, nullptr);
 
         // dump ntdll exports
@@ -295,7 +305,6 @@ NTSTATUS MiCoreStartup()
                     const auto NameLength = strlen(Name);
 
                     Mi::ZWFUN_LIST_ENTRY Entry;
-                    Entry.CmpMode  = 0;
                     Entry.NameHash = Mi::Util::Fnv1aHash(Name, NameLength);
                     Entry.Address  = Mi::Util::FastEncodePointer(static_cast<void*>(nullptr));
 
@@ -320,7 +329,7 @@ NTSTATUS MiCoreStartup()
                     strcpy_s(Entry.Name, NameLength + _countof(""), Name);
                 #endif
 
-                    if (!RtlInsertElementGenericTableAvl(&Mi::ZwFunTable, &Entry, sizeof(Mi::ZWFUN_LIST_ENTRY), nullptr)) {
+                    if (!RtlInsertElementGenericTableAvl(&Mi::ZwFuncTableByIndex, &Entry, sizeof(Mi::ZWFUN_LIST_ENTRY), nullptr)) {
                     #if defined(DBG)
                         ExFreePoolWithTag(Entry.Name, MI_TAG);
                     #endif
@@ -423,12 +432,11 @@ NTSTATUS MiCoreStartup()
         #endif
         }
 
-        const auto CountOfZwRoutine = RtlNumberGenericTableElementsAvl(&Mi::ZwFunTable);
+        const auto CountOfZwRoutine = RtlNumberGenericTableElementsAvl(&Mi::ZwFuncTableByIndex);
         for (size_t Idx = 0; Idx < CountOfZwRoutine; ++Idx) {
             const auto ZwRoutine = FirstZwRoutine + (Idx * SizeOfZwRoutine);
 
             Mi::ZWFUN_LIST_ENTRY Entry{};
-            Entry.CmpMode = 0;
 
         #if defined(_X86_) || defined(_AMD64_)
             if (*reinterpret_cast<const uint64_t*>(ZwRoutine + OffsetOfTemplate) != ZwCodeTemplate) {
@@ -443,15 +451,45 @@ NTSTATUS MiCoreStartup()
             Entry.Index   = (*reinterpret_cast<const uint32_t*>(ZwRoutine) >> 5) & 0xFFFF;
         #endif
 
-            if (const auto MatchEntry = static_cast<Mi::PZWFUN_LIST_ENTRY>(RtlLookupElementGenericTableAvl(&Mi::ZwFunTable, &Entry))) {
+            if (const auto MatchEntry = static_cast<Mi::PZWFUN_LIST_ENTRY>(RtlLookupElementGenericTableAvl(&Mi::ZwFuncTableByIndex, &Entry))) {
                 MatchEntry->Address = Mi::Util::FastEncodePointer(ZwRoutine);
             }
         }
 
-    #if defined(DBG)
-        for (auto Entry = static_cast<const Mi::ZWFUN_LIST_ENTRY*>(RtlEnumerateGenericTableAvl(&Mi::ZwFunTable, TRUE));
+        // from ZwFuncTableByIndex copy to ZwFuncTableByName
+        for (auto Entry = static_cast<const Mi::ZWFUN_LIST_ENTRY*>(RtlEnumerateGenericTableAvl(&Mi::ZwFuncTableByIndex, TRUE));
             Entry;
-            Entry = static_cast<const Mi::ZWFUN_LIST_ENTRY*>(RtlEnumerateGenericTableAvl(&Mi::ZwFunTable, FALSE))) {
+            Entry = static_cast<const Mi::ZWFUN_LIST_ENTRY*>(RtlEnumerateGenericTableAvl(&Mi::ZwFuncTableByIndex, FALSE))) {
+
+            Mi::ZWFUN_LIST_ENTRY NewEntry = *Entry;
+
+        #if defined(DBG)
+            if (Entry->Name) {
+                const auto NameLength = strlen(Entry->Name);
+
+                NewEntry.Name = static_cast<char*>(ExAllocatePoolZero(NonPagedPool, NameLength + sizeof(""), MI_TAG));
+                if (NewEntry.Name == nullptr) {
+                    Status = STATUS_INSUFFICIENT_RESOURCES;
+                    return true;
+                }
+                strcpy_s(NewEntry.Name, NameLength + _countof(""), Entry->Name);
+            }
+        #endif
+
+            if (!RtlInsertElementGenericTableAvl(&Mi::ZwFuncTableByName, &NewEntry, sizeof(Mi::ZWFUN_LIST_ENTRY), nullptr)) {
+            #if defined(DBG)
+                ExFreePoolWithTag(NewEntry.Name, MI_TAG);
+            #endif
+
+                Status = STATUS_INSUFFICIENT_RESOURCES;
+                return true;
+            }
+        }
+
+    #if defined(DBG)
+        for (auto Entry = static_cast<const Mi::ZWFUN_LIST_ENTRY*>(RtlEnumerateGenericTableAvl(&Mi::ZwFuncTableByIndex, TRUE));
+            Entry;
+            Entry = static_cast<const Mi::ZWFUN_LIST_ENTRY*>(RtlEnumerateGenericTableAvl(&Mi::ZwFuncTableByIndex, FALSE))) {
 
             DbgPrintEx(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL,
                 "0x%04X -> 0x%p, %s \n", Entry->Index, Mi::Util::FastDecodePointer(Entry->Address), Entry->Name);
@@ -477,23 +515,30 @@ NTSTATUS MiCoreStartup()
 
 NTSTATUS MiCoreShutdown()
 {
-    auto Entry = RtlGetElementGenericTableAvl(&Mi::ZwFunTable, 0);
-    while (Entry) {
-        RtlDeleteElementGenericTableAvl(&Mi::ZwFunTable, Entry);
-        Entry = RtlGetElementGenericTableAvl(&Mi::ZwFunTable, 0);
+    for (auto Entry = RtlGetElementGenericTableAvl(&Mi::ZwFuncTableByName, 0);
+        Entry;
+        Entry = RtlGetElementGenericTableAvl(&Mi::ZwFuncTableByName, 0)) {
+
+        RtlDeleteElementGenericTableAvl(&Mi::ZwFuncTableByName, Entry);
     }
 
-    ExDeleteNPagedLookasideList(&Mi::ZwFunTablePool);
+    for (auto Entry = RtlGetElementGenericTableAvl(&Mi::ZwFuncTableByIndex, 0);
+        Entry;
+        Entry = RtlGetElementGenericTableAvl(&Mi::ZwFuncTableByIndex, 0)) {
+
+        RtlDeleteElementGenericTableAvl(&Mi::ZwFuncTableByIndex, Entry);
+    }
+
+    ExDeleteNPagedLookasideList(&Mi::ZwTablePool);
     return STATUS_SUCCESS;
 }
 
 PVOID MICORE_API MiGetZwRoutineAddress(const size_t NameHash)
 {
     Mi::ZWFUN_LIST_ENTRY Entry{};
-    Entry.CmpMode = 1;
     Entry.NameHash = NameHash;
 
-    if (const auto MatchEntry = static_cast<Mi::PZWFUN_LIST_ENTRY>(RtlLookupElementGenericTableAvl(&Mi::ZwFunTable, &Entry))) {
+    if (const auto MatchEntry = static_cast<Mi::PZWFUN_LIST_ENTRY>(RtlLookupElementGenericTableAvl(&Mi::ZwFuncTableByName, &Entry))) {
         return const_cast<void*>(Mi::Util::FastDecodePointer(MatchEntry->Address));
     }
 
