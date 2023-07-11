@@ -23,7 +23,7 @@ namespace Main
             (void)MiCoreShutdown();
         };
 
-        NTSTATUS Status = MiCoreStartup();
+        NTSTATUS Status = MiCoreStartup(DriverObject);
         if (NT_SUCCESS(Status)) {
 
             (void)ZwYieldExecution();

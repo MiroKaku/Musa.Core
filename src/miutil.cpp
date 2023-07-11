@@ -1,6 +1,13 @@
 #include "miutil.hpp"
 
 
+EXTERN_C_START
+
+extern PDRIVER_OBJECT MI_DRIVER_OBJECT;
+
+EXTERN_C_END
+
+
 namespace Mi::Util
 {
     NTSTATUS ImageEnumerateExports(
@@ -45,5 +52,65 @@ namespace Mi::Util
         return STATUS_SUCCESS;
     }
 
+    int64_t GetUniqueIdViaThread(
+        _In_ PETHREAD Thread
+    )
+    {
+        const auto ClientId = PsGetThreadClientId(Thread);
 
+        const auto High = reinterpret_cast<SIZE_T>(ClientId.UniqueProcess) >> 2;
+        const auto Low  = reinterpret_cast<SIZE_T>(ClientId.UniqueThread ) >> 2;
+
+        return
+            (static_cast<int64_t>(High & ~static_cast<uint32_t>(0)) << 32) |
+            (static_cast<int64_t>(Low  & ~static_cast<uint32_t>(0)));
+    }
+
+    NTSTATUS QueueWorkItem(
+        _In_opt_ PLARGE_INTEGER WaitTime,
+        _In_ void(CALLBACK* Callback)(void*),
+        _In_opt_ void* Context
+    )
+    {
+        typedef struct _MI_WORK_ITEM
+        {
+            void(CALLBACK* Callback)(PVOID);
+            PVOID   Context;
+
+            KEVENT  WaitEvent;
+            UINT8   IoWorkItem[ANYSIZE_ARRAY];
+
+        } MI_WORK_ITEM, * PMI_WORK_ITEM;
+
+        NTSTATUS Status;
+
+        do {
+            const auto WorkItem = static_cast<PMI_WORK_ITEM>(ExAllocatePoolZero(NonPagedPool,
+                sizeof(MI_WORK_ITEM) + IoSizeofWorkItem(), MI_TAG));
+            if (WorkItem == nullptr) {
+                Status = STATUS_INSUFFICIENT_RESOURCES;
+                break;
+            }
+
+            WorkItem->Callback  = Callback;
+            WorkItem->Context   = Context;
+            KeInitializeEvent(&WorkItem->WaitEvent, NotificationEvent, FALSE);
+            IoInitializeWorkItem(MI_DRIVER_OBJECT, reinterpret_cast<PIO_WORKITEM>(WorkItem->IoWorkItem));
+
+            IoQueueWorkItemEx(reinterpret_cast<PIO_WORKITEM>(WorkItem->IoWorkItem), [](PVOID, PVOID Context, PIO_WORKITEM)
+            {
+                const auto WorkItem = static_cast<PMI_WORK_ITEM>(Context);
+                WorkItem->Callback(WorkItem->Context);
+
+                KeSetEvent(&WorkItem->WaitEvent, IO_NO_INCREMENT, FALSE);
+                ExFreePoolWithTag(WorkItem, MI_TAG);
+
+            }, DelayedWorkQueue, WorkItem);
+
+            Status = KeWaitForSingleObject(&WorkItem->WaitEvent, Executive, KernelMode, FALSE, WaitTime);
+
+        } while (false);
+
+        return Status;
+    }
 }

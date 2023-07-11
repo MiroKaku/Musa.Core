@@ -16,3 +16,11 @@ constexpr unsigned long MI_TAG = '-iM-';
 EXTERN_C_END
 
 #define MI_NAME(name) _VEIL_CONCATENATE(_Mi_, name)
+
+#if defined _M_IX86
+#define MI_IAT_SYMBOL(name, stack) _VEIL_DEFINE_IAT_RAW_SYMBOL(name ## @ ## stack, MI_NAME(name))
+#else
+#define MI_IAT_SYMBOL(name, stack) _VEIL_DEFINE_IAT_SYMBOL(name, MI_NAME(name))
+#endif
+
+#include "micore.hpp"

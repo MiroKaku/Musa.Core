@@ -63,4 +63,14 @@ namespace Mi::Util
         _In_opt_ void* Context
     );
 
+    int64_t GetUniqueIdViaThread(
+        _In_ PETHREAD Thread
+    );
+
+    NTSTATUS QueueWorkItem(
+        _In_opt_ PLARGE_INTEGER WaitTime,
+        _In_ void(CALLBACK* Callback)(void* Context),
+        _In_opt_ void* Context
+    );
+
 }

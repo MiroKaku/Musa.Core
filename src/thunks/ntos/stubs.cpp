@@ -1,5 +1,4 @@
-#include "../micore.hpp"
-#include "../miutil.hpp"
+#include "miutil.hpp"
 
 EXTERN_C_START
 
