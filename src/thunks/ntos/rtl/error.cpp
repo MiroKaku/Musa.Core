@@ -8,8 +8,8 @@ NTSTATUS NTAPI MI_NAME(RtlGetLastNtStatus)(
     VOID
 )
 {
-    if (const auto MiThreadBlock = Mi::Thunk::GetThreadBlock()) {
-        return MiThreadBlock->LastNtStatus;
+    if (const auto ThreadBlock = Mi::Thunk::GetThreadBlock()) {
+        return ThreadBlock->LastNtStatus;
     }
     return STATUS_INTERNAL_ERROR;
 }
@@ -19,8 +19,8 @@ LONG NTAPI MI_NAME(RtlGetLastWin32Error)(
     VOID
 )
 {
-    if (const auto MiThreadBlock = Mi::Thunk::GetThreadBlock()) {
-        return static_cast<LONG>(MiThreadBlock->LastWin32Error);
+    if (const auto ThreadBlock = Mi::Thunk::GetThreadBlock()) {
+        return static_cast<LONG>(ThreadBlock->LastWin32Error);
     }
     return STATUS_INTERNAL_ERROR;
 }
@@ -30,9 +30,9 @@ VOID NTAPI MI_NAME(RtlSetLastWin32ErrorAndNtStatusFromNtStatus)(
     _In_ NTSTATUS Status
 )
 {
-    if (const auto MiThreadBlock = Mi::Thunk::GetThreadBlock()) {
-        MiThreadBlock->LastNtStatus   = Status;
-        MiThreadBlock->LastWin32Error = RtlNtStatusToDosErrorNoTeb(Status);
+    if (const auto ThreadBlock = Mi::Thunk::GetThreadBlock()) {
+        ThreadBlock->LastNtStatus   = Status;
+        ThreadBlock->LastWin32Error = RtlNtStatusToDosErrorNoTeb(Status);
     }
 }
 MI_IAT_SYMBOL(RtlSetLastWin32ErrorAndNtStatusFromNtStatus, 4);
@@ -41,8 +41,8 @@ VOID NTAPI MI_NAME(RtlSetLastWin32Error)(
     _In_ LONG Win32Error
 )
 {
-    if (const auto MiThreadBlock = Mi::Thunk::GetThreadBlock()) {
-        MiThreadBlock->LastWin32Error = Win32Error;
+    if (const auto ThreadBlock = Mi::Thunk::GetThreadBlock()) {
+        ThreadBlock->LastWin32Error = Win32Error;
     }
 }
 MI_IAT_SYMBOL(RtlSetLastWin32Error, 4);

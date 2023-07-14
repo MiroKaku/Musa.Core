@@ -89,7 +89,6 @@ NTSTATUS NTAPI MI_NAME(RtlFlsAlloc)(
 
             if (ThreadBlock->FlsData != nullptr) {
                 InsertTailList(&Mi::Thunk::FlsListHead, &ThreadBlock->FlsData->Entry);
-
             }
             else {
                 RtlClearBits(&Mi::Thunk::FlsBitmap, Index, 1);
@@ -119,23 +118,17 @@ NTSTATUS NTAPI MI_NAME(RtlFlsFree)(
     _In_ ULONG FlsIndex
 )
 {
+    NTSTATUS Status = STATUS_SUCCESS;
+
     if (FlsIndex >= MI_FLS_MAXIMUM_AVAILABLE) {
         return STATUS_INVALID_PARAMETER;
     }
 
-    const auto ThreadBlock = Mi::Thunk::GetThreadBlock();
-    if (ThreadBlock == nullptr) {
-        return STATUS_INSUFFICIENT_RESOURCES;
-    }
-
-    NTSTATUS Status = STATUS_SUCCESS;
-
     ExAcquireFastMutex(&Mi::Thunk::FlsListLock);
-    do {
-
+    __try {
         if (!RtlAreBitsSet(&Mi::Thunk::FlsBitmap, FlsIndex, 1)) {
             Status = STATUS_INVALID_PARAMETER;
-            break;
+            __leave;
         }
 
         //
@@ -159,8 +152,10 @@ NTSTATUS NTAPI MI_NAME(RtlFlsFree)(
 
         Mi::Thunk::FlsCallback[FlsIndex] = nullptr;
 
-    } while (false);
-    ExReleaseFastMutex(&Mi::Thunk::FlsListLock);
+    }
+    __finally {
+        ExReleaseFastMutex(&Mi::Thunk::FlsListLock);
+    }
 
     return Status;
 }
@@ -210,12 +205,33 @@ NTSTATUS WINAPI MI_NAME(RtlFlsSetValue)(
         return STATUS_INSUFFICIENT_RESOURCES;
     }
 
-    if (ThreadBlock->FlsData == nullptr) {
-        return STATUS_MEMORY_NOT_ALLOCATED;
-    }
-
     if (!RtlAreBitsSet(&Mi::Thunk::FlsBitmap, FlsIndex, 1)) {
         return STATUS_INVALID_PARAMETER;
+    }
+
+    if (ThreadBlock->FlsData == nullptr) {
+        ThreadBlock->FlsData = static_cast<PMI_FLS_DATA>(ExAllocatePoolZero(NonPagedPool,
+            sizeof(MI_FLS_DATA), MI_TAG));
+
+        //
+        // If a fiber local storage data structure was allocated, then
+        // insert the allocated structure in the process fiber local
+        // storage list. Otherwise, clear the allocated slot in the bitmap,
+        // set the last error value, return the distuiguished value.
+        //
+
+        if (ThreadBlock->FlsData != nullptr) {
+            ExAcquireFastMutex(&Mi::Thunk::FlsListLock);
+            __try {
+                InsertTailList(&Mi::Thunk::FlsListHead, &ThreadBlock->FlsData->Entry);
+            }
+            __finally {
+                ExReleaseFastMutex(&Mi::Thunk::FlsListLock);
+            }
+        }
+        else {
+            return STATUS_NO_MEMORY;
+        }
     }
 
     ThreadBlock->FlsData->Slots[FlsIndex] = FlsData;

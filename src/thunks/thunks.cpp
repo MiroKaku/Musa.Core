@@ -618,7 +618,8 @@ namespace Mi::Thunk
                 // Clear FLS via WorkItem
                 //
 
-                Util::QueueWorkItem(nullptr, [](void* Context)
+                LARGE_INTEGER WithoutWait{};
+                Util::QueueWorkItem(&WithoutWait, [](void* Context)
                 {
                     const auto FlsData = static_cast<PMI_FLS_DATA>(Context);
                     for (auto FlsIndex = 0u; FlsIndex < _countof(FlsData->Slots); ++FlsIndex) {
@@ -633,9 +634,16 @@ namespace Mi::Thunk
                             FlsData->Slots[FlsIndex] = nullptr;
                         }
                     }
-                }, Block->FlsData);
 
-                ExFreePoolWithTag(Block->FlsData, MI_TAG);
+                    ExAcquireFastMutex(&FlsListLock);
+                    {
+                        RemoveEntryList(&FlsData->Entry);
+                    }
+                    ExReleaseFastMutex(&FlsListLock);
+
+                    ExFreePoolWithTag(FlsData, MI_TAG);
+
+                }, Block->FlsData);
             }
 
             return ExFreeToNPagedLookasideList(&ThreadTablePool, Buffer);
@@ -695,7 +703,7 @@ namespace Mi::Thunk
         MI_THREAD_BLOCK* Result;
 
         MI_THREAD_BLOCK  Block{};
-        Block.ThreadId    = PsGetCurrentProcessId();
+        Block.ThreadId    = PsGetCurrentThreadId();
         Block.UniqueId    = Util::GetUniqueIdViaThread(PsGetCurrentThread());
 
         bool Exclusive = false;
