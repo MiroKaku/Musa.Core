@@ -7,7 +7,7 @@ namespace Mi::Thunk
     extern RTL_BITMAP FlsBitmap;
     extern PVOID*     FlsCallback;
     extern LIST_ENTRY FlsListHead;
-    extern FAST_MUTEX FlsListLock;
+    extern KSPIN_LOCK FlsListLock;
 }
 
 EXTERN_C_START
@@ -27,8 +27,10 @@ NTSTATUS NTAPI MI_NAME(RtlFlsAlloc)(
 
     NTSTATUS Status = STATUS_SUCCESS;
 
-    ExAcquireFastMutex(&Mi::Thunk::FlsListLock);
-    do {
+    KLOCK_QUEUE_HANDLE LockHandle{};
+    KeAcquireInStackQueuedSpinLock(&Mi::Thunk::FlsListLock, &LockHandle);
+    __try {
+
         //
         // Search for the first free entry in the fiber local storage
         // bitmap.
@@ -42,7 +44,8 @@ NTSTATUS NTAPI MI_NAME(RtlFlsAlloc)(
         //
 
         if (Index == FLS_OUT_OF_INDEXES) {
-            return STATUS_NO_MEMORY;
+            Status = STATUS_NO_MEMORY;
+            __leave;
         }
 
         //
@@ -65,7 +68,7 @@ NTSTATUS NTAPI MI_NAME(RtlFlsAlloc)(
             if (Mi::Thunk::FlsCallback == nullptr) {
                 RtlClearBits(&Mi::Thunk::FlsBitmap, Index, 1);
                 Status = STATUS_NO_MEMORY;
-                break;
+                __leave;
             }
         }
 
@@ -93,7 +96,7 @@ NTSTATUS NTAPI MI_NAME(RtlFlsAlloc)(
             else {
                 RtlClearBits(&Mi::Thunk::FlsBitmap, Index, 1);
                 Status = STATUS_NO_MEMORY;
-                break;
+                __leave;
             }
         }
 
@@ -106,9 +109,10 @@ NTSTATUS NTAPI MI_NAME(RtlFlsAlloc)(
         ThreadBlock->FlsData->Slots[Index] = nullptr;
 
         *FlsIndex = Index;
-
-    } while (false);
-    ExReleaseFastMutex(&Mi::Thunk::FlsListLock);
+    }
+    __finally {
+        KeReleaseInStackQueuedSpinLock(&LockHandle);
+    }
 
     return Status;
 }
@@ -124,7 +128,8 @@ NTSTATUS NTAPI MI_NAME(RtlFlsFree)(
         return STATUS_INVALID_PARAMETER;
     }
 
-    ExAcquireFastMutex(&Mi::Thunk::FlsListLock);
+    KLOCK_QUEUE_HANDLE LockHandle{};
+    KeAcquireInStackQueuedSpinLock(&Mi::Thunk::FlsListLock, &LockHandle);
     __try {
         if (!RtlAreBitsSet(&Mi::Thunk::FlsBitmap, FlsIndex, 1)) {
             Status = STATUS_INVALID_PARAMETER;
@@ -154,7 +159,7 @@ NTSTATUS NTAPI MI_NAME(RtlFlsFree)(
 
     }
     __finally {
-        ExReleaseFastMutex(&Mi::Thunk::FlsListLock);
+        KeReleaseInStackQueuedSpinLock(&LockHandle);
     }
 
     return Status;
@@ -221,12 +226,14 @@ NTSTATUS WINAPI MI_NAME(RtlFlsSetValue)(
         //
 
         if (ThreadBlock->FlsData != nullptr) {
-            ExAcquireFastMutex(&Mi::Thunk::FlsListLock);
+
+            KLOCK_QUEUE_HANDLE LockHandle{};
+            KeAcquireInStackQueuedSpinLock(&Mi::Thunk::FlsListLock, &LockHandle);
             __try {
                 InsertTailList(&Mi::Thunk::FlsListHead, &ThreadBlock->FlsData->Entry);
             }
             __finally {
-                ExReleaseFastMutex(&Mi::Thunk::FlsListLock);
+                KeReleaseInStackQueuedSpinLock(&LockHandle);
             }
         }
         else {

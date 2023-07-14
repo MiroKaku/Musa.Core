@@ -568,7 +568,7 @@ namespace Mi::Thunk
     ULONG                 FlsBitmapBits[MI_FLS_MAXIMUM_AVAILABLE / RTL_BITS_OF(ULONG)];
     PVOID*                FlsCallback;
     LIST_ENTRY            FlsListHead;
-    FAST_MUTEX            FlsListLock;
+    KSPIN_LOCK            FlsListLock;
 
     RTL_AVL_TABLE         ThreadTable;
     EX_SPIN_LOCK          ThreadTableLock;
@@ -613,37 +613,31 @@ namespace Mi::Thunk
 
             const auto Block = reinterpret_cast<PMI_THREAD_BLOCK>(static_cast<uint8_t*>(Buffer) + sizeof(RTL_BALANCED_LINKS));
             if (Block->FlsData) {
+                const auto FlsData = Block->FlsData;
 
-                //
-                // Clear FLS via WorkItem
-                //
+                for (auto FlsIndex = 0u; FlsIndex < _countof(FlsData->Slots); ++FlsIndex) {
 
-                LARGE_INTEGER WithoutWait{};
-                Util::QueueWorkItem(&WithoutWait, [](void* Context)
-                {
-                    const auto FlsData = static_cast<PMI_FLS_DATA>(Context);
-                    for (auto FlsIndex = 0u; FlsIndex < _countof(FlsData->Slots); ++FlsIndex) {
+                    if (RtlAreBitsSet(&FlsBitmap, FlsIndex, 1)) {
 
-                        if (RtlAreBitsSet(&FlsBitmap, FlsIndex, 1)) {
-
-                            const auto Callback = static_cast<PFLS_CALLBACK_FUNCTION>(FlsCallback[FlsIndex]);
-                            if ((Callback != nullptr) && (FlsData->Slots[FlsIndex])) {
-                                (Callback)(FlsData->Slots[FlsIndex]);
-                            }
-
-                            FlsData->Slots[FlsIndex] = nullptr;
+                        const auto Callback = static_cast<PFLS_CALLBACK_FUNCTION>(FlsCallback[FlsIndex]);
+                        if ((Callback != nullptr) && (FlsData->Slots[FlsIndex])) {
+                            (Callback)(FlsData->Slots[FlsIndex]);
                         }
+
+                        FlsData->Slots[FlsIndex] = nullptr;
                     }
+                }
 
-                    ExAcquireFastMutex(&FlsListLock);
-                    {
-                        RemoveEntryList(&FlsData->Entry);
-                    }
-                    ExReleaseFastMutex(&FlsListLock);
+                KLOCK_QUEUE_HANDLE LockHandle{};
+                KeAcquireInStackQueuedSpinLock(&FlsListLock, &LockHandle);
+                __try {
+                    RemoveEntryList(&FlsData->Entry);
+                }
+                __finally {
+                    KeReleaseInStackQueuedSpinLock(&LockHandle);
+                }
 
-                    ExFreePoolWithTag(FlsData, MI_TAG);
-
-                }, Block->FlsData);
+                ExFreePoolWithTag(FlsData, MI_TAG);
             }
 
             return ExFreeToNPagedLookasideList(&ThreadTablePool, Buffer);
@@ -662,8 +656,8 @@ namespace Mi::Thunk
                 return STATUS_NO_MEMORY;
             }
 
-            InitializeListHead   (&FlsListHead);
-            ExInitializeFastMutex(&FlsListLock);
+            InitializeListHead  (&FlsListHead);
+            KeInitializeSpinLock(&FlsListLock);
 
             constexpr auto EntrySize = ROUND_TO_SIZE(sizeof(MI_THREAD_BLOCK) + sizeof(RTL_BALANCED_LINKS), sizeof(void*));
             ExInitializeNPagedLookasideList(&ThreadTablePool, nullptr, nullptr,
