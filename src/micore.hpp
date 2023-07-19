@@ -8,7 +8,11 @@
 
 EXTERN_C_START
 
-NTSTATUS MICORE_API MiCoreStartup (_In_ PDRIVER_OBJECT DriverObject);
+NTSTATUS MICORE_API MiCoreStartup (
+    _In_ PDRIVER_OBJECT  DriverObject,
+    _In_ PUNICODE_STRING RegistryPath
+);
+
 NTSTATUS MICORE_API MiCoreShutdown();
 
 PVOID    MICORE_API MiGetZwRoutineAddress(

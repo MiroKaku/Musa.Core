@@ -58,6 +58,9 @@
     <ClCompile Include="..\src\thunks\client\kernel32\error.cpp">
       <Filter>src\thunks\client\kernel32</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\thunks\ntos\rtl\heap.cpp">
+      <Filter>src\thunks\ntos\rtl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\micore.hpp">

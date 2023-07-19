@@ -31,7 +31,7 @@ namespace Main
                 (void)MiCoreShutdown();
             };
 
-            Status = MiCoreStartup(DriverObject);
+            Status = MiCoreStartup(DriverObject, RegistryPath);
             if (!NT_SUCCESS(Status)) {
                 break;
             }

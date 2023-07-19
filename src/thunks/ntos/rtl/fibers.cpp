@@ -20,8 +20,8 @@ NTSTATUS NTAPI MI_NAME(RtlFlsAlloc)(
 {
     *FlsIndex = FLS_OUT_OF_INDEXES;
 
-    const auto ThreadBlock = Mi::Thunk::GetThreadBlock();
-    if (ThreadBlock == nullptr) {
+    const auto Teb = Mi::Thunk::GetCurrentTeb();
+    if (Teb == nullptr) {
         return STATUS_INSUFFICIENT_RESOURCES;
     }
 
@@ -78,8 +78,8 @@ NTSTATUS NTAPI MI_NAME(RtlFlsAlloc)(
         // it now.
         //
 
-        if (ThreadBlock->FlsData == nullptr) {
-            ThreadBlock->FlsData = static_cast<PMI_FLS_DATA>(ExAllocatePoolZero(NonPagedPool,
+        if (Teb->FlsData == nullptr) {
+            Teb->FlsData = static_cast<PMI_FLS_DATA>(ExAllocatePoolZero(NonPagedPool,
                 sizeof(MI_FLS_DATA), MI_TAG));
 
             //
@@ -90,8 +90,8 @@ NTSTATUS NTAPI MI_NAME(RtlFlsAlloc)(
             // distuiguished value.
             //
 
-            if (ThreadBlock->FlsData != nullptr) {
-                InsertTailList(&Mi::Thunk::FlsListHead, &ThreadBlock->FlsData->Entry);
+            if (Teb->FlsData != nullptr) {
+                InsertTailList(&Mi::Thunk::FlsListHead, &Teb->FlsData->Entry);
             }
             else {
                 RtlClearBits(&Mi::Thunk::FlsBitmap, Index, 1);
@@ -106,7 +106,7 @@ NTSTATUS NTAPI MI_NAME(RtlFlsAlloc)(
         //
 
         Mi::Thunk::FlsCallback[Index] = Callback;
-        ThreadBlock->FlsData->Slots[Index] = nullptr;
+        Teb->FlsData->Slots[Index] = nullptr;
 
         *FlsIndex = Index;
     }
@@ -177,12 +177,12 @@ NTSTATUS WINAPI MI_NAME(RtlFlsGetValue)(
         return STATUS_INVALID_PARAMETER;
     }
 
-    const auto ThreadBlock = Mi::Thunk::GetThreadBlock();
-    if (ThreadBlock == nullptr) {
+    const auto Teb = Mi::Thunk::GetCurrentTeb();
+    if (Teb == nullptr) {
         return STATUS_INSUFFICIENT_RESOURCES;
     }
 
-    if (ThreadBlock->FlsData == nullptr) {
+    if (Teb->FlsData == nullptr) {
         return STATUS_MEMORY_NOT_ALLOCATED;
     }
 
@@ -190,7 +190,7 @@ NTSTATUS WINAPI MI_NAME(RtlFlsGetValue)(
         return STATUS_INVALID_PARAMETER;
     }
 
-    *FlsData = ThreadBlock->FlsData->Slots[FlsIndex];
+    *FlsData = Teb->FlsData->Slots[FlsIndex];
 
     return STATUS_SUCCESS;
 }
@@ -205,8 +205,8 @@ NTSTATUS WINAPI MI_NAME(RtlFlsSetValue)(
         return STATUS_INVALID_PARAMETER;
     }
 
-    const auto ThreadBlock = Mi::Thunk::GetThreadBlock();
-    if (ThreadBlock == nullptr) {
+    const auto Teb = Mi::Thunk::GetCurrentTeb();
+    if (Teb == nullptr) {
         return STATUS_INSUFFICIENT_RESOURCES;
     }
 
@@ -214,8 +214,8 @@ NTSTATUS WINAPI MI_NAME(RtlFlsSetValue)(
         return STATUS_INVALID_PARAMETER;
     }
 
-    if (ThreadBlock->FlsData == nullptr) {
-        ThreadBlock->FlsData = static_cast<PMI_FLS_DATA>(ExAllocatePoolZero(NonPagedPool,
+    if (Teb->FlsData == nullptr) {
+        Teb->FlsData = static_cast<PMI_FLS_DATA>(ExAllocatePoolZero(NonPagedPool,
             sizeof(MI_FLS_DATA), MI_TAG));
 
         //
@@ -225,12 +225,12 @@ NTSTATUS WINAPI MI_NAME(RtlFlsSetValue)(
         // set the last error value, return the distuiguished value.
         //
 
-        if (ThreadBlock->FlsData != nullptr) {
+        if (Teb->FlsData != nullptr) {
 
             KLOCK_QUEUE_HANDLE LockHandle{};
             KeAcquireInStackQueuedSpinLock(&Mi::Thunk::FlsListLock, &LockHandle);
             __try {
-                InsertTailList(&Mi::Thunk::FlsListHead, &ThreadBlock->FlsData->Entry);
+                InsertTailList(&Mi::Thunk::FlsListHead, &Teb->FlsData->Entry);
             }
             __finally {
                 KeReleaseInStackQueuedSpinLock(&LockHandle);
@@ -241,7 +241,7 @@ NTSTATUS WINAPI MI_NAME(RtlFlsSetValue)(
         }
     }
 
-    ThreadBlock->FlsData->Slots[FlsIndex] = FlsData;
+    Teb->FlsData->Slots[FlsIndex] = FlsData;
 
     return STATUS_SUCCESS;
 }

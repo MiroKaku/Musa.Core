@@ -556,24 +556,60 @@ namespace Mi::Thunk
 #pragma endregion
 
 
-#pragma region "FLS"
+#pragma region "KPEB"
 
 //
-// FLS
+// KPEB
 //
 
 namespace Mi::Thunk
 {
-    RTL_BITMAP            FlsBitmap;
-    ULONG                 FlsBitmapBits[MI_FLS_MAXIMUM_AVAILABLE / RTL_BITS_OF(ULONG)];
-    PVOID*                FlsCallback;
-    LIST_ENTRY            FlsListHead;
-    KSPIN_LOCK            FlsListLock;
+    static MI_KPEB* KernelProcessEnvironmentBlock;
+
+    extern LARGE_INTEGER  RtlTimeout;
+    extern UNICODE_STRING NtSystemRoot;
+
+    HANDLE StdInHandle;
+    HANDLE StdOutHandle;
+    HANDLE StdErrHandle;
+
+    static NTSTATUS MICORE_API InitStdio()
+    {
+        NTSTATUS Status;
+
+        do {
+            constexpr UNICODE_STRING    NullDeviceName   = RTL_CONSTANT_STRING(LR"(\GLOBAL??\NUL)");
+            constexpr OBJECT_ATTRIBUTES ObjectAttributes = RTL_CONSTANT_OBJECT_ATTRIBUTES(
+                &NullDeviceName, OBJ_KERNEL_HANDLE | OBJ_CASE_INSENSITIVE);
+
+            IO_STATUS_BLOCK IoStatus{};
+
+            Status = ZwOpenFile(&StdInHandle, FILE_GENERIC_READ, const_cast<POBJECT_ATTRIBUTES>(&ObjectAttributes),
+                &IoStatus, FILE_SHARE_VALID_FLAGS, 0);
+            if (!NT_SUCCESS(Status)) {
+                break;
+            }
+
+            Status = ZwOpenFile(&StdOutHandle, FILE_GENERIC_WRITE, const_cast<POBJECT_ATTRIBUTES>(&ObjectAttributes),
+                &IoStatus, FILE_SHARE_VALID_FLAGS, 0);
+            if (!NT_SUCCESS(Status)) {
+                break;
+            }
+
+            Status = ZwOpenFile(&StdErrHandle, FILE_GENERIC_WRITE, const_cast<POBJECT_ATTRIBUTES>(&ObjectAttributes),
+                &IoStatus, FILE_SHARE_VALID_FLAGS, 0);
+            if (!NT_SUCCESS(Status)) {
+                break;
+            }
+
+        } while (false);
+
+        return Status;
+    }
 
     RTL_AVL_TABLE         ThreadTable;
     EX_SPIN_LOCK          ThreadTableLock;
     NPAGED_LOOKASIDE_LIST ThreadTablePool;
-
 
     namespace ThreadTableRoutines
     {
@@ -585,8 +621,8 @@ namespace Mi::Thunk
         {
             UNREFERENCED_PARAMETER(Table);
 
-            const auto Entry1 = static_cast<PCMI_THREAD_BLOCK>(First);
-            const auto Entry2 = static_cast<PCMI_THREAD_BLOCK>(Second);
+            const auto Entry1 = static_cast<PCMI_KTEB>(First);
+            const auto Entry2 = static_cast<PCMI_KTEB>(Second);
 
             return
                 (Entry1->ThreadId < Entry2->ThreadId) ? GenericLessThan :
@@ -611,68 +647,28 @@ namespace Mi::Thunk
         {
             UNREFERENCED_PARAMETER(Table);
 
-            const auto Block = reinterpret_cast<PMI_THREAD_BLOCK>(static_cast<uint8_t*>(Buffer) + sizeof(RTL_BALANCED_LINKS));
-            if (Block->FlsData) {
-                const auto FlsData = Block->FlsData;
-
-                for (auto FlsIndex = 0u; FlsIndex < _countof(FlsData->Slots); ++FlsIndex) {
-
-                    if (RtlAreBitsSet(&FlsBitmap, FlsIndex, 1)) {
-
-                        const auto Callback = static_cast<PFLS_CALLBACK_FUNCTION>(FlsCallback[FlsIndex]);
-                        if ((Callback != nullptr) && (FlsData->Slots[FlsIndex])) {
-                            (Callback)(FlsData->Slots[FlsIndex]);
-                        }
-
-                        FlsData->Slots[FlsIndex] = nullptr;
-                    }
-                }
-
-                KLOCK_QUEUE_HANDLE LockHandle{};
-                KeAcquireInStackQueuedSpinLock(&FlsListLock, &LockHandle);
-                __try {
-                    RemoveEntryList(&FlsData->Entry);
-                }
-                __finally {
-                    KeReleaseInStackQueuedSpinLock(&LockHandle);
-                }
-
-                ExFreePoolWithTag(FlsData, MI_TAG);
-            }
-
             return ExFreeToNPagedLookasideList(&ThreadTablePool, Buffer);
         }
     }
 
-
-    NTSTATUS MICORE_API InitThreadTable()
+    static
+    NTSTATUS MICORE_API CreateTebList()
     {
-        do {
-            RtlInitializeBitMap(&FlsBitmap, FlsBitmapBits, RTL_BITS_OF(FlsBitmapBits));
+        constexpr auto EntrySize = ROUND_TO_SIZE(sizeof(MI_KTEB) + sizeof(RTL_BALANCED_LINKS), sizeof(void*));
+        ExInitializeNPagedLookasideList(&ThreadTablePool, nullptr, nullptr,
+            POOL_NX_ALLOCATION, EntrySize, MI_TAG, 0);
 
-            FlsCallback = static_cast<PVOID*>(ExAllocatePoolZero(NonPagedPool,
-                MI_FLS_MAXIMUM_AVAILABLE * sizeof(PVOID), MI_TAG));
-            if (FlsCallback == nullptr) {
-                return STATUS_NO_MEMORY;
-            }
-
-            InitializeListHead  (&FlsListHead);
-            KeInitializeSpinLock(&FlsListLock);
-
-            constexpr auto EntrySize = ROUND_TO_SIZE(sizeof(MI_THREAD_BLOCK) + sizeof(RTL_BALANCED_LINKS), sizeof(void*));
-            ExInitializeNPagedLookasideList(&ThreadTablePool, nullptr, nullptr,
-                POOL_NX_ALLOCATION, EntrySize, MI_TAG, 0);
-
-            RtlInitializeGenericTableAvl(&ThreadTable, &ThreadTableRoutines::Compare,
-                &ThreadTableRoutines::Allocate, &ThreadTableRoutines::Free, nullptr);
-
-        } while (false);
+        RtlInitializeGenericTableAvl(&ThreadTable, &ThreadTableRoutines::Compare,
+            &ThreadTableRoutines::Allocate, &ThreadTableRoutines::Free, nullptr);
 
         return STATUS_SUCCESS;
     }
 
-    NTSTATUS MICORE_API FreeThreadTable()
+    static
+    NTSTATUS MICORE_API DeleteTebList()
     {
+        PAGED_ASSERT(KeGetCurrentIrql() <= APC_LEVEL);
+
         const auto Irql = ExAcquireSpinLockExclusive(&ThreadTableLock);
         {
             for (auto Entry = RtlGetElementGenericTableAvl(&ThreadTable, 0);
@@ -685,26 +681,248 @@ namespace Mi::Thunk
         }
         ExReleaseSpinLockExclusive(&ThreadTableLock, Irql);
 
-        if (FlsCallback) {
-            ExFreePoolWithTag(FlsCallback, MI_TAG);
+        const auto Peb = GetCurrentPeb();
+
+        ExAcquireFastMutex(&Peb->FastPebLock);
+        if (!IsListEmpty(&Peb->FlsListHead)) {
+            PLIST_ENTRY Entry = RemoveHeadList(&Peb->FlsListHead);
+
+            while (Entry != &Peb->FlsListHead) {
+                const auto FlsData = CONTAINING_RECORD(Entry, MI_FLS_DATA, Entry);
+
+                for (auto Idx = 0ul; Idx < Peb->FlsHighIndex; ++Idx) {
+                    if (RtlAreBitsSet(&Peb->FlsBitmap, Idx, 1)) {
+                        const auto Callback = Peb->FlsCallback[Idx];
+
+                        if ((Callback != nullptr) && (FlsData->Slots[Idx])) {
+                            (Callback)(FlsData->Slots[Idx]);
+                        }
+                        FlsData->Slots[Idx] = nullptr;
+                    }
+                }
+                ExFreePoolWithTag(Entry, MI_TAG);
+
+                Entry = RemoveHeadList(&Peb->FlsListHead);
+            }
         }
+        ExReleaseFastMutex(&Peb->FastPebLock);
 
         return STATUS_SUCCESS;
     }
 
-    PMI_THREAD_BLOCK MICORE_API GetThreadBlock()
+    NTSTATUS MICORE_API CreatePeb(
+        _In_ PDRIVER_OBJECT  DriverObject,
+        _In_ PUNICODE_STRING RegistryPath
+    )
     {
-        MI_THREAD_BLOCK* Result;
+        NTSTATUS Status;
 
-        MI_THREAD_BLOCK  Block{};
-        Block.ThreadId    = PsGetCurrentThreadId();
-        Block.UniqueId    = Util::GetUniqueIdViaThread(PsGetCurrentThread());
+        do {
+            Status = InitStdio();
+            if (!NT_SUCCESS(Status)) {
+                break;
+            }
+
+            const auto Ldr = static_cast<PKLDR_DATA_TABLE_ENTRY>(DriverObject->DriverSection);
+            const auto Peb = static_cast<PMI_KPEB>(ExAllocatePoolZero(
+                NonPagedPool, PAGE_SIZE, MI_TAG));
+            if (KernelProcessEnvironmentBlock == nullptr) {
+                Status = STATUS_INSUFFICIENT_RESOURCES;
+                break;
+            }
+
+            Peb->Ldr                  = Ldr;
+            Peb->ImageBaseAddress     = Ldr->DllBase;
+            Peb->SizeOfImage          = Ldr->SizeOfImage;
+            Peb->DriverObject         = DriverObject;
+            Peb->ProcessHeaps         = reinterpret_cast<PVOID*>(Peb + 1);
+            Peb->MaximumNumberOfHeaps = (PAGE_SIZE - sizeof(MI_KPEB)) / sizeof(PVOID);
+            Peb->StandardInput        = StdInHandle;
+            Peb->StandardOutput       = StdOutHandle;
+            Peb->StandardError        = StdErrHandle;
+
+            InitializeListHead   (&Peb->FlsListHead);
+            RtlInitializeBitMap  (&Peb->FlsBitmap, Peb->FlsBitmapBits, RTL_BITS_OF(Peb->FlsBitmapBits));
+            ExInitializeFastMutex(&Peb->FastPebLock);
+
+            Status = RtlDuplicateUnicodeString(RTL_DUPLICATE_UNICODE_STRING_NULL_TERMINATE,
+                RegistryPath, &Peb->RegistryPath);
+            if (!NT_SUCCESS(Status)) {
+                break;
+            }
+
+            Status = RtlDuplicateUnicodeString(RTL_DUPLICATE_UNICODE_STRING_NULL_TERMINATE,
+                &Ldr->FullDllName, &Peb->ImagePathName);
+            if (!NT_SUCCESS(Status)) {
+                break;
+            }
+
+            ULONG ImageConfigDataSize   = 0ul;
+            const auto ImageConfigData  = static_cast<PIMAGE_LOAD_CONFIG_DIRECTORY>(RtlImageDirectoryEntryToData(
+                Peb->ImageBaseAddress, TRUE, IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG, &ImageConfigDataSize));
+
+            RTL_HEAP_PARAMETERS HeapParameters{};
+            ULONG ProcessHeapFlags = HEAP_GROWABLE | HEAP_CLASS_0;
+            HeapParameters.Length  = sizeof(HeapParameters);
+
+            if (ImageConfigData) {
+                if ((ImageConfigDataSize >= RTL_SIZEOF_THROUGH_FIELD(IMAGE_LOAD_CONFIG_DIRECTORY, CriticalSectionDefaultTimeout)) &&
+                    (ImageConfigData->CriticalSectionDefaultTimeout)) {
+
+                    //
+                    // Convert from milliseconds to NT time scale (100ns)
+                    //
+
+                    RtlTimeout.QuadPart = Int32x32To64(static_cast<LONG>(ImageConfigData->CriticalSectionDefaultTimeout),
+                        -10000);
+                }
+                if ((ImageConfigDataSize >= RTL_SIZEOF_THROUGH_FIELD(IMAGE_LOAD_CONFIG_DIRECTORY, ProcessHeapFlags)) &&
+                    (ImageConfigData->ProcessHeapFlags)) {
+                    ProcessHeapFlags = ImageConfigData->ProcessHeapFlags;
+                }
+                if ((ImageConfigDataSize >= RTL_SIZEOF_THROUGH_FIELD(IMAGE_LOAD_CONFIG_DIRECTORY, DeCommitFreeBlockThreshold)) &&
+                    (ImageConfigData->DeCommitFreeBlockThreshold)) {
+                    HeapParameters.DeCommitFreeBlockThreshold = ImageConfigData->DeCommitFreeBlockThreshold;
+                }
+                if ((ImageConfigDataSize >= RTL_SIZEOF_THROUGH_FIELD(IMAGE_LOAD_CONFIG_DIRECTORY, DeCommitTotalFreeThreshold)) &&
+                    (ImageConfigData->DeCommitTotalFreeThreshold)) {
+                    HeapParameters.DeCommitTotalFreeThreshold = ImageConfigData->DeCommitTotalFreeThreshold;
+                }
+                if ((ImageConfigDataSize >= RTL_SIZEOF_THROUGH_FIELD(IMAGE_LOAD_CONFIG_DIRECTORY, MaximumAllocationSize)) &&
+                    (ImageConfigData->MaximumAllocationSize)) {
+                    HeapParameters.MaximumAllocationSize = ImageConfigData->MaximumAllocationSize;
+                }
+                if ((ImageConfigDataSize >= RTL_SIZEOF_THROUGH_FIELD(IMAGE_LOAD_CONFIG_DIRECTORY, VirtualMemoryThreshold)) &&
+                    (ImageConfigData->VirtualMemoryThreshold)) {
+                    HeapParameters.VirtualMemoryThreshold = ImageConfigData->VirtualMemoryThreshold;
+                }
+            }
+
+            const auto NtHeader = RtlImageNtHeader(Peb->ImageBaseAddress);
+
+            Peb->ProcessHeap = RtlCreateHeap(
+                ProcessHeapFlags,
+                nullptr,
+                NtHeader->OptionalHeader.SizeOfHeapReserve,
+                NtHeader->OptionalHeader.SizeOfHeapCommit,
+                nullptr,
+                &HeapParameters);
+            if (Peb->ProcessHeap == nullptr) {
+                Status = STATUS_NO_MEMORY;
+                break;
+            }
+
+            Status = RtlCreateEnvironment(FALSE, &Peb->Environment);
+            if (!NT_SUCCESS(Status)) {
+                break;
+            }
+
+            Status = RtlSetCurrentDirectory_U(&NtSystemRoot);
+            if (!NT_SUCCESS(Status)) {
+                break;
+            }
+
+            InterlockedExchangePointer(reinterpret_cast<PVOID volatile*>(&KernelProcessEnvironmentBlock), Peb);
+
+            //
+            // TEB
+            //
+
+            Status = CreateTebList();
+            if (!NT_SUCCESS(Status)) {
+                break;
+            }
+
+        } while (false);
+
+        return Status;
+    }
+
+    NTSTATUS MICORE_API DeletePeb()
+    {
+        NTSTATUS Status;
+
+        do {
+            Status = DeleteTebList();
+            if (!NT_SUCCESS(Status)) {
+                break;
+            }
+
+            const auto Peb = static_cast<PMI_KPEB>(InterlockedExchangePointer(
+                reinterpret_cast<PVOID volatile*>(&KernelProcessEnvironmentBlock), nullptr));
+            if (Peb != nullptr) {
+
+                RtlFreeUnicodeString(&Peb->CurrentDirectory.DosPath);
+                if (Peb->CurrentDirectory.Handle) {
+                    Status = ::ZwClose(Peb->CurrentDirectory.Handle);
+                    if (!NT_SUCCESS(Status)) {
+                        break;
+                    }
+                }
+
+                if (Peb->Environment) {
+                    Status = RtlDestroyEnvironment(Peb->Environment);
+                    if (!NT_SUCCESS(Status)) {
+                        break;
+                    }
+                }
+
+                for (size_t Idx = 0; Idx < Peb->NumberOfHeaps; ++Idx) {
+                    if (Peb->ProcessHeaps[Idx]) {
+                        RtlDestroyHeap(Peb->ProcessHeaps[Idx]);
+                    }
+                }
+
+                RtlFreeUnicodeString(&Peb->RegistryPath);
+                RtlFreeUnicodeString(&Peb->ImagePathName);
+
+                ExFreePoolWithTag(Peb, MI_TAG);
+            }
+
+            if (StdInHandle) {
+                Status = ::ZwClose(StdInHandle);
+                if (!NT_SUCCESS(Status)) {
+                    break;
+                }
+            }
+            if (StdOutHandle) {
+                Status = ::ZwClose(StdOutHandle);
+                if (!NT_SUCCESS(Status)) {
+                    break;
+                }
+            }
+            if (StdErrHandle) {
+                Status = ::ZwClose(StdErrHandle);
+                if (!NT_SUCCESS(Status)) {
+                    break;
+                }
+            }
+
+        } while (false);
+
+        return Status;
+    }
+
+    PMI_KPEB MICORE_API GetCurrentPeb()
+    {
+        return KernelProcessEnvironmentBlock;
+    }
+
+    PMI_KTEB MICORE_API GetCurrentTeb()
+    {
+        const auto Peb = GetCurrentPeb();
+        PMI_FLS_DATA FlsData   = nullptr;
+
+        MI_KTEB* Result;
+        MI_KTEB  Block{};
+        Block.ThreadId = PsGetCurrentThreadId();
+        Block.UniqueId = Util::GetUniqueIdViaThread(PsGetCurrentThread());
+        Block.ProcessEnvironmentBlock = Peb;
 
         bool Exclusive = false;
-
         auto Irql = ExAcquireSpinLockShared(&ThreadTableLock);
         {
-            Result = static_cast<PMI_THREAD_BLOCK>(RtlLookupElementGenericTableAvl(&ThreadTable, &Block));
+            Result = static_cast<PMI_KTEB>(RtlLookupElementGenericTableAvl(&ThreadTable, &Block));
             if (Result == nullptr || Result->UniqueId != Block.UniqueId) {
                 if (!ExTryConvertSharedSpinLockExclusive(&ThreadTableLock)) {
                     ExReleaseSpinLockShared(&ThreadTableLock, Irql);
@@ -717,10 +935,11 @@ namespace Mi::Thunk
                 Exclusive = true;
 
                 if (Result) {
+                    FlsData = Result->FlsData;
                     RtlDeleteElementGenericTableAvl(&ThreadTable, Result);
                 }
 
-                Result = static_cast<PMI_THREAD_BLOCK>(RtlInsertElementGenericTableAvl(
+                Result = static_cast<PMI_KTEB>(RtlInsertElementGenericTableAvl(
                     &ThreadTable, &Block, sizeof Block, nullptr));
             }
         }
@@ -729,6 +948,27 @@ namespace Mi::Thunk
         }
         else {
             ExReleaseSpinLockShared(&ThreadTableLock, Irql);
+        }
+
+        if (FlsData) {
+            ExAcquireFastMutex(&Peb->FastPebLock);
+            {
+                RemoveEntryList(&FlsData->Entry);
+
+                for (auto Idx = 0ul; Idx < Peb->FlsHighIndex; ++Idx) {
+                    if (RtlAreBitsSet(&Peb->FlsBitmap, Idx, 1)) {
+                        const auto Callback = Peb->FlsCallback[Idx];
+
+                        if ((Callback != nullptr) && (FlsData->Slots[Idx])) {
+                            (Callback)(FlsData->Slots[Idx]);
+                        }
+                        FlsData->Slots[Idx] = nullptr;
+                    }
+                }
+
+                ExFreePoolWithTag(FlsData, MI_TAG);
+            }
+            ExReleaseFastMutex(&Peb->FastPebLock);
         }
 
         return Result;

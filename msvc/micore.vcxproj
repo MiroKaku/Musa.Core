@@ -38,6 +38,7 @@
     <ClCompile Include="..\src\thunks\client\kernel32\mbcs.cpp" />
     <ClCompile Include="..\src\thunks\ntos\rtl\error.cpp" />
     <ClCompile Include="..\src\thunks\ntos\rtl\fibers.cpp" />
+    <ClCompile Include="..\src\thunks\ntos\rtl\heap.cpp" />
     <ClCompile Include="..\src\thunks\ntos\stubs.cpp" />
     <ClCompile Include="..\src\thunks\thunks.cpp" />
   </ItemGroup>
