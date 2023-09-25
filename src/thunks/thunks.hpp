@@ -1,8 +1,6 @@
 #pragma once
 
 
-EXTERN_C_START
-
 constexpr uint32_t MI_FLS_MAXIMUM_AVAILABLE = 256;
 
 typedef struct _MI_FLS_DATA
@@ -19,8 +17,6 @@ typedef struct _MI_KPEB
 
     PDRIVER_OBJECT  DriverObject;
     UNICODE_STRING  RegistryPath;
-
-    PKLDR_DATA_TABLE_ENTRY Ldr;
 
     PVOID           ImageBaseAddress;
     SIZE_T          SizeOfImage;
@@ -67,9 +63,6 @@ typedef struct _MI_KTEB
 } MI_KTEB, * PMI_KTEB;
 typedef MI_KTEB const* PCMI_KTEB;
 
-EXTERN_C_END
-
-
 
 namespace Mi::Thunk
 {
@@ -86,12 +79,18 @@ namespace Mi::Thunk
     // KPEB & KTEB
     //
 
-    NTSTATUS MICORE_API CreatePeb(
+    NTSTATUS MICORE_API InitProcessEnvironmentBlock(
         _In_ PDRIVER_OBJECT  DriverObject,
         _In_ PUNICODE_STRING RegistryPath
     );
-    NTSTATUS MICORE_API DeletePeb();
+    NTSTATUS MICORE_API FreeProcessEnvironmentBlock();
+
     PMI_KPEB MICORE_API GetCurrentPeb();
     PMI_KTEB MICORE_API GetCurrentTeb();
+
+#define NtCurrentPeb() ::Mi::Thunk::GetCurrentPeb()
+#define NtCurrentTeb() ::Mi::Thunk::GetCurrentTeb()
+#define RtlAcquirePebLock() ExAcquireFastMutex(&NtCurrentPeb()->FastPebLock)
+#define RtlReleasePebLock() ExReleaseFastMutex(&NtCurrentPeb()->FastPebLock)
 
 }

@@ -1,6 +1,6 @@
 #pragma once
 #pragma warning(suppress: 4117)
-#define _KERNEL_MODE    1
+#define _KERNEL_MODE    1   // Fix: ReSharper's code analysis
 #define POOL_NX_OPTIN   1
 #define POOL_ZERO_DOWN_LEVEL_SUPPORT 1
 

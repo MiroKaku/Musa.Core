@@ -4,26 +4,27 @@
 
 EXTERN_C_START
 
-UNICODE_STRING NtSystemRoot;
+LARGE_INTEGER  RtlTimeout{};
+UNICODE_STRING NtSystemRoot{};
 
 NTSTATUS MICORE_API MiCoreStartup(
     _In_ PDRIVER_OBJECT  DriverObject,
     _In_ PUNICODE_STRING RegistryPath
 )
 {
+    PAGED_CODE()
+
     NTSTATUS Status;
 
     do {
         ExInitializeDriverRuntime(DrvRtPoolNxOptIn);
-
-        RtlInitUnicodeString(&NtSystemRoot, RtlGetNtSystemRoot());
 
         Status = Mi::Thunk::LoadStubs();
         if (!NT_SUCCESS(Status)) {
             break;
         }
 
-        Status = Mi::Thunk::CreatePeb(DriverObject, RegistryPath);
+        Status = Mi::Thunk::InitProcessEnvironmentBlock(DriverObject, RegistryPath);
         if (!NT_SUCCESS(Status)) {
             break;
         }
@@ -35,7 +36,9 @@ NTSTATUS MICORE_API MiCoreStartup(
 
 NTSTATUS MICORE_API MiCoreShutdown()
 {
-    Mi::Thunk::DeletePeb();
+    PAGED_CODE()
+
+    Mi::Thunk::FreeProcessEnvironmentBlock();
     Mi::Thunk::FreeStubs();
     return STATUS_SUCCESS;
 }

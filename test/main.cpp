@@ -1,5 +1,5 @@
 #pragma warning(suppress: 4117)
-#define _KERNEL_MODE 1
+#define _KERNEL_MODE 1   // Fix: ReSharper's code analysis
 #include <veil/veil.h>
 #include <src/micore.hpp>
 

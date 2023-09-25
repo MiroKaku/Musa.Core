@@ -63,8 +63,8 @@ namespace Mi::Util
         _In_opt_ void* Context
     );
 
-    int64_t GetUniqueIdViaThread(
-        _In_ PETHREAD Thread
+    int64_t GetUniqueIdViaClientId(
+        _In_ CLIENT_ID ClientId
     );
 
     NTSTATUS QueueWorkItem(
