@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{15951923-1854-4CAE-ADCA-E3897AEE39A0}</ProjectGuid>
+    <RootNamespace>MiCore.StaticLibraryForDriver</RootNamespace>
+    <MileProjectType>StaticLibrary</MileProjectType>
+    <MileProjectUseKernelMode>true</MileProjectUseKernelMode>
+    <MileProjectUseWindowsDriverKit>true</MileProjectUseWindowsDriverKit>
+  </PropertyGroup>
+  <Import Project="..\Mile.Project.Windows\Mile.Project.Platform.x86.props" />
+  <Import Project="..\Mile.Project.Windows\Mile.Project.Platform.x64.props" />
+  <Import Project="..\Mile.Project.Windows\Mile.Project.Platform.ARM64.props" />
+  <Import Project="..\Mile.Project.Windows\Mile.Project.Cpp.Default.props" />
+  <Import Project="..\Mile.Project.Windows\Mile.Project.Cpp.props" />
+  <PropertyGroup Label="Globals">
+    <!--TODO: -->
+    <OutDir>$(MileProjectBinariesPath)$(Configuration)\$(Platform)\</OutDir>
+    <IntDir>$(MileProjectObjectsPath)$(Configuration)\$(MSBuildProjectName)\$(Platform)\</IntDir>
+    <GeneratedFilesDir>$(IntDir)Generated Files\</GeneratedFilesDir>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>universal.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>%(PrecompiledHeaderFile);%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\MiCore\MiCore.EnvironmentBlock.h" />
+    <ClInclude Include="..\MiCore\MiCore.h" />
+    <ClInclude Include="..\MiCore\MiCore.Internal.h" />
+    <ClInclude Include="..\MiCore\MiCore.PEParser.h" />
+    <ClInclude Include="..\MiCore\MiCore.SystemCall.h" />
+    <ClInclude Include="universal.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\MiCore\MiCore.cpp" />
+    <ClCompile Include="..\MiCore\MiCore.EnvironmentBlock.cpp" />
+    <ClCompile Include="..\MiCore\MiCore.Internal.cpp" />
+    <ClCompile Include="..\MiCore\MiCore.Nothing.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\MiCore\MiCore.PEParser.cpp" />
+    <ClCompile Include="..\MiCore\MiCore.SystemCall.cpp" />
+    <ClCompile Include="..\MiCore\MiCore.SystemCall.Stubs.cpp" />
+    <ClCompile Include="..\MiCore\Thunks\MiCore.Thunks.Ntdll.Heap.cpp" />
+    <ClCompile Include="..\MiCore\Thunks\MiCore.Thunks.Ntdll.Memory.cpp" />
+  </ItemGroup>
+  <Import Project="..\Mile.Project.Windows\Mile.Project.Cpp.targets" />
+</Project>

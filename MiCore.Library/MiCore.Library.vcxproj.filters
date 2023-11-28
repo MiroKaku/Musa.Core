@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="MiCore">
+      <UniqueIdentifier>{cb109b40-a7c2-4238-aca9-45c3e0002f89}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="MiCore.Library.manifest">
+      <Filter>MiCore</Filter>
+    </Manifest>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="MiCore.Library.def">
+      <Filter>MiCore</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="MiCore.Library.cpp">
+      <Filter>MiCore</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

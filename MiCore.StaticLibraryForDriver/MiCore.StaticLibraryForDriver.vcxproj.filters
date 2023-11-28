@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="MiCore">
+      <UniqueIdentifier>{edbaf631-8584-43c0-9f23-3f6bd6159630}</UniqueIdentifier>
+      <Extensions>.h;.c;.hpp;.cpp;</Extensions>
+    </Filter>
+    <Filter Include="MiCore\Thunks">
+      <UniqueIdentifier>{78689286-b985-4df1-aef5-799aff7c7508}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="universal.h" />
+    <ClInclude Include="..\MiCore\MiCore.Internal.h">
+      <Filter>MiCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MiCore\MiCore.h">
+      <Filter>MiCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MiCore\MiCore.PEParser.h">
+      <Filter>MiCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MiCore\MiCore.SystemCall.h">
+      <Filter>MiCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MiCore\MiCore.EnvironmentBlock.h">
+      <Filter>MiCore</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\MiCore\MiCore.Internal.cpp">
+      <Filter>MiCore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MiCore\MiCore.cpp">
+      <Filter>MiCore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MiCore\MiCore.Nothing.cpp">
+      <Filter>MiCore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MiCore\MiCore.PEParser.cpp">
+      <Filter>MiCore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MiCore\MiCore.SystemCall.cpp">
+      <Filter>MiCore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MiCore\MiCore.SystemCall.Stubs.cpp">
+      <Filter>MiCore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MiCore\Thunks\MiCore.Thunks.Ntdll.Memory.cpp">
+      <Filter>MiCore\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MiCore\MiCore.EnvironmentBlock.cpp">
+      <Filter>MiCore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MiCore\Thunks\MiCore.Thunks.Ntdll.Heap.cpp">
+      <Filter>MiCore\Thunks</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

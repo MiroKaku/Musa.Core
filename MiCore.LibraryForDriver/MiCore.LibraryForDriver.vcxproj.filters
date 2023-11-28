@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="MiCore">
+      <UniqueIdentifier>{1c7827ce-2993-46f0-b3f1-cb8510187adc}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="MiCore.LibraryForDriver.def">
+      <Filter>MiCore</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="MiCore.LibraryForDriver.cpp">
+      <Filter>MiCore</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
