@@ -11,9 +11,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="universal.h" />
-    <ClInclude Include="..\MiCore\MiCore.Internal.h">
-      <Filter>MiCore</Filter>
-    </ClInclude>
     <ClInclude Include="..\MiCore\MiCore.h">
       <Filter>MiCore</Filter>
     </ClInclude>
@@ -23,14 +20,20 @@
     <ClInclude Include="..\MiCore\MiCore.SystemCall.h">
       <Filter>MiCore</Filter>
     </ClInclude>
-    <ClInclude Include="..\MiCore\MiCore.EnvironmentBlock.h">
+    <ClInclude Include="..\MiCore\MiCore.SystemEnvironmentBlock.Private.h">
       <Filter>MiCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MiCore\MiCore.SystemEnvironmentBlock.h">
+      <Filter>MiCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MiCore\MiCore.Utility.h">
+      <Filter>MiCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MiCore\Thunks\MiCore.Thunks.Ntdll.Heap.Private.h">
+      <Filter>MiCore\Thunks</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\MiCore\MiCore.Internal.cpp">
-      <Filter>MiCore</Filter>
-    </ClCompile>
     <ClCompile Include="..\MiCore\MiCore.cpp">
       <Filter>MiCore</Filter>
     </ClCompile>
@@ -49,11 +52,14 @@
     <ClCompile Include="..\MiCore\Thunks\MiCore.Thunks.Ntdll.Memory.cpp">
       <Filter>MiCore\Thunks</Filter>
     </ClCompile>
-    <ClCompile Include="..\MiCore\MiCore.EnvironmentBlock.cpp">
-      <Filter>MiCore</Filter>
-    </ClCompile>
     <ClCompile Include="..\MiCore\Thunks\MiCore.Thunks.Ntdll.Heap.cpp">
       <Filter>MiCore\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MiCore\MiCore.SystemEnvironmentBlock.cpp">
+      <Filter>MiCore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MiCore\MiCore.Utility.cpp">
+      <Filter>MiCore</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

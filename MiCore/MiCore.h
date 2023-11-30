@@ -2,11 +2,14 @@
 #ifndef _MICORE_
 #define _MICORE_
 
-#define MICORE_API __stdcall
-
 #if !defined(_AMD64_) && !defined(_X86_) && !defined(_ARM64_)
 #error Unsupported architecture
 #endif
+
+
+// Public
+#define MICORE_API __stdcall
+
 
 // begin
 EXTERN_C_START

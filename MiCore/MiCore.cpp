@@ -1,5 +1,5 @@
 #include "MiCore.h"
-#include "MiCore.EnvironmentBlock.h"
+#include "MiCore.SystemEnvironmentBlock.h"
 #include "MiCore.SystemCall.h"
 
 
@@ -9,9 +9,9 @@
 #endif
 
 
+EXTERN_C_START
 namespace Mi
 {
-    EXTERN_C_START
 
 #ifdef _KERNEL_MODE
     NTSTATUS MICORE_API MiCoreStartup(
@@ -125,9 +125,8 @@ namespace Mi
 
     PVOID MICORE_API MiCoreGetSystemRoutineByNameHash(const size_t NameHash)
     {
-        return MI_NAME_PRIVATE(GetSystemRoutineAddress)(NameHash);
+        return MI_NAME_PRIVATE(GetSystemRoutineAddressByNameHash)(NameHash);
     }
 
-
-EXTERN_C_END
 }
+EXTERN_C_END

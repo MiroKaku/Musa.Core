@@ -16,13 +16,16 @@
     <ClInclude Include="..\MiCore\MiCore.PEParser.h">
       <Filter>MiCore</Filter>
     </ClInclude>
-    <ClInclude Include="..\MiCore\MiCore.Internal.h">
-      <Filter>MiCore</Filter>
-    </ClInclude>
     <ClInclude Include="..\MiCore\MiCore.h">
       <Filter>MiCore</Filter>
     </ClInclude>
-    <ClInclude Include="..\MiCore\MiCore.EnvironmentBlock.h">
+    <ClInclude Include="..\MiCore\MiCore.SystemEnvironmentBlock.h">
+      <Filter>MiCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MiCore\MiCore.SystemEnvironmentBlock.Private.h">
+      <Filter>MiCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MiCore\MiCore.Utility.h">
       <Filter>MiCore</Filter>
     </ClInclude>
   </ItemGroup>
@@ -39,13 +42,13 @@
     <ClCompile Include="..\MiCore\MiCore.Nothing.cpp">
       <Filter>MiCore</Filter>
     </ClCompile>
-    <ClCompile Include="..\MiCore\MiCore.Internal.cpp">
-      <Filter>MiCore</Filter>
-    </ClCompile>
     <ClCompile Include="..\MiCore\MiCore.SystemCall.Stubs.cpp">
       <Filter>MiCore</Filter>
     </ClCompile>
-    <ClCompile Include="..\MiCore\MiCore.EnvironmentBlock.cpp">
+    <ClCompile Include="..\MiCore\MiCore.SystemEnvironmentBlock.cpp">
+      <Filter>MiCore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MiCore\MiCore.Utility.cpp">
       <Filter>MiCore</Filter>
     </ClCompile>
   </ItemGroup>

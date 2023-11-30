@@ -1,12 +1,19 @@
 #include "MiCore.SystemCall.h"
-#include "MiCore.Internal.h"
+#include "MiCore.Utility.h"
 #include "MiCore.PEParser.h"
 
 
+#ifdef ALLOC_PRAGMA
+#pragma alloc_text(INIT, MI_NAME_PRIVATE(SetupSystemCall))
+#pragma alloc_text(PAGE, MI_NAME_PRIVATE(FreeSystemCall))
+#endif
+
+
+EXTERN_C_START
 namespace Mi
 {
-    EXTERN_C PVOID MiCoreHeap;
-    EXTERN_C PVOID MiCoreNtBase;
+    extern PVOID MiCoreHeap;
+    extern PVOID MiCoreNtBase;
 
     namespace 
     {
@@ -111,7 +118,7 @@ namespace Mi
         RTL_AVL_TABLE SyscallTableByName {};
         RTL_AVL_TABLE SyscallTableByIndex{};
 
-        typedef struct _MI_SYSCALL_LIST_ENTRY
+        VEIL_DECLARE_STRUCT(MI_SYSCALL_LIST_ENTRY)
         {
             uint32_t    Index;
             size_t      NameHash;
@@ -120,8 +127,7 @@ namespace Mi
             const char* Name;
         #endif
 
-        } MI_SYSCALL_LIST_ENTRY, * PMI_SYSCALL_LIST_ENTRY;
-        typedef MI_SYSCALL_LIST_ENTRY const* PCMI_SYSCALL_LIST_ENTRY;
+        };
 
         namespace SyscallTableRoutines
         {
@@ -281,6 +287,8 @@ namespace Mi
 
     NTSTATUS MICORE_API MI_NAME_PRIVATE(SetupSystemCall)()
     {
+        PAGED_CODE()
+
         NTSTATUS Status;
         HANDLE   SectionHandle    = nullptr;
         PVOID    SectionObject    = nullptr;
@@ -374,6 +382,56 @@ namespace Mi
             }, &Status, ImageBaseOfNtdll, true);
             if (!NT_SUCCESS(Status)) {
                 break;
+            }
+
+            // Fix 'ZwQuerySystemTime' Index
+            uint32_t IndexOfPrevious          = 0;
+            uint32_t IndexOfZwQuerySystemTime = static_cast<uint32_t>(~0);
+
+            for (auto Entry = static_cast<PMI_SYSCALL_LIST_ENTRY>(RtlEnumerateGenericTableAvl(&SyscallTableByIndex, TRUE));
+                Entry;
+                Entry = static_cast<PMI_SYSCALL_LIST_ENTRY>(RtlEnumerateGenericTableAvl(&SyscallTableByIndex, FALSE))) {
+
+                if (IndexOfZwQuerySystemTime == static_cast<uint32_t>(~0)) {
+                    // Fix 'ZwQuerySystemTime' Index - Step 1
+                    if (Entry->Index - IndexOfPrevious == 2) {
+                        IndexOfZwQuerySystemTime = IndexOfPrevious + 1;
+                    }
+                    else {
+                        IndexOfPrevious = Entry->Index;
+                    }
+                }
+                else {
+                    // Fix 'ZwQuerySystemTime' Index - Step 2
+                    if (Entry->NameHash == Mi::Fnv1aHash("ZwQuerySystemTime")) {
+                        IndexOfPrevious = Entry->Index; // Re-insert later
+                    }
+                }
+            }
+
+            // Fix 'ZwQuerySystemTime' Index - Step 3: Re-insert 'ZwQuerySystemTime'
+            if (IndexOfZwQuerySystemTime) {
+                MI_SYSCALL_LIST_ENTRY Entry{};
+                Entry.Index = IndexOfPrevious;
+
+                if (const auto MatchEntry = RtlLookupElementGenericTableAvl(&SyscallTableByIndex, &Entry)) {
+                    Entry = *static_cast<PCMI_SYSCALL_LIST_ENTRY>(MatchEntry);
+                    Entry.Index = IndexOfZwQuerySystemTime;
+
+                #if defined(DBG)
+                    static_cast<PMI_SYSCALL_LIST_ENTRY>(MatchEntry)->Name = nullptr;
+                    RtlDeleteElementGenericTableAvl(&SyscallTableByIndex, MatchEntry);
+                #endif
+
+                    if (!RtlInsertElementGenericTableAvl(&SyscallTableByIndex, &Entry, sizeof(MI_SYSCALL_LIST_ENTRY), nullptr)) {
+                    #if defined(DBG)
+                        RtlFreeHeap(MiCoreHeap, HEAP_NO_SERIALIZE, const_cast<char*>(Entry.Name));
+                    #endif
+
+                        Status = STATUS_INSUFFICIENT_RESOURCES;
+                        break;
+                    }
+                }
             }
 
             // dump NtOS Zw routines.
@@ -490,34 +548,12 @@ namespace Mi
                 }
             }
 
-            uint32_t IndexOfPrevious          = 0;
-            uint32_t IndexOfZwQuerySystemTime = static_cast<uint32_t>(~0);
-
             // SyscallTableByIndex copy to SyscallTableByName
             for (auto Entry = static_cast<PMI_SYSCALL_LIST_ENTRY>(RtlEnumerateGenericTableAvl(&SyscallTableByIndex, TRUE));
                 Entry;
                 Entry = static_cast<PMI_SYSCALL_LIST_ENTRY>(RtlEnumerateGenericTableAvl(&SyscallTableByIndex, FALSE))) {
 
                 MI_SYSCALL_LIST_ENTRY NewEntry = *Entry;
-
-                if (IndexOfZwQuerySystemTime == static_cast<uint32_t>(~0)) {
-                    // Fix 'ZwQuerySystemTime' Index - Step 1
-
-                    if (NewEntry.Index - IndexOfPrevious == 2) {
-                        IndexOfZwQuerySystemTime = IndexOfPrevious + 1;
-                    }
-                    else {
-                        IndexOfPrevious = NewEntry.Index;
-                    }
-                }
-                else {
-                    // Fix 'ZwQuerySystemTime' Index - Step 2
-
-                    if (NewEntry.NameHash == Mi::Fnv1aHash("ZwQuerySystemTime")) {
-                        NewEntry.Index  = IndexOfZwQuerySystemTime;
-                        IndexOfPrevious = Entry->Index; // Re-insert later
-                    }
-                }
 
             #if defined(DBG)
                 if (Entry->Name) {
@@ -542,37 +578,12 @@ namespace Mi
                 }
             }
 
-            // Fix 'ZwQuerySystemTime' Index - Step 3: Re-insert 'ZwQuerySystemTime'
-            if (IndexOfZwQuerySystemTime) {
-                MI_SYSCALL_LIST_ENTRY Entry{};
-                Entry.Index = IndexOfPrevious;
-
-                if (const auto MatchEntry = RtlLookupElementGenericTableAvl(&SyscallTableByIndex, &Entry)) {
-                    Entry = *static_cast<PCMI_SYSCALL_LIST_ENTRY>(MatchEntry);
-                    Entry.Index = IndexOfZwQuerySystemTime;
-
-                #if defined(DBG)
-                    static_cast<PMI_SYSCALL_LIST_ENTRY>(MatchEntry)->Name = nullptr;
-                    RtlDeleteElementGenericTableAvl(&SyscallTableByIndex, MatchEntry);
-                #endif
-
-                    if (!RtlInsertElementGenericTableAvl(&SyscallTableByIndex, &Entry, sizeof(MI_SYSCALL_LIST_ENTRY), nullptr)) {
-                    #if defined(DBG)
-                        RtlFreeHeap(MiCoreHeap, HEAP_NO_SERIALIZE, const_cast<char*>(Entry.Name));
-                    #endif
-
-                        Status = STATUS_INSUFFICIENT_RESOURCES;
-                        break;
-                    }
-                }
-            }
-
         #if defined(DBG)
             for (auto Entry = static_cast<PMI_SYSCALL_LIST_ENTRY>(RtlEnumerateGenericTableAvl(&SyscallTableByIndex, TRUE));
                 Entry;
                 Entry = static_cast<PMI_SYSCALL_LIST_ENTRY>(RtlEnumerateGenericTableAvl(&SyscallTableByIndex, FALSE))) {
 
-                MiLOG("0x%04X -> 0x%p, %s \n", Entry->Index, Mi::FastDecodePointer(Entry->Address), Entry->Name);
+                MiLOG("0x%04X -> 0x%p, %s", Entry->Index, Mi::FastDecodePointer(Entry->Address), Entry->Name);
             }
         #endif
 
@@ -589,30 +600,6 @@ namespace Mi
         if (SectionHandle) {
             (void)ZwClose(SectionHandle);
         }
-
-        return Status;
-    }
-
-    NTSTATUS MICORE_API MI_NAME_PRIVATE(FreeSystemCall)()
-    {
-        NTSTATUS Status = STATUS_SUCCESS;
-
-        do {
-            for (auto Entry = RtlGetElementGenericTableAvl(&SyscallTableByName, 0);
-                Entry;
-                Entry = RtlGetElementGenericTableAvl(&SyscallTableByName, 0)) {
-
-                RtlDeleteElementGenericTableAvl(&SyscallTableByName, Entry);
-            }
-
-            for (auto Entry = RtlGetElementGenericTableAvl(&SyscallTableByIndex, 0);
-                Entry;
-                Entry = RtlGetElementGenericTableAvl(&SyscallTableByIndex, 0)) {
-
-                RtlDeleteElementGenericTableAvl(&SyscallTableByIndex, Entry);
-            }
-
-        } while(false);
 
         return Status;
     }
@@ -803,8 +790,14 @@ namespace Mi
         return Status;
     }
 
+#endif // _KERNEL_MODE
+
     NTSTATUS MICORE_API MI_NAME_PRIVATE(FreeSystemCall)()
     {
+    #ifdef _KERNEL_MODE
+        PAGED_CODE()
+    #endif
+
         NTSTATUS Status = STATUS_SUCCESS;
 
         do {
@@ -822,6 +815,7 @@ namespace Mi
                 RtlDeleteElementGenericTableAvl(&SyscallTableByIndex, Entry);
             }
 
+        #ifndef _KERNEL_MODE
             if (MiCoreNtBaseSecure) {
                 Status = ZwUnmapViewOfSection(ZwCurrentProcess(), MiCoreNtBaseSecure);
                 if (!NT_SUCCESS(Status)) {
@@ -830,15 +824,14 @@ namespace Mi
 
                 MiCoreNtBaseSecure = nullptr;
             }
+        #endif
 
         } while (false);
 
         return Status;
     }
 
-#endif // _KERNEL_MODE
-
-    PVOID MICORE_API MI_NAME_PRIVATE(GetSystemRoutineAddress)(
+    PVOID MICORE_API MI_NAME_PRIVATE(GetSystemRoutineAddressByNameHash)(
         _In_ const size_t NameHash
     )
     {
@@ -858,7 +851,8 @@ namespace Mi
         _In_ const char* Name
     )
     {
-        return MI_NAME_PRIVATE(GetSystemRoutineAddress)(Mi::Fnv1aHash(Name, strlen(Name)));
+        return MI_NAME_PRIVATE(GetSystemRoutineAddressByNameHash)(Mi::Fnv1aHash(Name, strlen(Name)));
     }
 
 }
+EXTERN_C_END

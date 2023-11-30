@@ -6,6 +6,25 @@
 #include <MiCore/MiCore.h>
 
 
+// Logging
+#ifdef _DEBUG
+#define MiLOG(fmt, ...) DbgPrintEx(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, \
+    "[Mi][%s():%u]" fmt "\n", __FUNCTION__, __LINE__, ## __VA_ARGS__)
+#else
+#define MiLOG(...)
+#endif
+
+
+EXTERN_C DRIVER_INITIALIZE DriverEntry;
+EXTERN_C DRIVER_UNLOAD     DriverUnload;
+
+
+#ifdef ALLOC_PRAGMA
+#pragma alloc_text(INIT, DriverEntry)
+#pragma alloc_text(PAGE, DriverUnload)
+#endif
+
+
 namespace Main
 {
     EXTERN_C VOID DriverUnload(
@@ -13,6 +32,8 @@ namespace Main
     )
     {
         UNREFERENCED_PARAMETER(DriverObject);
+
+        PAGED_CODE();
 
         (void)MiCoreShutdown();
     }
@@ -25,6 +46,8 @@ namespace Main
         UNREFERENCED_PARAMETER(DriverObject);
         UNREFERENCED_PARAMETER(RegistryPath);
 
+        PAGED_CODE();
+
         NTSTATUS Status;
 
         do {
@@ -35,7 +58,29 @@ namespace Main
                 break;
             }
 
+            LARGE_INTEGER SystemTime{};
+            Status = ZwQuerySystemTime(&SystemTime);
+            if (!NT_SUCCESS(Status)) {
+                break;
+            }
+
+            Status = RtlSystemTimeToLocalTime(&SystemTime, &SystemTime);
+            if (!NT_SUCCESS(Status)) {
+                break;
+            }
+
+            TIME_FIELDS Time{};
+            RtlTimeToTimeFields(&SystemTime, &Time);
+
+            MiLOG("Loading time is %04d/%02d/%02d %02d:%02d:%02d",
+                Time.Year, Time.Month, Time.Day,
+                Time.Hour, Time.Minute, Time.Second);
+
         } while (false);
+
+        if (!NT_SUCCESS(Status)) {
+            DriverUnload(DriverObject);
+        }
 
         return Status;
     }

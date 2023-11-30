@@ -1,5 +1,5 @@
 #pragma once
-#pragma warning(disable: 28101)
+#pragma warning(disable: 28101 28167)
 
 // Config Macro
 #define POOL_NX_OPTIN 1

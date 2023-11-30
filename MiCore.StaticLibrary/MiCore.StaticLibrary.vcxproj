@@ -27,23 +27,24 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\MiCore\MiCore.EnvironmentBlock.h" />
+    <ClInclude Include="..\MiCore\MiCore.SystemEnvironmentBlock.h" />
     <ClInclude Include="..\MiCore\MiCore.h" />
-    <ClInclude Include="..\MiCore\MiCore.Internal.h" />
     <ClInclude Include="..\MiCore\MiCore.PEParser.h" />
     <ClInclude Include="..\MiCore\MiCore.SystemCall.h" />
+    <ClInclude Include="..\MiCore\MiCore.SystemEnvironmentBlock.Private.h" />
+    <ClInclude Include="..\MiCore\MiCore.Utility.h" />
     <ClInclude Include="universal.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\MiCore\MiCore.cpp" />
-    <ClCompile Include="..\MiCore\MiCore.EnvironmentBlock.cpp" />
-    <ClCompile Include="..\MiCore\MiCore.Internal.cpp" />
+    <ClCompile Include="..\MiCore\MiCore.SystemEnvironmentBlock.cpp" />
     <ClCompile Include="..\MiCore\MiCore.Nothing.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\MiCore\MiCore.PEParser.cpp" />
     <ClCompile Include="..\MiCore\MiCore.SystemCall.cpp" />
     <ClCompile Include="..\MiCore\MiCore.SystemCall.Stubs.cpp" />
+    <ClCompile Include="..\MiCore\MiCore.Utility.cpp" />
   </ItemGroup>
   <Import Project="..\Mile.Project.Windows\Mile.Project.Cpp.targets" />
 </Project>

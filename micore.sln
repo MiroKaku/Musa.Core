@@ -9,16 +9,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ReadMe", "ReadMe", "{F3A505
 		README.zh-CN.md = README.zh-CN.md
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MiCore.Library", "MiCore.Library\MiCore.Library.vcxproj", "{EEAF22E7-3FBA-4E91-A0A4-D61049A5E5EC}"
-	ProjectSection(ProjectDependencies) = postProject
-		{45ED5E33-A849-401E-A88F-C36763C97814} = {45ED5E33-A849-401E-A88F-C36763C97814}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MiCore.LibraryForDriver", "MiCore.LibraryForDriver\MiCore.LibraryForDriver.vcxproj", "{836FFCA6-7B16-450E-A5A7-2B658611E249}"
-	ProjectSection(ProjectDependencies) = postProject
-		{15951923-1854-4CAE-ADCA-E3897AEE39A0} = {15951923-1854-4CAE-ADCA-E3897AEE39A0}
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MiCore.StaticLibrary", "MiCore.StaticLibrary\MiCore.StaticLibrary.vcxproj", "{45ED5E33-A849-401E-A88F-C36763C97814}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MiCore.StaticLibraryForDriver", "MiCore.StaticLibraryForDriver\MiCore.StaticLibraryForDriver.vcxproj", "{15951923-1854-4CAE-ADCA-E3897AEE39A0}"
@@ -43,30 +33,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{EEAF22E7-3FBA-4E91-A0A4-D61049A5E5EC}.Debug|ARM64.ActiveCfg = Debug|ARM64
-		{EEAF22E7-3FBA-4E91-A0A4-D61049A5E5EC}.Debug|ARM64.Build.0 = Debug|ARM64
-		{EEAF22E7-3FBA-4E91-A0A4-D61049A5E5EC}.Debug|x64.ActiveCfg = Debug|x64
-		{EEAF22E7-3FBA-4E91-A0A4-D61049A5E5EC}.Debug|x64.Build.0 = Debug|x64
-		{EEAF22E7-3FBA-4E91-A0A4-D61049A5E5EC}.Debug|x86.ActiveCfg = Debug|Win32
-		{EEAF22E7-3FBA-4E91-A0A4-D61049A5E5EC}.Debug|x86.Build.0 = Debug|Win32
-		{EEAF22E7-3FBA-4E91-A0A4-D61049A5E5EC}.Release|ARM64.ActiveCfg = Release|ARM64
-		{EEAF22E7-3FBA-4E91-A0A4-D61049A5E5EC}.Release|ARM64.Build.0 = Release|ARM64
-		{EEAF22E7-3FBA-4E91-A0A4-D61049A5E5EC}.Release|x64.ActiveCfg = Release|x64
-		{EEAF22E7-3FBA-4E91-A0A4-D61049A5E5EC}.Release|x64.Build.0 = Release|x64
-		{EEAF22E7-3FBA-4E91-A0A4-D61049A5E5EC}.Release|x86.ActiveCfg = Release|Win32
-		{EEAF22E7-3FBA-4E91-A0A4-D61049A5E5EC}.Release|x86.Build.0 = Release|Win32
-		{836FFCA6-7B16-450E-A5A7-2B658611E249}.Debug|ARM64.ActiveCfg = Debug|ARM64
-		{836FFCA6-7B16-450E-A5A7-2B658611E249}.Debug|ARM64.Build.0 = Debug|ARM64
-		{836FFCA6-7B16-450E-A5A7-2B658611E249}.Debug|x64.ActiveCfg = Debug|x64
-		{836FFCA6-7B16-450E-A5A7-2B658611E249}.Debug|x64.Build.0 = Debug|x64
-		{836FFCA6-7B16-450E-A5A7-2B658611E249}.Debug|x86.ActiveCfg = Debug|Win32
-		{836FFCA6-7B16-450E-A5A7-2B658611E249}.Debug|x86.Build.0 = Debug|Win32
-		{836FFCA6-7B16-450E-A5A7-2B658611E249}.Release|ARM64.ActiveCfg = Release|ARM64
-		{836FFCA6-7B16-450E-A5A7-2B658611E249}.Release|ARM64.Build.0 = Release|ARM64
-		{836FFCA6-7B16-450E-A5A7-2B658611E249}.Release|x64.ActiveCfg = Release|x64
-		{836FFCA6-7B16-450E-A5A7-2B658611E249}.Release|x64.Build.0 = Release|x64
-		{836FFCA6-7B16-450E-A5A7-2B658611E249}.Release|x86.ActiveCfg = Release|Win32
-		{836FFCA6-7B16-450E-A5A7-2B658611E249}.Release|x86.Build.0 = Release|Win32
 		{45ED5E33-A849-401E-A88F-C36763C97814}.Debug|ARM64.ActiveCfg = Debug|ARM64
 		{45ED5E33-A849-401E-A88F-C36763C97814}.Debug|ARM64.Build.0 = Debug|ARM64
 		{45ED5E33-A849-401E-A88F-C36763C97814}.Debug|x64.ActiveCfg = Debug|x64

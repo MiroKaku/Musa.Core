@@ -30,21 +30,41 @@ Recommended for use with [Veil](https://github.com/MiroKaku/Veil).
     ```C
     NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath)
     {
+        UNREFERENCED_PARAMETER(DriverObject);
         UNREFERENCED_PARAMETER(RegistryPath);
 
-        DriverObject->DriverUnload = [](PDRIVER_OBJECT)
-        {
-            (void)MiCoreShutdown();
-        };
+        NTSTATUS Status;
 
-        NTSTATUS Status = MiCoreStartup();
-        if (NT_SUCCESS(Status)) {
-            // ...
+        do {
+            DriverObject->DriverUnload = DriverUnload;
 
-            // This function is not exported, it can be called directly after using micore
-            ZwResumeThread(TheradHandle);
+            Status = MiCoreStartup(DriverObject, RegistryPath);
+            if (!NT_SUCCESS(Status)) {
+                break;
+            }
 
-            // ...
+            LARGE_INTEGER SystemTime{};
+            Status = ZwQuerySystemTime(&SystemTime);
+            if (!NT_SUCCESS(Status)) {
+                break;
+            }
+
+            Status = RtlSystemTimeToLocalTime(&SystemTime, &SystemTime);
+            if (!NT_SUCCESS(Status)) {
+                break;
+            }
+
+            TIME_FIELDS Time{};
+            RtlTimeToTimeFields(&SystemTime, &Time);
+
+            MiLOG("Loading time is %04d/%02d/%02d %02d:%02d:%02d",
+                Time.Year, Time.Month, Time.Day,
+                Time.Hour, Time.Minute, Time.Second);
+
+        } while (false);
+
+        if (!NT_SUCCESS(Status)) {
+            DriverUnload(DriverObject);
         }
 
         return Status;

@@ -1,4 +1,4 @@
-#include "MiCore.Internal.h"
+#include "MiCore.Utility.h"
 
 
 EXTERN_C_START
