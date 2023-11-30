@@ -38,11 +38,11 @@ jobs:
         working-directory: ${{github.workspace}}
         shell: cmd
         run: |
-          .\.github\workflows\build.bat
+          .\BuildAllTargets.cmd
 
-      - name: Upload an artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: micore
-          path: micore\
-          if-no-files-found: error
+      #- name: Upload an artifact
+      #  uses: actions/upload-artifact@v3
+      #  with:
+      #    name: micore
+      #    path: micore\
+      #    if-no-files-found: error
