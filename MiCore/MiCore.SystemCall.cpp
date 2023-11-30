@@ -293,7 +293,6 @@ namespace Mi
         HANDLE   SectionHandle    = nullptr;
         PVOID    SectionObject    = nullptr;
         PVOID    ImageBaseOfNtdll = nullptr;
-        SIZE_T   ImageSizeOfNtdll = 0;
 
         do {
             RtlInitializeGenericTableAvl(&SyscallTableByName,
@@ -326,7 +325,8 @@ namespace Mi
                 break;
             }
 
-            Status = MmMapViewInSystemSpace(SectionObject, &ImageBaseOfNtdll, &ImageSizeOfNtdll);
+            SIZE_T ViewSize = 0;
+            Status = MmMapViewInSystemSpace(SectionObject, &ImageBaseOfNtdll, &ViewSize);
             if (!NT_SUCCESS(Status)) {
                 break;
             }
@@ -611,7 +611,8 @@ namespace Mi
     NTSTATUS MICORE_API MI_NAME_PRIVATE(SetupSystemCall)()
     {
         NTSTATUS Status;
-        HANDLE   SectionHandle = nullptr;
+        HANDLE   SectionHandle    = nullptr;
+        PVOID    ImageBaseOfNtdll = MiCoreNtBase;
 
         do {
             RtlInitializeGenericTableAvl(&SyscallTableByName,
@@ -633,6 +634,7 @@ namespace Mi
                 break;
             }
 
+        #ifdef MICORE_SECURE_CORE
             Status = GetKnownDllSectionHandle(&SectionHandle, L"ntdll.dll",
                 SECTION_MAP_READ | SECTION_MAP_EXECUTE | SECTION_MAP_WRITE);
             if (!NT_SUCCESS(Status)) {
@@ -645,6 +647,9 @@ namespace Mi
             if (!NT_SUCCESS(Status)) {
                 break;
             }
+
+            ImageBaseOfNtdll = MiCoreNtBaseSecure;
+        #endif
 
             Status = Mi::PEParser::ImageEnumerateExports([](const uint32_t Ordinal, const char* Name, const void* Address, void* Context)->bool
             {
@@ -694,7 +699,7 @@ namespace Mi
                 }
                 return false;
 
-            }, &Status, MiCoreNtBaseSecure, true);
+            }, &Status, ImageBaseOfNtdll, true);
             if (!NT_SUCCESS(Status)) {
                 break;
             }
@@ -786,6 +791,10 @@ namespace Mi
         #endif
 
         } while (false);
+        
+        if (SectionHandle) {
+            (void)ZwClose(SectionHandle);
+        }
 
         return Status;
     }

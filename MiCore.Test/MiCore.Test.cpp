@@ -4,7 +4,7 @@
 
 // Logging
 #ifdef _DEBUG
-#define MiLOG(fmt, ...) printf("[Mi][%s():%u]" fmt "\n", __FUNCTION__, __LINE__, ## __VA_ARGS__)
+#define MiLOG(fmt, ...) printf("[Mi][%s():%u] " fmt "\n", __FUNCTION__, __LINE__, ## __VA_ARGS__)
 #else
 #define MiLOG(...)
 #endif

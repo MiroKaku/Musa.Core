@@ -35,7 +35,7 @@ EXTERN_C_END
 // Logging
 #ifdef _DEBUG
 #define MiLOG(fmt, ...) DbgPrintEx(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, \
-    "[Mi][%s():%u]" fmt "\n", __FUNCTION__, __LINE__, ## __VA_ARGS__)
+    "[Mi][%s():%u] " fmt "\n", __FUNCTION__, __LINE__, ## __VA_ARGS__)
 #else
 #define MiLOG(...)
 #endif

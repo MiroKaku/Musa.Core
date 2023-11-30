@@ -6,6 +6,9 @@
 #error Unsupported architecture
 #endif
 
+// Config
+//#define MICORE_SECURE_CORE 1
+
 
 // Public
 #define MICORE_API __stdcall
