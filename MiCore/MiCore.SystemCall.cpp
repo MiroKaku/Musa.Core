@@ -348,11 +348,11 @@ namespace Mi
 
                     #if defined(_X86_)
                         // B8 42 00 00 00   mov eax, 42h
-                        Entry.Index = *reinterpret_cast<const uint32_t*>(OpCodeBase + 1);
+                        Entry.Index = (*reinterpret_cast<const uint32_t*>(OpCodeBase + 1)) & 0xFFFF;
                     #elif defined(_AMD64_)
                         // 4C 8B D1         mov r10, rcx
                         // B8 55 00 00 00   mov eax, 55h
-                        Entry.Index = *reinterpret_cast<const uint32_t*>(OpCodeBase + 4);
+                        Entry.Index = (*reinterpret_cast<const uint32_t*>(OpCodeBase + 4)) & 0xFFFF;
                     #elif defined(_ARM64_)
                         // A1 0A 00 D4      SVC 0x55 ; imm16(5~20 bit)
                         Entry.Index = (*reinterpret_cast<const uint32_t*>(OpCodeBase) >> 5) & 0xFFFF;
@@ -410,7 +410,7 @@ namespace Mi
             }
 
             // Fix 'ZwQuerySystemTime' Index - Step 3: Re-insert 'ZwQuerySystemTime'
-            if (IndexOfZwQuerySystemTime) {
+            if (IndexOfZwQuerySystemTime != static_cast<uint32_t>(~0)) {
                 MI_SYSCALL_LIST_ENTRY Entry{};
                 Entry.Index = IndexOfPrevious;
 
@@ -668,11 +668,11 @@ namespace Mi
 
                     #if defined(_X86_)
                         // B8 42 00 00 00   mov eax, 42h
-                        Entry.Index = *reinterpret_cast<const uint32_t*>(OpCodeBase + 1);
+                        Entry.Index = (*reinterpret_cast<const uint32_t*>(OpCodeBase + 1)) & 0xFFFF;
                     #elif defined(_AMD64_)
                         // 4C 8B D1         mov r10, rcx
                         // B8 55 00 00 00   mov eax, 55h
-                        Entry.Index = *reinterpret_cast<const uint32_t*>(OpCodeBase + 4);
+                        Entry.Index = (*reinterpret_cast<const uint32_t*>(OpCodeBase + 4)) & 0xFFFF;
                     #elif defined(_ARM64_)
                         // A1 0A 00 D4      SVC 0x55 ; imm16(5~20 bit)
                         Entry.Index = (*reinterpret_cast<const uint32_t*>(OpCodeBase) >> 5) & 0xFFFF;
@@ -757,7 +757,7 @@ namespace Mi
             }
 
             // Fix 'ZwQuerySystemTime' Index - Step 3: Re-insert 'ZwQuerySystemTime'
-            if (IndexOfZwQuerySystemTime) {
+            if (IndexOfZwQuerySystemTime != static_cast<uint32_t>(~0)) {
                 MI_SYSCALL_LIST_ENTRY Entry{};
                 Entry.Index = IndexOfPrevious;
 
