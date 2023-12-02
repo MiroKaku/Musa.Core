@@ -19,8 +19,21 @@ namespace Mi
     PVOID   MiCoreNtBase = nullptr;
 
 #ifdef _KERNEL_MODE
-    LOGICAL MiCoreVerifierEnabled          = FALSE;
-    PKPEB   MiCoreProcessEnvironmentBlock  = nullptr;
+    LOGICAL          MiCoreVerifierEnabled            = FALSE;
+    PKPEB            MiCoreProcessEnvironmentBlock    = nullptr;
+    PDRIVER_OBJECT   MiCoreDriverObject               = nullptr;
+    PCALLBACK_OBJECT MiCoreThreadNotifyCallbackObject = nullptr;
+
+    static void NTAPI ThreadNotifyCallback(
+        _In_ HANDLE  ProcessId,
+        _In_ HANDLE  ThreadId,
+        _In_ BOOLEAN Create
+    )
+    {
+        UNREFERENCED_PARAMETER(ProcessId);
+
+        return ExNotifyCallback(MiCoreThreadNotifyCallbackObject, ThreadId, reinterpret_cast<PVOID>(Create));
+    }
 
     NTSTATUS MICORE_API MI_NAME_PRIVATE(SetupEnvironmentBlock)(
         _In_ PDRIVER_OBJECT  DriverObject,
@@ -34,10 +47,11 @@ namespace Mi
         NTSTATUS Status;
 
         do {
-            ExInitializeDriverRuntime(DrvRtPoolNxOptIn);
+            ExInitializeDriverRuntime (DrvRtPoolNxOptIn);
+            InterlockedExchangePointer(reinterpret_cast<PVOID volatile*>(&MiCoreDriverObject), DriverObject);
 
-            if (DriverObject) {
-                MiCoreVerifierEnabled = MmIsDriverSuspectForVerifier(DriverObject);
+            if (MiCoreDriverObject) {
+                MiCoreVerifierEnabled = MmIsDriverSuspectForVerifier(MiCoreDriverObject);
             }
 
             constexpr auto KernelName = UNICODE_STRING RTL_CONSTANT_STRING(L"ntoskrnl.exe");
@@ -45,6 +59,22 @@ namespace Mi
             if (MiCoreNtBase == nullptr) {
                 Status = STATUS_NOT_FOUND;
                 break;
+            }
+
+            constexpr auto ObjectAttributes = OBJECT_ATTRIBUTES RTL_CONSTANT_OBJECT_ATTRIBUTES(
+                static_cast<PUNICODE_STRING>(nullptr), OBJ_CASE_INSENSITIVE);
+
+            Status = ExCreateCallback(&MiCoreThreadNotifyCallbackObject,
+                const_cast<POBJECT_ATTRIBUTES>(&ObjectAttributes), TRUE, TRUE);
+            if (!NT_SUCCESS(Status)) {
+                break;
+            }
+
+            if (MiCoreDriverObject) {
+                Status = PsSetCreateThreadNotifyRoutineEx(PsCreateThreadNotifySubsystems, ThreadNotifyCallback);
+                if (!NT_SUCCESS(Status)) {
+                    break;
+                }
             }
 
             const auto Peb = static_cast<PKPEB>(ExAllocatePoolZero(NonPagedPool, PAGE_SIZE, MI_TAG));
@@ -59,7 +89,7 @@ namespace Mi
             Peb->MaximumNumberOfHeaps = (PAGE_SIZE - sizeof(KPEB)) / sizeof(PVOID);
 
             ExInitializeFastMutex(&Peb->Lock);
-            ExInitializeRundownProtection(&Peb->RundownProtection);
+            ExInitializeRundownProtection(&Peb->RundownProtect);
 
             Status = RtlDuplicateUnicodeString(RTL_DUPLICATE_UNICODE_STRING_NULL_TERMINATE,
                 RegistryPath, &Peb->RegistryPath);
@@ -67,11 +97,11 @@ namespace Mi
                 break;
             }
 
-            if (DriverObject) {
+            if (MiCoreDriverObject) {
                 #pragma warning(suppress: 28175)
-                const auto LdrEntry = static_cast<PKLDR_DATA_TABLE_ENTRY>(DriverObject->DriverSection);
+                const auto LdrEntry = static_cast<PKLDR_DATA_TABLE_ENTRY>(MiCoreDriverObject->DriverSection);
 
-                Peb->DriverObject     = DriverObject;
+                Peb->DriverObject     = MiCoreDriverObject;
                 Peb->SizeOfImage      = LdrEntry->SizeOfImage;
                 Peb->ImageBaseAddress = LdrEntry->DllBase;
 
@@ -137,7 +167,7 @@ namespace Mi
                 break;
             }
 
-            ExWaitForRundownProtectionRelease(&Peb->RundownProtection);
+            ExWaitForRundownProtectionRelease(&Peb->RundownProtect);
 
             //if (Peb->Environment) {
             //    Status = RtlDestroyEnvironment(Peb->Environment);
@@ -165,6 +195,15 @@ namespace Mi
 
             InterlockedExchangePointer(
                 reinterpret_cast<PVOID volatile*>(&MiCoreProcessEnvironmentBlock), nullptr);
+
+            if (MiCoreDriverObject) {
+                (void)PsRemoveCreateThreadNotifyRoutine(ThreadNotifyCallback);
+            }
+
+            if (MiCoreThreadNotifyCallbackObject) {
+                ObDereferenceObject(MiCoreThreadNotifyCallbackObject);
+                MiCoreThreadNotifyCallbackObject = nullptr;
+            }
 
         } while (false);
 

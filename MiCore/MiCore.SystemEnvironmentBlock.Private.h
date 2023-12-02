@@ -18,7 +18,7 @@ namespace Mi
     VEIL_DECLARE_STRUCT_ALIGN(KPEB, 8)
     {
         FAST_MUTEX      Lock;
-        EX_RUNDOWN_REF  RundownProtection;
+        EX_RUNDOWN_REF  RundownProtect;
 
         PDRIVER_OBJECT  DriverObject;
         UNICODE_STRING  RegistryPath;
