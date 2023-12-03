@@ -1,13 +1,24 @@
-#ifdef _KERNEL_MODE
-
 #include "MiCore.Thunks.Ntdll.Heap.Private.h"
 #include "MiCore/MiCore.SystemEnvironmentBlock.Private.h"
 #include "MiCore/MiCore.Utility.h"
 
 
+EXTERN_C PVOID NTAPI RtlGetDefaultHeap();
+
+#ifdef _X86_
+_VEIL_DECLARE_ALTERNATE_NAME(RtlGetDefaultHeap@0, _Mi_RtlGetDefaultHeap@0);
+#else
+_VEIL_DECLARE_ALTERNATE_NAME(RtlGetDefaultHeap, _Mi_RtlGetDefaultHeap);
+#endif
+
+
+#ifdef _KERNEL_MODE
+
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text(PAGE, MI_NAME(RtlCreateHeap))
 #pragma alloc_text(PAGE, MI_NAME(RtlDestroyHeap))
+#pragma alloc_text(PAGE, MI_NAME(RtlGetProcessHeaps))
+#pragma alloc_text(PAGE, MI_NAME(RtlEnumProcessHeaps))
 #endif
 
 
@@ -65,14 +76,6 @@ namespace Mi
                                     HEAP_CREATE_SEGMENT_HEAP)
 
 #define HEAP_LOCK_USER_ALLOCATED    0x80000000
-
-    PVOID NTAPI RtlGetDefaultHeap();
-
-#ifdef _X86_
-    _VEIL_DECLARE_ALTERNATE_NAME(RtlGetDefaultHeap@0, _Mi_RtlGetDefaultHeap@0);
-#else
-    _VEIL_DECLARE_ALTERNATE_NAME(RtlGetDefaultHeap, _Mi_RtlGetDefaultHeap);
-#endif
 
 
     // Private functions
@@ -263,12 +266,6 @@ namespace Mi
 
     // Public  functions
 
-    PVOID NTAPI MI_NAME(RtlGetDefaultHeap)()
-    {
-        return MI_NAME_PRIVATE(RtlGetCurrentPeb)()->DefaultHeap;
-    }
-    MI_IAT_SYMBOL(RtlGetDefaultHeap, 0);
-
     _IRQL_requires_max_(APC_LEVEL)
     _Must_inspect_result_
     PVOID NTAPI MI_NAME(RtlCreateHeap)(
@@ -457,6 +454,83 @@ namespace Mi
         return nullptr;
     }
     MI_IAT_SYMBOL(RtlDestroyHeap, 4);
+
+    _IRQL_requires_max_(APC_LEVEL)
+    ULONG NTAPI MI_NAME(RtlGetProcessHeaps)(
+        _In_  ULONG  NumberOfHeaps,
+        _Out_ PVOID* ProcessHeaps
+    )
+    {
+        PAGED_CODE()
+
+        ULONG TotalHeaps = 0;
+
+        const auto Peb = MI_NAME_PRIVATE(RtlGetCurrentPeb)();
+        MI_NAME_PRIVATE(RtlAcquirePebLock)();
+        __try {
+            ULONG NumberOfHeapsToCopy;
+
+            //
+            //  Return no more than the number of heaps currently in use
+            //
+
+            TotalHeaps = Peb->NumberOfHeaps;
+
+            if (TotalHeaps > NumberOfHeaps) {
+                NumberOfHeapsToCopy = NumberOfHeaps;
+            }
+            else {
+                NumberOfHeapsToCopy = TotalHeaps;
+            }
+
+            //
+            //  Return the heap pointers to the caller
+            //
+
+            RtlCopyMemory(ProcessHeaps, Peb->ProcessHeaps,
+                NumberOfHeapsToCopy * sizeof(*ProcessHeaps));
+        }
+        __finally {
+            MI_NAME_PRIVATE(RtlReleasePebLock)();
+        }
+
+        return TotalHeaps;
+    }
+    MI_IAT_SYMBOL(RtlGetProcessHeaps, 8);
+
+    _IRQL_requires_max_(APC_LEVEL)
+    NTSTATUS NTAPI MI_NAME(RtlEnumProcessHeaps)(
+        _In_ PRTL_ENUM_HEAPS_ROUTINE EnumRoutine,
+        _In_ PVOID Parameter
+    )
+    {
+        PAGED_CODE()
+
+        NTSTATUS Status = STATUS_SUCCESS;
+
+        const auto Peb = MI_NAME_PRIVATE(RtlGetCurrentPeb)();
+        MI_NAME_PRIVATE(RtlAcquirePebLock)();
+        __try {
+            //
+            //  For each heap in the process invoke the callback routine
+            //  and if the callback returns anything other than success
+            //  then break out and return immediately to our caller
+            //
+
+            for (auto Idx = 0ul; Idx < Peb->NumberOfHeaps; ++Idx) {
+                Status = (*EnumRoutine)(Peb->ProcessHeaps[Idx], Parameter);
+                if (!NT_SUCCESS(Status)) {
+                    break;
+                }
+            }
+        }
+        __finally {
+            MI_NAME_PRIVATE(RtlReleasePebLock)();
+        }
+
+        return Status;
+    }
+    MI_IAT_SYMBOL(RtlEnumProcessHeaps, 8);
 
     _IRQL_requires_max_(DISPATCH_LEVEL)
     _Must_inspect_result_
@@ -765,5 +839,23 @@ namespace Mi
 }
 EXTERN_C_END
 
-
 #endif // _KERNEL_MODE
+
+
+EXTERN_C_START
+namespace Mi
+{
+    // Public  functions
+
+    PVOID NTAPI MI_NAME(RtlGetDefaultHeap)()
+    {
+    #ifdef _KERNEL_MODE
+        return MI_NAME_PRIVATE(RtlGetCurrentPeb)()->DefaultHeap;
+    #else
+        return ZwCurrentPeb()->ProcessHeap;
+    #endif
+    }
+    MI_IAT_SYMBOL(RtlGetDefaultHeap, 0);
+
+}
+EXTERN_C_END

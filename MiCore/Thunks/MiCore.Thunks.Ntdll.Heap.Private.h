@@ -26,6 +26,18 @@ PVOID NTAPI MI_NAME(RtlDestroyHeap)(
     _In_ _Post_invalid_ PVOID HeapHandle
     );
 
+_IRQL_requires_max_(APC_LEVEL)
+ULONG NTAPI MI_NAME(RtlGetProcessHeaps)(
+    _In_  ULONG  NumberOfHeaps,
+    _Out_ PVOID* ProcessHeaps
+    );
+
+_IRQL_requires_max_(APC_LEVEL)
+NTSTATUS NTAPI MI_NAME(RtlEnumProcessHeaps)(
+    _In_ PRTL_ENUM_HEAPS_ROUTINE EnumRoutine,
+    _In_ PVOID Parameter
+    );
+
 _IRQL_requires_max_(DISPATCH_LEVEL)
 _Must_inspect_result_
 _Ret_maybenull_

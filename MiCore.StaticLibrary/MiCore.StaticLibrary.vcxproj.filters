@@ -51,5 +51,8 @@
     <ClCompile Include="..\MiCore\MiCore.Utility.cpp">
       <Filter>MiCore</Filter>
     </ClCompile>
+    <ClCompile Include="..\MiCore\Thunks\MiCore.Thunks.Ntdll.Heap.cpp">
+      <Filter>MiCore\Thunks</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
