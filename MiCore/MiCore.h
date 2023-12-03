@@ -6,15 +6,24 @@
 #error Unsupported architecture
 #endif
 
-// Config
+//
+// Configs
+//
+
+//   - User   Mode
 //#define MICORE_SECURE_CORE 1
 
+//   - Kernel Mode
+//#define MICORE_FLS_USE_THREAD_NOTIFY_CALLBACK 1
 
+
+//
 // Public
+//
+
 #define MICORE_API __stdcall
 
 
-// begin
 EXTERN_C_START
 
 
@@ -39,6 +48,6 @@ PVOID    MICORE_API MiCoreGetSystemRoutineByNameHash(
 
 
 EXTERN_C_END
-// end
+
 
 #endif

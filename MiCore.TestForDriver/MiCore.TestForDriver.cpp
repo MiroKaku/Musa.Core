@@ -51,7 +51,7 @@ namespace Main
         NTSTATUS Status;
 
         do {
-            DriverObject->DriverUnload = DriverUnload;
+            DriverObject->DriverUnload = Main::DriverUnload;
 
             Status = MiCoreStartup(DriverObject, RegistryPath);
             if (!NT_SUCCESS(Status)) {
@@ -79,7 +79,7 @@ namespace Main
         } while (false);
 
         if (!NT_SUCCESS(Status)) {
-            DriverUnload(DriverObject);
+            Main::DriverUnload(DriverObject);
         }
 
         return Status;

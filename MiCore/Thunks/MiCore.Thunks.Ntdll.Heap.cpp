@@ -28,8 +28,8 @@ namespace Mi
     VEIL_DECLARE_STRUCT_ALIGN(HEAP_LOCK, 8)
     {
         union {
-            ERESOURCE  Resource;    // PagedPool
-            KSPIN_LOCK SpinLock;    // NonPagedPool
+            ERESOURCE    Resource;  // PagedPool
+            EX_SPIN_LOCK SpinLock;  // NonPagedPool
         } Lock;
     };
 
@@ -86,7 +86,7 @@ namespace Mi
             (VOID)ExInitializeResourceLite(&Heap->LockVariable->Lock.Resource);
         }
         else {
-            KeInitializeSpinLock(&Heap->LockVariable->Lock.SpinLock);
+            Heap->LockVariable->Lock.SpinLock = 0;
         }
     }
 
@@ -97,33 +97,45 @@ namespace Mi
         }
     }
 
-    static VOID NTAPI MI_NAME_PRIVATE(RtlAcquireHeapLockExclusive)(_Inout_ PHEAP Heap, _Inout_ PKLOCK_QUEUE_HANDLE LockHandle)
+    static KIRQL NTAPI MI_NAME_PRIVATE(RtlAcquireHeapLockExclusive)(_Inout_ PHEAP Heap)
     {
         if (Heap->Type == PagedPool) {
             ExEnterCriticalRegionAndAcquireResourceExclusive(&Heap->LockVariable->Lock.Resource);
+            return KeGetCurrentIrql();
         }
         else {
-            KeAcquireInStackQueuedSpinLock(&Heap->LockVariable->Lock.SpinLock, LockHandle);
+            return ExAcquireSpinLockExclusive(&Heap->LockVariable->Lock.SpinLock);
         }
     }
 
-    static VOID NTAPI MI_NAME_PRIVATE(RtlAcquireHeapLockShared)(_Inout_ PHEAP Heap, _Inout_ PKLOCK_QUEUE_HANDLE LockHandle)
-    {
-        if (Heap->Type == PagedPool) {
-            ExEnterCriticalRegionAndAcquireResourceShared(&Heap->LockVariable->Lock.Resource);
-        }
-        else {
-            KeAcquireInStackQueuedSpinLock(&Heap->LockVariable->Lock.SpinLock, LockHandle);
-        }
-    }
-
-    static VOID NTAPI MI_NAME_PRIVATE(RtlReleaseHeapLock)(_Inout_ PHEAP Heap, _Inout_ PKLOCK_QUEUE_HANDLE LockHandle)
+    static VOID NTAPI MI_NAME_PRIVATE(RtlReleaseHeapLockExclusive)(_Inout_ PHEAP Heap, _In_ KIRQL Irql)
     {
         if (Heap->Type == PagedPool) {
             ExReleaseResourceAndLeaveCriticalRegion(&Heap->LockVariable->Lock.Resource);
         }
         else {
-            KeReleaseInStackQueuedSpinLock(LockHandle);
+            ExReleaseSpinLockExclusive(&Heap->LockVariable->Lock.SpinLock, Irql);
+        }
+    }
+
+    static KIRQL NTAPI MI_NAME_PRIVATE(RtlAcquireHeapLockShared)(_Inout_ PHEAP Heap)
+    {
+        if (Heap->Type == PagedPool) {
+            ExEnterCriticalRegionAndAcquireResourceShared(&Heap->LockVariable->Lock.Resource);
+            return KeGetCurrentIrql();
+        }
+        else {
+            return ExAcquireSpinLockShared(&Heap->LockVariable->Lock.SpinLock);
+        }
+    }
+
+    static VOID NTAPI MI_NAME_PRIVATE(RtlReleaseHeapLockShared)(_Inout_ PHEAP Heap, _In_ KIRQL Irql)
+    {
+        if (Heap->Type == PagedPool) {
+            ExReleaseResourceAndLeaveCriticalRegion(&Heap->LockVariable->Lock.Resource);
+        }
+        else {
+            ExReleaseSpinLockShared(&Heap->LockVariable->Lock.SpinLock, Irql);
         }
     }
 
@@ -132,8 +144,9 @@ namespace Mi
         NTSTATUS Status = STATUS_SUCCESS;
 
         const auto Peb = MI_NAME_PRIVATE(RtlGetCurrentPeb)();
-        MI_NAME_PRIVATE(RtlAcquirePebLock)();
         __try {
+            MI_NAME_PRIVATE(RtlAcquirePebLockExclusive)();
+
             //
             //  If the processes heap list is already full then we'll
             //  double the size of the heap list for the process
@@ -184,7 +197,7 @@ namespace Mi
             Heap->Index = Peb->NumberOfHeaps;
         }
         __finally {
-            MI_NAME_PRIVATE(RtlReleasePebLock)();
+            MI_NAME_PRIVATE(RtlReleasePebLockExclusive)();
         }
 
         return Status;
@@ -193,8 +206,8 @@ namespace Mi
     static VOID NTAPI MI_NAME_PRIVATE(RtlRemoveHeap)(_In_ PHEAP Heap)
     {
         const auto Peb = MI_NAME_PRIVATE(RtlGetCurrentPeb)();
-        MI_NAME_PRIVATE(RtlAcquirePebLock)();
         __try {
+            MI_NAME_PRIVATE(RtlAcquirePebLockExclusive)();
 
             //
             //  We only want to the the work if the current process actually has some
@@ -259,7 +272,7 @@ namespace Mi
             }
         }
         __finally {
-            MI_NAME_PRIVATE(RtlReleasePebLock)();
+            MI_NAME_PRIVATE(RtlReleasePebLockExclusive)();
         }
     }
 
@@ -281,10 +294,10 @@ namespace Mi
         PRTL_HEAP_PARAMETERS Parameters
         )
     {
-        PAGED_CODE()
-
         UNREFERENCED_PARAMETER(ReserveSize);
         UNREFERENCED_PARAMETER(CommitSize);
+
+        PAGED_CODE();
 
         NTSTATUS Status;
         PHEAP    Heap       = nullptr;
@@ -390,7 +403,7 @@ namespace Mi
         _In_ _Post_invalid_ PVOID HeapHandle
         )
     {
-        PAGED_CODE()
+        PAGED_CODE();
 
         do {
             if (HeapHandle == nullptr) {
@@ -406,11 +419,11 @@ namespace Mi
             //  For every allocation we remove it from the list and free the vm
             //
 
+            KIRQL   LockIrql     = PASSIVE_LEVEL;
             BOOLEAN LockAcquired = FALSE;
-            KLOCK_QUEUE_HANDLE LockHandle{};
 
             if (!BooleanFlagOn(Heap->Flags, HEAP_NO_SERIALIZE)) {
-                MI_NAME_PRIVATE(RtlAcquireHeapLockExclusive)(Heap, &LockHandle);
+                LockIrql     = MI_NAME_PRIVATE(RtlAcquireHeapLockExclusive)(Heap);
                 LockAcquired = TRUE;
             }
             __try {
@@ -426,7 +439,7 @@ namespace Mi
             }
             __finally {
                 if (LockAcquired) {
-                    MI_NAME_PRIVATE(RtlReleaseHeapLock)(Heap, &LockHandle);
+                    MI_NAME_PRIVATE(RtlReleaseHeapLockExclusive)(Heap, LockIrql);
                 }
             }
 
@@ -461,13 +474,14 @@ namespace Mi
         _Out_ PVOID* ProcessHeaps
     )
     {
-        PAGED_CODE()
+        PAGED_CODE();
 
         ULONG TotalHeaps = 0;
 
         const auto Peb = MI_NAME_PRIVATE(RtlGetCurrentPeb)();
-        MI_NAME_PRIVATE(RtlAcquirePebLock)();
         __try {
+            MI_NAME_PRIVATE(RtlAcquirePebLockShared)();
+
             ULONG NumberOfHeapsToCopy;
 
             //
@@ -491,7 +505,7 @@ namespace Mi
                 NumberOfHeapsToCopy * sizeof(*ProcessHeaps));
         }
         __finally {
-            MI_NAME_PRIVATE(RtlReleasePebLock)();
+            MI_NAME_PRIVATE(RtlReleasePebLockShared)();
         }
 
         return TotalHeaps;
@@ -504,13 +518,14 @@ namespace Mi
         _In_ PVOID Parameter
     )
     {
-        PAGED_CODE()
+        PAGED_CODE();
 
         NTSTATUS Status = STATUS_SUCCESS;
 
         const auto Peb = MI_NAME_PRIVATE(RtlGetCurrentPeb)();
-        MI_NAME_PRIVATE(RtlAcquirePebLock)();
         __try {
+            MI_NAME_PRIVATE(RtlAcquirePebLockShared)();
+
             //
             //  For each heap in the process invoke the callback routine
             //  and if the callback returns anything other than success
@@ -525,7 +540,7 @@ namespace Mi
             }
         }
         __finally {
-            MI_NAME_PRIVATE(RtlReleasePebLock)();
+            MI_NAME_PRIVATE(RtlReleasePebLockShared)();
         }
 
         return Status;
@@ -599,11 +614,11 @@ namespace Mi
                 RtlZeroMemory(BaseAddress, Size);
             }
 
+            KIRQL   LockIrql     = PASSIVE_LEVEL;
             BOOLEAN LockAcquired = FALSE;
-            KLOCK_QUEUE_HANDLE LockHandle{};
 
             if (!BooleanFlagOn(Flags, HEAP_NO_SERIALIZE)) {
-                MI_NAME_PRIVATE(RtlAcquireHeapLockExclusive)(Heap, &LockHandle);
+                LockIrql     = MI_NAME_PRIVATE(RtlAcquireHeapLockExclusive)(Heap);
                 LockAcquired = TRUE;
             }
             __try {
@@ -611,7 +626,7 @@ namespace Mi
             }
             __finally {
                 if (LockAcquired) {
-                    MI_NAME_PRIVATE(RtlReleaseHeapLock)(Heap, &LockHandle);
+                    MI_NAME_PRIVATE(RtlReleaseHeapLockExclusive)(Heap, LockIrql);
                 }
             }
 
@@ -739,11 +754,11 @@ namespace Mi
 
         SetFlag(Flags, Heap->Flags);
 
+        KIRQL   LockIrql     = PASSIVE_LEVEL;
         BOOLEAN LockAcquired = FALSE;
-        KLOCK_QUEUE_HANDLE LockHandle{};
 
         if (!BooleanFlagOn(Flags, HEAP_NO_SERIALIZE)) {
-            MI_NAME_PRIVATE(RtlAcquireHeapLockExclusive)(Heap, &LockHandle);
+            LockIrql     = MI_NAME_PRIVATE(RtlAcquireHeapLockExclusive)(Heap);
             LockAcquired = TRUE;
         }
         __try {
@@ -764,7 +779,7 @@ namespace Mi
         }
         __finally {
             if (LockAcquired) {
-                MI_NAME_PRIVATE(RtlReleaseHeapLock)(Heap, &LockHandle);
+                MI_NAME_PRIVATE(RtlReleaseHeapLockExclusive)(Heap, LockIrql);
             }
         }
 
@@ -796,11 +811,11 @@ namespace Mi
 
         SetFlag(Flags, Heap->Flags);
 
+        KIRQL   LockIrql     = PASSIVE_LEVEL;
         BOOLEAN LockAcquired = FALSE;
-        KLOCK_QUEUE_HANDLE LockHandle{};
 
         if (!BooleanFlagOn(Flags, HEAP_NO_SERIALIZE)) {
-            MI_NAME_PRIVATE(RtlAcquireHeapLockShared)(Heap, &LockHandle);
+            LockIrql     = MI_NAME_PRIVATE(RtlAcquireHeapLockShared)(Heap);
             LockAcquired = TRUE;
         }
         __try {
@@ -814,7 +829,7 @@ namespace Mi
         }
         __finally {
             if (LockAcquired) {
-                MI_NAME_PRIVATE(RtlReleaseHeapLock)(Heap, &LockHandle);
+                MI_NAME_PRIVATE(RtlReleaseHeapLockShared)(Heap, LockIrql);
             }
         }
 

@@ -61,7 +61,26 @@ namespace Mi
     }
 
 #ifdef _KERNEL_MODE
-    PVOID MICORE_API GetLoadedModuleBase(_In_ PCUNICODE_STRING ModuleName);
+    PVOID MICORE_API GetLoadedModuleBase(
+        _In_ PCUNICODE_STRING ModuleName
+    );
+
+    typedef
+    _IRQL_requires_same_
+    _Function_class_(TASK_FUNCTION)
+    NTSTATUS
+    CALLBACK
+    TASK_FUNCTION(
+        _In_opt_ PVOID Context
+    );
+
+    typedef TASK_FUNCTION* PCTASK_FUNCTION;
+
+    NTSTATUS MICORE_API RunTaskOnLowIrql(
+        _In_ PDRIVER_OBJECT  DriverObject,
+        _In_ PCTASK_FUNCTION Task,
+        _In_opt_ PVOID Context
+    );
 #endif
 
 }

@@ -34,7 +34,10 @@
     <ClInclude Include="..\MiCore\MiCore.SystemCall.h" />
     <ClInclude Include="..\MiCore\MiCore.SystemEnvironmentBlock.h" />
     <ClInclude Include="..\MiCore\MiCore.SystemEnvironmentBlock.Private.h" />
+    <ClInclude Include="..\MiCore\MiCore.SystemEnvironmentBlock.Process.h" />
+    <ClInclude Include="..\MiCore\MiCore.SystemEnvironmentBlock.Thread.h" />
     <ClInclude Include="..\MiCore\MiCore.Utility.h" />
+    <ClInclude Include="..\MiCore\Thunks\MiCore.Thunks.Ntdll.FiberLocalStorage.Private.h" />
     <ClInclude Include="..\MiCore\Thunks\MiCore.Thunks.Ntdll.Heap.Private.h" />
     <ClInclude Include="universal.h" />
   </ItemGroup>
@@ -47,7 +50,10 @@
     <ClCompile Include="..\MiCore\MiCore.SystemCall.cpp" />
     <ClCompile Include="..\MiCore\MiCore.SystemCall.Stubs.cpp" />
     <ClCompile Include="..\MiCore\MiCore.SystemEnvironmentBlock.cpp" />
+    <ClCompile Include="..\MiCore\MiCore.SystemEnvironmentBlock.Process.cpp" />
+    <ClCompile Include="..\MiCore\MiCore.SystemEnvironmentBlock.Thread.cpp" />
     <ClCompile Include="..\MiCore\MiCore.Utility.cpp" />
+    <ClCompile Include="..\MiCore\Thunks\MiCore.Thunks.Ntdll.FiberLocalStorage.cpp" />
     <ClCompile Include="..\MiCore\Thunks\MiCore.Thunks.Ntdll.Heap.cpp" />
     <ClCompile Include="..\MiCore\Thunks\MiCore.Thunks.Ntdll.Memory.cpp" />
   </ItemGroup>

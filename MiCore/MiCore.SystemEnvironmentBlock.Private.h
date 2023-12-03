@@ -1,7 +1,7 @@
 #pragma once
-
-
 #ifdef _KERNEL_MODE
+
+
 namespace Mi
 {
     constexpr uint32_t MI_FLS_MAXIMUM_AVAILABLE = 256;
@@ -11,13 +11,12 @@ namespace Mi
     {
         LIST_ENTRY  Entry;
         PVOID       Slots[MI_FLS_MAXIMUM_AVAILABLE];
-
     };
 
     // Kernel Process Environment Block
     VEIL_DECLARE_STRUCT_ALIGN(KPEB, 8)
     {
-        FAST_MUTEX      Lock;
+        ERESOURCE       Lock;
         EX_RUNDOWN_REF  RundownProtect;
 
         PDRIVER_OBJECT  DriverObject;
@@ -50,7 +49,6 @@ namespace Mi
         PVOID           WaitOnAddressHashTable[128];
 
         // Heaps[1] ...
-
     };
     static_assert(ALIGN_DOWN(sizeof(KPEB), 8) < PAGE_SIZE);
 
@@ -68,7 +66,6 @@ namespace Mi
         NTSTATUS    LastStatusValue;
 
         PFLS_DATA   FlsData;
-
     };
 
 }
@@ -81,15 +78,16 @@ EXTERN_C_START
 Mi::PKPEB MICORE_API MI_NAME_PRIVATE(RtlGetCurrentPeb)();
 
 _IRQL_raises_(APC_LEVEL)
-VOID MICORE_API MI_NAME_PRIVATE(RtlAcquirePebLock)();
+VOID MICORE_API MI_NAME_PRIVATE(RtlAcquirePebLockExclusive)();
 
 _IRQL_requires_(APC_LEVEL)
-VOID MICORE_API MI_NAME_PRIVATE(RtlReleasePebLock)();
+VOID  MICORE_API MI_NAME_PRIVATE(RtlReleasePebLockExclusive)();
 
-_Must_inspect_result_
-_Success_(return != FALSE)
 _IRQL_raises_(APC_LEVEL)
-BOOLEAN MICORE_API MI_NAME_PRIVATE(RtlTryAcquirePebLock)();
+VOID MICORE_API MI_NAME_PRIVATE(RtlAcquirePebLockShared)();
+
+_IRQL_requires_(APC_LEVEL)
+VOID  MICORE_API MI_NAME_PRIVATE(RtlReleasePebLockShared)();
 
 
 EXTERN_C_END

@@ -115,8 +115,8 @@ namespace Mi
         }
 
 
-        RTL_AVL_TABLE SyscallTableByName {};
-        RTL_AVL_TABLE SyscallTableByIndex{};
+        RTL_AVL_TABLE MiCoreSyscallTableByName {};
+        RTL_AVL_TABLE MiCoreSyscallTableByIndex{};
 
         VEIL_DECLARE_STRUCT(MI_SYSCALL_LIST_ENTRY)
         {
@@ -129,70 +129,73 @@ namespace Mi
 
         };
 
-        namespace SyscallTableRoutines
+        extern"C++"
         {
-            RTL_AVL_COMPARE_ROUTINE  CompareByIndex;
-            RTL_AVL_COMPARE_ROUTINE  CompareByNameHash;
-            RTL_AVL_ALLOCATE_ROUTINE Allocate;
-            RTL_AVL_FREE_ROUTINE     Free;
-
-            RTL_GENERIC_COMPARE_RESULTS NTAPI CompareByIndex(
-                _In_ RTL_AVL_TABLE* Table,
-                _In_ PVOID First,
-                _In_ PVOID Second
-            )
+            namespace SyscallTableRoutines
             {
-                UNREFERENCED_PARAMETER(Table);
+                RTL_AVL_COMPARE_ROUTINE  CompareByIndex;
+                RTL_AVL_COMPARE_ROUTINE  CompareByNameHash;
+                RTL_AVL_ALLOCATE_ROUTINE Allocate;
+                RTL_AVL_FREE_ROUTINE     Free;
 
-                const auto Entry1 = static_cast<PCMI_SYSCALL_LIST_ENTRY>(First);
-                const auto Entry2 = static_cast<PCMI_SYSCALL_LIST_ENTRY>(Second);
+                RTL_GENERIC_COMPARE_RESULTS NTAPI CompareByIndex(
+                    _In_ RTL_AVL_TABLE* Table,
+                    _In_ PVOID First,
+                    _In_ PVOID Second
+                )
+                {
+                    UNREFERENCED_PARAMETER(Table);
 
-                return Entry1->Index == Entry2->Index
-                    ? GenericEqual
-                    : (Entry1->Index > Entry2->Index ? GenericGreaterThan : GenericLessThan);
-            }
+                    const auto Entry1 = static_cast<PCMI_SYSCALL_LIST_ENTRY>(First);
+                    const auto Entry2 = static_cast<PCMI_SYSCALL_LIST_ENTRY>(Second);
 
-            RTL_GENERIC_COMPARE_RESULTS NTAPI CompareByNameHash(
-                _In_ RTL_AVL_TABLE* Table,
-                _In_ PVOID First,
-                _In_ PVOID Second
-            )
-            {
-                UNREFERENCED_PARAMETER(Table);
-
-                const auto Entry1 = static_cast<PCMI_SYSCALL_LIST_ENTRY>(First);
-                const auto Entry2 = static_cast<PCMI_SYSCALL_LIST_ENTRY>(Second);
-
-                return Entry1->NameHash == Entry2->NameHash
-                    ? GenericEqual
-                    : (Entry1->NameHash > Entry2->NameHash ? GenericGreaterThan : GenericLessThan);
-            }
-
-            PVOID NTAPI Allocate(
-                _In_ RTL_AVL_TABLE* Table,
-                _In_ ULONG Size
-            )
-            {
-                UNREFERENCED_PARAMETER(Table);
-
-                return RtlAllocateHeap(MiCoreHeap, HEAP_ZERO_MEMORY | HEAP_NO_SERIALIZE, Size);
-            }
-
-            VOID NTAPI Free(
-                _In_ RTL_AVL_TABLE* Table,
-                _In_ __drv_freesMem(Mem) _Post_invalid_ PVOID Buffer
-            )
-            {
-                UNREFERENCED_PARAMETER(Table);
-
-            #if defined(DBG)
-                const auto Entry = reinterpret_cast<PMI_SYSCALL_LIST_ENTRY>(static_cast<uint8_t*>(Buffer) + sizeof(RTL_BALANCED_LINKS));
-                if (Entry->Name) {
-                    RtlFreeHeap(MiCoreHeap, HEAP_NO_SERIALIZE, const_cast<char*>(Entry->Name));
+                    return Entry1->Index == Entry2->Index
+                        ? GenericEqual
+                        : (Entry1->Index > Entry2->Index ? GenericGreaterThan : GenericLessThan);
                 }
-            #endif
 
-                RtlFreeHeap(MiCoreHeap, HEAP_NO_SERIALIZE, Buffer);
+                RTL_GENERIC_COMPARE_RESULTS NTAPI CompareByNameHash(
+                    _In_ RTL_AVL_TABLE* Table,
+                    _In_ PVOID First,
+                    _In_ PVOID Second
+                )
+                {
+                    UNREFERENCED_PARAMETER(Table);
+
+                    const auto Entry1 = static_cast<PCMI_SYSCALL_LIST_ENTRY>(First);
+                    const auto Entry2 = static_cast<PCMI_SYSCALL_LIST_ENTRY>(Second);
+
+                    return Entry1->NameHash == Entry2->NameHash
+                        ? GenericEqual
+                        : (Entry1->NameHash > Entry2->NameHash ? GenericGreaterThan : GenericLessThan);
+                }
+
+                PVOID NTAPI Allocate(
+                    _In_ RTL_AVL_TABLE* Table,
+                    _In_ ULONG Size
+                )
+                {
+                    UNREFERENCED_PARAMETER(Table);
+
+                    return RtlAllocateHeap(MiCoreHeap, HEAP_ZERO_MEMORY | HEAP_NO_SERIALIZE, Size);
+                }
+
+                VOID NTAPI Free(
+                    _In_ RTL_AVL_TABLE* Table,
+                    _In_ __drv_freesMem(Mem) _Post_invalid_ PVOID Buffer
+                )
+                {
+                    UNREFERENCED_PARAMETER(Table);
+
+                #if defined(DBG)
+                    const auto Entry = reinterpret_cast<PMI_SYSCALL_LIST_ENTRY>(static_cast<uint8_t*>(Buffer) + sizeof(RTL_BALANCED_LINKS));
+                    if (Entry->Name) {
+                        RtlFreeHeap(MiCoreHeap, HEAP_NO_SERIALIZE, const_cast<char*>(Entry->Name));
+                    }
+                #endif
+
+                    RtlFreeHeap(MiCoreHeap, HEAP_NO_SERIALIZE, Buffer);
+                }
             }
         }
 
@@ -287,7 +290,7 @@ namespace Mi
 
     NTSTATUS MICORE_API MI_NAME_PRIVATE(SetupSystemCall)()
     {
-        PAGED_CODE()
+        PAGED_CODE();
 
         NTSTATUS Status;
         HANDLE   SectionHandle    = nullptr;
@@ -295,13 +298,13 @@ namespace Mi
         PVOID    ImageBaseOfNtdll = nullptr;
 
         do {
-            RtlInitializeGenericTableAvl(&SyscallTableByName,
+            RtlInitializeGenericTableAvl(&MiCoreSyscallTableByName,
                 &SyscallTableRoutines::CompareByNameHash,
                 &SyscallTableRoutines::Allocate,
                 &SyscallTableRoutines::Free,
                 nullptr);
 
-            RtlInitializeGenericTableAvl(&SyscallTableByIndex,
+            RtlInitializeGenericTableAvl(&MiCoreSyscallTableByIndex,
                 &SyscallTableRoutines::CompareByIndex,
                 &SyscallTableRoutines::Allocate,
                 &SyscallTableRoutines::Free,
@@ -367,7 +370,7 @@ namespace Mi
                         strcpy_s(const_cast<char*>(Entry.Name), NameLength + _countof(""), Name);
                     #endif
 
-                        if (!RtlInsertElementGenericTableAvl(&SyscallTableByIndex, &Entry, sizeof(MI_SYSCALL_LIST_ENTRY), nullptr)) {
+                        if (!RtlInsertElementGenericTableAvl(&MiCoreSyscallTableByIndex, &Entry, sizeof(MI_SYSCALL_LIST_ENTRY), nullptr)) {
                         #if defined(DBG)
                             RtlFreeHeap(MiCoreHeap, HEAP_NO_SERIALIZE, const_cast<char*>(Entry.Name));
                         #endif
@@ -388,9 +391,9 @@ namespace Mi
             uint32_t IndexOfPrevious          = 0;
             uint32_t IndexOfZwQuerySystemTime = static_cast<uint32_t>(~0);
 
-            for (auto Entry = static_cast<PMI_SYSCALL_LIST_ENTRY>(RtlEnumerateGenericTableAvl(&SyscallTableByIndex, TRUE));
+            for (auto Entry = static_cast<PMI_SYSCALL_LIST_ENTRY>(RtlEnumerateGenericTableAvl(&MiCoreSyscallTableByIndex, TRUE));
                 Entry;
-                Entry = static_cast<PMI_SYSCALL_LIST_ENTRY>(RtlEnumerateGenericTableAvl(&SyscallTableByIndex, FALSE))) {
+                Entry = static_cast<PMI_SYSCALL_LIST_ENTRY>(RtlEnumerateGenericTableAvl(&MiCoreSyscallTableByIndex, FALSE))) {
 
                 if (IndexOfZwQuerySystemTime == static_cast<uint32_t>(~0)) {
                     // Fix 'ZwQuerySystemTime' Index - Step 1
@@ -414,16 +417,16 @@ namespace Mi
                 MI_SYSCALL_LIST_ENTRY Entry{};
                 Entry.Index = IndexOfPrevious;
 
-                if (const auto MatchEntry = RtlLookupElementGenericTableAvl(&SyscallTableByIndex, &Entry)) {
+                if (const auto MatchEntry = RtlLookupElementGenericTableAvl(&MiCoreSyscallTableByIndex, &Entry)) {
                     Entry = *static_cast<PCMI_SYSCALL_LIST_ENTRY>(MatchEntry);
                     Entry.Index = IndexOfZwQuerySystemTime;
 
                 #if defined(DBG)
                     static_cast<PMI_SYSCALL_LIST_ENTRY>(MatchEntry)->Name = nullptr;
-                    RtlDeleteElementGenericTableAvl(&SyscallTableByIndex, MatchEntry);
+                    RtlDeleteElementGenericTableAvl(&MiCoreSyscallTableByIndex, MatchEntry);
                 #endif
 
-                    if (!RtlInsertElementGenericTableAvl(&SyscallTableByIndex, &Entry, sizeof(MI_SYSCALL_LIST_ENTRY), nullptr)) {
+                    if (!RtlInsertElementGenericTableAvl(&MiCoreSyscallTableByIndex, &Entry, sizeof(MI_SYSCALL_LIST_ENTRY), nullptr)) {
                     #if defined(DBG)
                         RtlFreeHeap(MiCoreHeap, HEAP_NO_SERIALIZE, const_cast<char*>(Entry.Name));
                     #endif
@@ -524,7 +527,7 @@ namespace Mi
                 break;
             }
 
-            const auto CountOfZwRoutine = RtlNumberGenericTableElementsAvl(&SyscallTableByIndex);
+            const auto CountOfZwRoutine = RtlNumberGenericTableElementsAvl(&MiCoreSyscallTableByIndex);
             for (size_t Idx = 0; Idx < CountOfZwRoutine; ++Idx) {
                 const auto ZwRoutine = FirstZwRoutine + (Idx * SizeOfZwRoutine);
 
@@ -543,15 +546,15 @@ namespace Mi
                 Entry.Index = (*reinterpret_cast<const uint32_t*>(ZwRoutine) >> 5) & 0xFFFF;
             #endif
 
-                if (const auto MatchEntry = static_cast<PMI_SYSCALL_LIST_ENTRY>(RtlLookupElementGenericTableAvl(&SyscallTableByIndex, &Entry))) {
+                if (const auto MatchEntry = static_cast<PMI_SYSCALL_LIST_ENTRY>(RtlLookupElementGenericTableAvl(&MiCoreSyscallTableByIndex, &Entry))) {
                     MatchEntry->Address = Mi::FastEncodePointer(ZwRoutine);
                 }
             }
 
-            // SyscallTableByIndex copy to SyscallTableByName
-            for (auto Entry = static_cast<PMI_SYSCALL_LIST_ENTRY>(RtlEnumerateGenericTableAvl(&SyscallTableByIndex, TRUE));
+            // MiCoreSyscallTableByIndex copy to MiCoreSyscallTableByName
+            for (auto Entry = static_cast<PMI_SYSCALL_LIST_ENTRY>(RtlEnumerateGenericTableAvl(&MiCoreSyscallTableByIndex, TRUE));
                 Entry;
-                Entry = static_cast<PMI_SYSCALL_LIST_ENTRY>(RtlEnumerateGenericTableAvl(&SyscallTableByIndex, FALSE))) {
+                Entry = static_cast<PMI_SYSCALL_LIST_ENTRY>(RtlEnumerateGenericTableAvl(&MiCoreSyscallTableByIndex, FALSE))) {
 
                 MI_SYSCALL_LIST_ENTRY NewEntry = *Entry;
 
@@ -568,7 +571,7 @@ namespace Mi
                 }
             #endif
 
-                if (!RtlInsertElementGenericTableAvl(&SyscallTableByName, &NewEntry, sizeof(MI_SYSCALL_LIST_ENTRY), nullptr)) {
+                if (!RtlInsertElementGenericTableAvl(&MiCoreSyscallTableByName, &NewEntry, sizeof(MI_SYSCALL_LIST_ENTRY), nullptr)) {
                 #if defined(DBG)
                     RtlFreeHeap(MiCoreHeap, HEAP_NO_SERIALIZE, const_cast<char*>(NewEntry.Name));
                 #endif
@@ -579,9 +582,9 @@ namespace Mi
             }
 
         #if defined(DBG)
-            for (auto Entry = static_cast<PMI_SYSCALL_LIST_ENTRY>(RtlEnumerateGenericTableAvl(&SyscallTableByIndex, TRUE));
+            for (auto Entry = static_cast<PMI_SYSCALL_LIST_ENTRY>(RtlEnumerateGenericTableAvl(&MiCoreSyscallTableByIndex, TRUE));
                 Entry;
-                Entry = static_cast<PMI_SYSCALL_LIST_ENTRY>(RtlEnumerateGenericTableAvl(&SyscallTableByIndex, FALSE))) {
+                Entry = static_cast<PMI_SYSCALL_LIST_ENTRY>(RtlEnumerateGenericTableAvl(&MiCoreSyscallTableByIndex, FALSE))) {
 
                 MiLOG("0x%04X -> 0x%p, %s", Entry->Index, Mi::FastDecodePointer(Entry->Address), Entry->Name);
             }
@@ -615,13 +618,13 @@ namespace Mi
         PVOID    ImageBaseOfNtdll = MiCoreNtBase;
 
         do {
-            RtlInitializeGenericTableAvl(&SyscallTableByName,
+            RtlInitializeGenericTableAvl(&MiCoreSyscallTableByName,
                 &SyscallTableRoutines::CompareByNameHash,
                 &SyscallTableRoutines::Allocate,
                 &SyscallTableRoutines::Free,
                 nullptr);
 
-            RtlInitializeGenericTableAvl(&SyscallTableByIndex,
+            RtlInitializeGenericTableAvl(&MiCoreSyscallTableByIndex,
                 &SyscallTableRoutines::CompareByIndex,
                 &SyscallTableRoutines::Allocate,
                 &SyscallTableRoutines::Free,
@@ -687,7 +690,7 @@ namespace Mi
                         strcpy_s(const_cast<char*>(Entry.Name), NameLength + _countof(""), Name);
                     #endif
 
-                        if (!RtlInsertElementGenericTableAvl(&SyscallTableByIndex, &Entry, sizeof(MI_SYSCALL_LIST_ENTRY), nullptr)) {
+                        if (!RtlInsertElementGenericTableAvl(&MiCoreSyscallTableByIndex, &Entry, sizeof(MI_SYSCALL_LIST_ENTRY), nullptr)) {
                         #if defined(DBG)
                             RtlFreeHeap(MiCoreHeap, HEAP_NO_SERIALIZE, const_cast<char*>(Entry.Name));
                         #endif
@@ -707,10 +710,10 @@ namespace Mi
             uint32_t IndexOfPrevious          = 0;
             uint32_t IndexOfZwQuerySystemTime = static_cast<uint32_t>(~0);
 
-            // SyscallTableByIndex copy to SyscallTableByName
-            for (auto Entry = static_cast<PMI_SYSCALL_LIST_ENTRY>(RtlEnumerateGenericTableAvl(&SyscallTableByIndex, TRUE));
+            // MiCoreSyscallTableByIndex copy to MiCoreSyscallTableByName
+            for (auto Entry = static_cast<PMI_SYSCALL_LIST_ENTRY>(RtlEnumerateGenericTableAvl(&MiCoreSyscallTableByIndex, TRUE));
                 Entry;
-                Entry = static_cast<PMI_SYSCALL_LIST_ENTRY>(RtlEnumerateGenericTableAvl(&SyscallTableByIndex, FALSE))) {
+                Entry = static_cast<PMI_SYSCALL_LIST_ENTRY>(RtlEnumerateGenericTableAvl(&MiCoreSyscallTableByIndex, FALSE))) {
 
                 MI_SYSCALL_LIST_ENTRY NewEntry = *Entry;
 
@@ -746,7 +749,7 @@ namespace Mi
                 }
             #endif
 
-                if (!RtlInsertElementGenericTableAvl(&SyscallTableByName, &NewEntry, sizeof(MI_SYSCALL_LIST_ENTRY), nullptr)) {
+                if (!RtlInsertElementGenericTableAvl(&MiCoreSyscallTableByName, &NewEntry, sizeof(MI_SYSCALL_LIST_ENTRY), nullptr)) {
                 #if defined(DBG)
                     RtlFreeHeap(MiCoreHeap, HEAP_NO_SERIALIZE, const_cast<char*>(NewEntry.Name));
                 #endif
@@ -761,16 +764,16 @@ namespace Mi
                 MI_SYSCALL_LIST_ENTRY Entry{};
                 Entry.Index = IndexOfPrevious;
 
-                if (const auto MatchEntry = RtlLookupElementGenericTableAvl(&SyscallTableByIndex, &Entry)) {
+                if (const auto MatchEntry = RtlLookupElementGenericTableAvl(&MiCoreSyscallTableByIndex, &Entry)) {
                     Entry = *static_cast<PCMI_SYSCALL_LIST_ENTRY>(MatchEntry);
                     Entry.Index = IndexOfZwQuerySystemTime;
 
                 #if defined(DBG)
                     static_cast<PMI_SYSCALL_LIST_ENTRY>(MatchEntry)->Name = nullptr;
-                    RtlDeleteElementGenericTableAvl(&SyscallTableByIndex, MatchEntry);
+                    RtlDeleteElementGenericTableAvl(&MiCoreSyscallTableByIndex, MatchEntry);
                 #endif
 
-                    if (!RtlInsertElementGenericTableAvl(&SyscallTableByIndex, &Entry, sizeof(MI_SYSCALL_LIST_ENTRY), nullptr)) {
+                    if (!RtlInsertElementGenericTableAvl(&MiCoreSyscallTableByIndex, &Entry, sizeof(MI_SYSCALL_LIST_ENTRY), nullptr)) {
                     #if defined(DBG)
                         RtlFreeHeap(MiCoreHeap, HEAP_NO_SERIALIZE, const_cast<char*>(Entry.Name));
                     #endif
@@ -782,9 +785,9 @@ namespace Mi
             }
 
         #if defined(DBG)
-            for (auto Entry = static_cast<PMI_SYSCALL_LIST_ENTRY>(RtlEnumerateGenericTableAvl(&SyscallTableByIndex, TRUE));
+            for (auto Entry = static_cast<PMI_SYSCALL_LIST_ENTRY>(RtlEnumerateGenericTableAvl(&MiCoreSyscallTableByIndex, TRUE));
                 Entry;
-                Entry = static_cast<PMI_SYSCALL_LIST_ENTRY>(RtlEnumerateGenericTableAvl(&SyscallTableByIndex, FALSE))) {
+                Entry = static_cast<PMI_SYSCALL_LIST_ENTRY>(RtlEnumerateGenericTableAvl(&MiCoreSyscallTableByIndex, FALSE))) {
 
                 MiLOG("0x%04X -> 0x%p, %s", Entry->Index, Mi::FastDecodePointer(Entry->Address), Entry->Name);
             }
@@ -804,24 +807,24 @@ namespace Mi
     NTSTATUS MICORE_API MI_NAME_PRIVATE(FreeSystemCall)()
     {
     #ifdef _KERNEL_MODE
-        PAGED_CODE()
+        PAGED_CODE();
     #endif
 
         NTSTATUS Status = STATUS_SUCCESS;
 
         do {
-            for (auto Entry = RtlGetElementGenericTableAvl(&SyscallTableByName, 0);
+            for (auto Entry = RtlGetElementGenericTableAvl(&MiCoreSyscallTableByName, 0);
                 Entry;
-                Entry = RtlGetElementGenericTableAvl(&SyscallTableByName, 0)) {
+                Entry = RtlGetElementGenericTableAvl(&MiCoreSyscallTableByName, 0)) {
 
-                RtlDeleteElementGenericTableAvl(&SyscallTableByName, Entry);
+                RtlDeleteElementGenericTableAvl(&MiCoreSyscallTableByName, Entry);
             }
 
-            for (auto Entry = RtlGetElementGenericTableAvl(&SyscallTableByIndex, 0);
+            for (auto Entry = RtlGetElementGenericTableAvl(&MiCoreSyscallTableByIndex, 0);
                 Entry;
-                Entry = RtlGetElementGenericTableAvl(&SyscallTableByIndex, 0)) {
+                Entry = RtlGetElementGenericTableAvl(&MiCoreSyscallTableByIndex, 0)) {
 
-                RtlDeleteElementGenericTableAvl(&SyscallTableByIndex, Entry);
+                RtlDeleteElementGenericTableAvl(&MiCoreSyscallTableByIndex, Entry);
             }
 
         #ifndef _KERNEL_MODE
@@ -848,7 +851,7 @@ namespace Mi
         Entry.NameHash = NameHash;
 
         if (const auto MatchEntry = static_cast<PCMI_SYSCALL_LIST_ENTRY>(RtlLookupElementGenericTableAvl(
-            &SyscallTableByName, &Entry))) {
+            &MiCoreSyscallTableByName, &Entry))) {
 
             return const_cast<void*>(Mi::FastDecodePointer(MatchEntry->Address));
         }
