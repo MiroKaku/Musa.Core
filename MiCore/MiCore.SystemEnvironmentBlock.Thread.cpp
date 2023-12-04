@@ -3,7 +3,7 @@
 
 #include "MiCore.SystemEnvironmentBlock.Private.h"
 #include "MiCore.SystemEnvironmentBlock.Thread.h"
-#include "Thunks/MiCore.Thunks.Ntdll.FiberLocalStorage.Private.h"
+#include "Thunks/Ntdll.FiberLocalStorage.Private.h"
 
 
 #ifdef ALLOC_PRAGMA
@@ -83,13 +83,13 @@ namespace Mi
     {
         UNREFERENCED_PARAMETER(CallbackContext);
 
-        PFLS_DATA FlsData = nullptr;
-
         if (Create) {
             return;
         }
 
-        KIRQL LockIrql = PASSIVE_LEVEL;
+        PFLS_DATA FlsData  = nullptr;
+        KIRQL     LockIrql = PASSIVE_LEVEL;
+
         __try {
             LockIrql = ExAcquireSpinLockExclusive(&MiCoreTebLock);
 

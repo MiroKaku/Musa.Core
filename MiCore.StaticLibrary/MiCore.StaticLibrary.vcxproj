@@ -45,7 +45,7 @@
     <ClCompile Include="..\MiCore\MiCore.SystemCall.cpp" />
     <ClCompile Include="..\MiCore\MiCore.SystemCall.Stubs.cpp" />
     <ClCompile Include="..\MiCore\MiCore.Utility.cpp" />
-    <ClCompile Include="..\MiCore\Thunks\MiCore.Thunks.Ntdll.Heap.cpp" />
+    <ClCompile Include="..\MiCore\Thunks\Ntdll.Heap.cpp" />
   </ItemGroup>
   <Import Project="..\Mile.Project.Windows\Mile.Project.Cpp.targets" />
 </Project>

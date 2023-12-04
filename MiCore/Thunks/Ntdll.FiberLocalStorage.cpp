@@ -1,6 +1,6 @@
 #ifdef _KERNEL_MODE
 
-#include "MiCore.Thunks.Ntdll.FiberLocalStorage.Private.h"
+#include "Ntdll.FiberLocalStorage.Private.h"
 #include "MiCore/MiCore.SystemEnvironmentBlock.Private.h"
 
 

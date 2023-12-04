@@ -1,4 +1,4 @@
-#include "MiCore.Thunks.Ntdll.Heap.Private.h"
+#include "Ntdll.Heap.Private.h"
 #include "MiCore/MiCore.SystemEnvironmentBlock.Private.h"
 #include "MiCore/MiCore.Utility.h"
 
