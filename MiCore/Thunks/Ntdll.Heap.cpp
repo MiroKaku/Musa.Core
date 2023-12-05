@@ -298,14 +298,14 @@ namespace Mi
             if (HeapBase) {
                 Status = STATUS_NOT_SUPPORTED;
 
-                KdBreakPointWithStatus(Status);
+                KdBreakPoint();
                 break;
             }
 
             if (BooleanFlagOn(Flags, ~MI_HEAP_CREATE_VALID_MASK)) {
                 Status = STATUS_NOT_SUPPORTED;
 
-                KdBreakPointWithStatus(Status);
+                KdBreakPoint();
                 break;
             }
 
@@ -313,7 +313,7 @@ namespace Mi
                 if (BooleanFlagOn(Flags, HEAP_CREATE_SEGMENT_HEAP) == FALSE) {
                     Status = STATUS_NOT_SUPPORTED;
 
-                    KdBreakPointWithStatus(Status);
+                    KdBreakPoint();
                     break;
                 }
             }
