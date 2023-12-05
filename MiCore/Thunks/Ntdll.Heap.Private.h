@@ -6,6 +6,14 @@ EXTERN_C_START
 
 PVOID NTAPI MI_NAME(RtlGetDefaultHeap)();
 
+PVOID NTAPI RtlGetDefaultHeap();
+
+#ifdef _X86_
+_VEIL_DECLARE_ALTERNATE_NAME(RtlGetDefaultHeap@0, _Mi_RtlGetDefaultHeap@0);
+#else
+_VEIL_DECLARE_ALTERNATE_NAME(RtlGetDefaultHeap, _Mi_RtlGetDefaultHeap);
+#endif
+
 _IRQL_requires_max_(APC_LEVEL)
 _Must_inspect_result_
 PVOID NTAPI MI_NAME(RtlCreateHeap)(

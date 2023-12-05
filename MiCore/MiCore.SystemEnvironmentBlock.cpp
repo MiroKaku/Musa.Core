@@ -34,6 +34,8 @@ namespace Mi
     }
 #endif
 
+    _Must_inspect_result_
+    _IRQL_requires_max_(APC_LEVEL)
     NTSTATUS MICORE_API MI_NAME_PRIVATE(SetupEnvironmentBlock)(
         _In_ PDRIVER_OBJECT  DriverObject,
         _In_ PUNICODE_STRING RegistryPath
@@ -94,6 +96,8 @@ namespace Mi
         return Status;
     }
 
+    _Must_inspect_result_
+    _IRQL_requires_max_(APC_LEVEL)
     NTSTATUS MICORE_API MI_NAME_PRIVATE(FreeEnvironmentBlock)()
     {
         PAGED_CODE()
@@ -132,6 +136,8 @@ namespace Mi
     }
 
 #else
+    _Must_inspect_result_
+    _IRQL_requires_max_(APC_LEVEL)
     NTSTATUS MICORE_API MI_NAME_PRIVATE(SetupEnvironmentBlock)()
     {
         NTSTATUS Status;
@@ -155,6 +161,8 @@ namespace Mi
         return Status;
     }
 
+    _Must_inspect_result_
+    _IRQL_requires_max_(APC_LEVEL)
     NTSTATUS MICORE_API MI_NAME_PRIVATE(FreeEnvironmentBlock)()
     {
         if (MiCoreHeap) {

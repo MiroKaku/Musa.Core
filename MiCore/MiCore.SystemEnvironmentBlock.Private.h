@@ -1,18 +1,11 @@
 #pragma once
 #ifdef _KERNEL_MODE
 
+#include "Thunks/Ntdll.FiberLocalStorage.Private.h"
+
 
 namespace Mi
 {
-    constexpr uint32_t MI_FLS_MAXIMUM_AVAILABLE = 256;
-
-    // Fiber Local storage
-    VEIL_DECLARE_STRUCT(FLS_DATA)
-    {
-        LIST_ENTRY  Entry;
-        PVOID       Slots[MI_FLS_MAXIMUM_AVAILABLE];
-    };
-
     // Kernel Process Environment Block
     VEIL_DECLARE_STRUCT_ALIGN(KPEB, 8)
     {
@@ -34,13 +27,6 @@ namespace Mi
         PVOID           Environment;
         CURDIR          CurrentDirectory;
 
-        RTL_BITMAP      FlsBitmap;
-        ULONG           FlsBitmapBits[MI_FLS_MAXIMUM_AVAILABLE / RTL_BITS_OF(ULONG)];
-
-        ULONG           FlsHighIndex;
-        LIST_ENTRY      FlsListHead;
-        PFLS_CALLBACK_FUNCTION FlsCallback[MI_FLS_MAXIMUM_AVAILABLE];
-
         ULONG           NumberOfHeaps;
         ULONG           MaximumNumberOfHeaps;
         PVOID           DefaultHeap;
@@ -55,17 +41,17 @@ namespace Mi
     // Kernel Thread  Environment Block
     VEIL_DECLARE_STRUCT_ALIGN(KTEB, 8)
     {
-        HANDLE      ThreadId;
-        HANDLE      ProcessId;
-        PKPEB       ProcessEnvironmentBlock;
+        HANDLE          ThreadId;
+        HANDLE          ProcessId;
+        PKPEB           ProcessEnvironmentBlock;
 
-        ULONG       HardErrorMode;
-        NTSTATUS    ExceptionCode;
+        ULONG           HardErrorMode;
+        NTSTATUS        ExceptionCode;
 
-        ULONG       LastErrorValue;
-        NTSTATUS    LastStatusValue;
+        ULONG           LastErrorValue;
+        NTSTATUS        LastStatusValue;
 
-        PFLS_DATA   FlsData;
+        PRTL_FLS_DATA   FlsData;
     };
 
 }
@@ -75,6 +61,7 @@ namespace Mi
 EXTERN_C_START
 
 
+_IRQL_requires_max_(DISPATCH_LEVEL)
 Mi::PKPEB MICORE_API MI_NAME_PRIVATE(RtlGetCurrentPeb)();
 
 _IRQL_raises_(APC_LEVEL)
@@ -88,6 +75,24 @@ VOID MICORE_API MI_NAME_PRIVATE(RtlAcquirePebLockShared)();
 
 _IRQL_requires_(APC_LEVEL)
 VOID  MICORE_API MI_NAME_PRIVATE(RtlReleasePebLockShared)();
+
+
+_IRQL_requires_max_(DISPATCH_LEVEL)
+Mi::PKTEB MICORE_API MI_NAME_PRIVATE(RtlGetCurrentTeb)();
+
+_IRQL_saves_
+_IRQL_raises_(DISPATCH_LEVEL)
+KIRQL MICORE_API MI_NAME_PRIVATE(RtlAcquireTebLockExclusive)();
+
+_IRQL_requires_(DISPATCH_LEVEL)
+VOID  MICORE_API MI_NAME_PRIVATE(RtlReleaseTebLockExclusive)(_In_ _IRQL_restores_ KIRQL Irql);
+
+_IRQL_saves_
+_IRQL_raises_(DISPATCH_LEVEL)
+KIRQL MICORE_API MI_NAME_PRIVATE(RtlAcquireTebLockShared)();
+
+_IRQL_requires_(DISPATCH_LEVEL)
+VOID  MICORE_API MI_NAME_PRIVATE(RtlReleaseTebLockShared)(_In_ _IRQL_restores_ KIRQL Irql);
 
 
 EXTERN_C_END

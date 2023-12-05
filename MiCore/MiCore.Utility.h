@@ -66,7 +66,7 @@ namespace Mi
     );
 
     typedef
-    _IRQL_requires_same_
+    _IRQL_requires_max_(APC_LEVEL)
     _Function_class_(TASK_FUNCTION)
     NTSTATUS
     CALLBACK

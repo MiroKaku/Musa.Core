@@ -3,7 +3,6 @@
 
 #include "MiCore.SystemEnvironmentBlock.Private.h"
 #include "MiCore.SystemEnvironmentBlock.Thread.h"
-#include "Thunks/Ntdll.FiberLocalStorage.Private.h"
 
 
 #ifdef ALLOC_PRAGMA
@@ -75,6 +74,7 @@ namespace Mi
     }
 
     static
+    _IRQL_requires_max_(DISPATCH_LEVEL)
     VOID MI_NAME_PRIVATE(ThreadNotifyCallbackForTeb)(
         _In_opt_ PVOID  CallbackContext,
         _In_opt_ HANDLE ThreadId,
@@ -87,21 +87,21 @@ namespace Mi
             return;
         }
 
-        PFLS_DATA FlsData  = nullptr;
-        KIRQL     LockIrql = PASSIVE_LEVEL;
+        PRTL_FLS_DATA FlsData = nullptr;
 
+        const auto LockIrql = MI_NAME_PRIVATE(RtlAcquireTebLockExclusive)();
         __try {
-            LockIrql = ExAcquireSpinLockExclusive(&MiCoreTebLock);
-
             KTEB Block{};
             Block.ThreadId = ThreadId;
 
-            if (const auto Teb = static_cast<PKTEB>(RtlLookupElementGenericTableAvl(&MiCoreTebTable, &Block))) {
+            const auto Teb = static_cast<PKTEB>(RtlLookupElementGenericTableAvl(&MiCoreTebTable, &Block));
+            if (Teb) {
                 FlsData = Teb->FlsData;
                 RtlDeleteElementGenericTableAvl(&MiCoreTebTable, Teb);
             }
+
         } __finally {
-            ExReleaseSpinLockExclusive(&MiCoreTebLock, LockIrql);
+            MI_NAME_PRIVATE(RtlReleaseTebLockExclusive)(LockIrql);
         }
 
         if (FlsData == nullptr) {
@@ -109,17 +109,22 @@ namespace Mi
         }
 
         if (LockIrql <= APC_LEVEL) {
-            MI_NAME_PRIVATE(RtlRemoveFlsData)(FlsData);
+            RtlProcessFlsData(FlsData,
+                RTLP_FLS_DATA_CLEANUP_RUN_CALLBACKS | RTLP_FLS_DATA_CLEANUP_DEALLOCATE);
         }
         else {
             (void)RunTaskOnLowIrql(MiCoreDriverObject, [](PVOID FlsData)
             {
-                MI_NAME_PRIVATE(RtlRemoveFlsData)(static_cast<PFLS_DATA>(FlsData));
+                RtlProcessFlsData(FlsData,
+                    RTLP_FLS_DATA_CLEANUP_RUN_CALLBACKS | RTLP_FLS_DATA_CLEANUP_DEALLOCATE);
+
                 return STATUS_SUCCESS;
             }, FlsData);
         }
     }
 
+    _Must_inspect_result_
+    _IRQL_requires_max_(APC_LEVEL)
     NTSTATUS MICORE_API MI_NAME_PRIVATE(SetupThreadEnvironmentBlock)(
         _In_ PDRIVER_OBJECT  DriverObject,
         _In_ PUNICODE_STRING RegistryPath
@@ -160,6 +165,8 @@ namespace Mi
         return Status;
     }
 
+    _Must_inspect_result_
+    _IRQL_requires_max_(APC_LEVEL)
     NTSTATUS MICORE_API MI_NAME_PRIVATE(FreeThreadEnvironmentBlock)()
     {
         PAGED_CODE();
@@ -181,75 +188,91 @@ namespace Mi
                 ExDeleteLookasideListEx(&MiCoreTebPool);
             }
 
-            MI_NAME_PRIVATE(RtlRemoveFlsDataAll)();
-
         } while (false);
 
         return STATUS_SUCCESS;
     }
 
+    _IRQL_requires_max_(DISPATCH_LEVEL)
     PKTEB MICORE_API MI_NAME_PRIVATE(RtlGetCurrentTeb)()
     {
-        PKTEB   Teb = nullptr;
+        PKTEB   Teb      = nullptr;
+    #ifndef MICORE_FLS_USE_THREAD_NOTIFY_CALLBACK
+        BOOLEAN Expired  = FALSE;
+    #endif
 
-        KIRQL   LockIrql      = PASSIVE_LEVEL;
-        BOOLEAN LockExclusive = FALSE;
+        KTEB  Block{};
+        Block.ThreadId  = PsGetCurrentThreadId();
+        Block.ProcessId = PsGetCurrentProcessId();
+        Block.ProcessEnvironmentBlock = MI_NAME_PRIVATE(RtlGetCurrentPeb)();
 
+        // Lookup already exists
+
+        KIRQL LockIrql = MI_NAME_PRIVATE(RtlAcquireTebLockShared)();
         __try {
-            LockIrql = ExAcquireSpinLockShared(&MiCoreTebLock);
-
-            KTEB  Block{};
-            Block.ThreadId  = PsGetCurrentThreadId ();
-            Block.ProcessId = PsGetCurrentProcessId();
-            Block.ProcessEnvironmentBlock = MI_NAME_PRIVATE(RtlGetCurrentPeb)();
-
             Teb = static_cast<PKTEB>(RtlLookupElementGenericTableAvl(&MiCoreTebTable, &Block));
-
-        #ifndef MICORE_FLS_USE_THREAD_NOTIFY_CALLBACK
             if (Teb) {
+            #ifndef MICORE_FLS_USE_THREAD_NOTIFY_CALLBACK
                 if (Teb->ProcessId != Block.ProcessId) {
-                    const auto Expired = static_cast<PKTEB>(InterlockedExchangePointer(
-                        reinterpret_cast<PVOID volatile*>(&Teb), nullptr));
-                    const auto FlsData = Expired->FlsData;
-
-                    RtlDeleteElementGenericTableAvl(&MiCoreTebTable, Expired);
-
-                    (void)RunTaskOnLowIrql(MiCoreDriverObject,[](PVOID FlsData)
-                    {
-                        MI_NAME_PRIVATE(RtlRemoveFlsData)(static_cast<PFLS_DATA>(FlsData));
-                        return STATUS_SUCCESS;
-                    }, FlsData);
+                    Expired = true;
+                    __leave;
                 }
-            }
-        #endif
+            #endif
 
-            // Lazy-init
-            if (Teb == nullptr) {
-                if (ExTryConvertSharedSpinLockExclusive(&MiCoreTebLock) == FALSE) {
-                    ExReleaseSpinLockShared(&MiCoreTebLock, LockIrql);
-
-                    KeMemoryBarrier();
-
-                    LockIrql = ExAcquireSpinLockExclusive(&MiCoreTebLock);
-                }
-
-                LockExclusive = TRUE;
-
-                Teb = static_cast<PKTEB>(RtlInsertElementGenericTableAvl(
-                    &MiCoreTebTable, &Block, sizeof(KTEB), nullptr));
+                return Teb;
             }
         }
         __finally {
-            if (LockExclusive) {
-                ExReleaseSpinLockExclusive(&MiCoreTebLock, LockIrql);
-            }
-            else {
-                ExReleaseSpinLockShared(&MiCoreTebLock, LockIrql);
-            }
+            MI_NAME_PRIVATE(RtlReleaseTebLockShared)(LockIrql);
+        }
+
+    #ifndef MICORE_FLS_USE_THREAD_NOTIFY_CALLBACK
+        if (Expired) {
+            ExNotifyCallback(MiCoreThreadNotifyCallbackHandleForTeb,
+                Block.ThreadId, nullptr /* false */);
+        }
+    #endif
+
+        // Lazy-init - Insert new item
+
+        LockIrql = MI_NAME_PRIVATE(RtlAcquireTebLockExclusive)();
+        __try {
+            Teb = static_cast<PKTEB>(RtlInsertElementGenericTableAvl(
+                &MiCoreTebTable, &Block, sizeof(KTEB), nullptr));
+        }
+        __finally {
+            MI_NAME_PRIVATE(RtlReleaseTebLockExclusive)(LockIrql);
         }
 
         return Teb;
     }
+
+    _IRQL_saves_
+    _IRQL_raises_(DISPATCH_LEVEL)
+    KIRQL MICORE_API MI_NAME_PRIVATE(RtlAcquireTebLockExclusive)()
+    {
+        return ExAcquireSpinLockExclusive(&MiCoreTebLock);
+    }
+
+    _IRQL_requires_(DISPATCH_LEVEL)
+    VOID  MICORE_API MI_NAME_PRIVATE(RtlReleaseTebLockExclusive)(_In_ _IRQL_restores_ KIRQL Irql)
+    {
+        return ExReleaseSpinLockExclusive(&MiCoreTebLock, Irql);
+    }
+
+    _IRQL_saves_
+    _IRQL_raises_(DISPATCH_LEVEL)
+    KIRQL MICORE_API MI_NAME_PRIVATE(RtlAcquireTebLockShared)()
+    {
+        return ExAcquireSpinLockShared(&MiCoreTebLock);
+    }
+
+    _IRQL_requires_(DISPATCH_LEVEL)
+    VOID  MICORE_API MI_NAME_PRIVATE(RtlReleaseTebLockShared)(_In_ _IRQL_restores_ KIRQL Irql)
+    {
+        return ExReleaseSpinLockShared(&MiCoreTebLock, Irql);
+    }
+
 
 }
 EXTERN_C_END

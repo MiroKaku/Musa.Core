@@ -54,6 +54,8 @@ namespace Mi
             return STATUS_SUCCESS;
         }
 
+        _Must_inspect_result_
+        _IRQL_requires_max_(APC_LEVEL)
         NTSTATUS NTAPI GetKnownDllSectionHandle(
             _Out_ PHANDLE SectionHandle,
             _In_  PCWSTR  DllName,
@@ -288,6 +290,8 @@ namespace Mi
     // .text:0000000140200834 B3 2D 00 14                           B               KiServiceInternal
     // .text:0000000140200834                       ; End of function ZwCreateFile
 
+    _Must_inspect_result_
+    _IRQL_requires_max_(APC_LEVEL)
     NTSTATUS MICORE_API MI_NAME_PRIVATE(SetupSystemCall)()
     {
         PAGED_CODE();
@@ -611,6 +615,8 @@ namespace Mi
 
     static PVOID MiCoreNtBaseSecure = nullptr;
 
+    _Must_inspect_result_
+    _IRQL_requires_max_(APC_LEVEL)
     NTSTATUS MICORE_API MI_NAME_PRIVATE(SetupSystemCall)()
     {
         NTSTATUS Status;
@@ -804,6 +810,8 @@ namespace Mi
 
 #endif // _KERNEL_MODE
 
+    _Must_inspect_result_
+    _IRQL_requires_max_(APC_LEVEL)
     NTSTATUS MICORE_API MI_NAME_PRIVATE(FreeSystemCall)()
     {
     #ifdef _KERNEL_MODE

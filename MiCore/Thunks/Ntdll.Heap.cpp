@@ -3,15 +3,6 @@
 #include "MiCore/MiCore.Utility.h"
 
 
-EXTERN_C PVOID NTAPI RtlGetDefaultHeap();
-
-#ifdef _X86_
-_VEIL_DECLARE_ALTERNATE_NAME(RtlGetDefaultHeap@0, _Mi_RtlGetDefaultHeap@0);
-#else
-_VEIL_DECLARE_ALTERNATE_NAME(RtlGetDefaultHeap, _Mi_RtlGetDefaultHeap);
-#endif
-
-
 #ifdef _KERNEL_MODE
 
 #ifdef ALLOC_PRAGMA

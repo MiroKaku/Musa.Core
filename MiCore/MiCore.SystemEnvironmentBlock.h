@@ -4,14 +4,17 @@
 EXTERN_C_START
 
 
-#ifdef _KERNEL_MODE
+_Must_inspect_result_
+_IRQL_requires_max_(APC_LEVEL)
 NTSTATUS MICORE_API MI_NAME_PRIVATE(SetupEnvironmentBlock)(
+#ifdef _KERNEL_MODE
     _In_ PDRIVER_OBJECT  DriverObject,
-    _In_ PUNICODE_STRING RegistryPath);
-#else
-NTSTATUS MICORE_API MI_NAME_PRIVATE(SetupEnvironmentBlock)();
+    _In_ PUNICODE_STRING RegistryPath
 #endif
+);
 
+_Must_inspect_result_
+_IRQL_requires_max_(APC_LEVEL)
 NTSTATUS MICORE_API MI_NAME_PRIVATE(FreeEnvironmentBlock)();
 
 

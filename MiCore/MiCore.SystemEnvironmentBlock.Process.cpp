@@ -2,6 +2,7 @@
 
 #include "MiCore.SystemEnvironmentBlock.Private.h"
 #include "MiCore.SystemEnvironmentBlock.Process.h"
+#include "Thunks/Ntdll.FiberLocalStorage.Private.h"
 
 
 #ifdef ALLOC_PRAGMA
@@ -21,13 +22,13 @@ namespace Mi
     PKPEB MiCoreProcessEnvironmentBlock = nullptr;
 
 
+    _Must_inspect_result_
+    _IRQL_requires_max_(APC_LEVEL)
     NTSTATUS MICORE_API MI_NAME_PRIVATE(SetupProcessEnvironmentBlock)(
         _In_ PDRIVER_OBJECT  DriverObject,
         _In_ PUNICODE_STRING RegistryPath
     )
     {
-        UNREFERENCED_PARAMETER(RegistryPath);
-
         PAGED_CODE();
 
         NTSTATUS Status;
@@ -45,9 +46,6 @@ namespace Mi
             Peb->MaximumNumberOfHeaps = (PAGE_SIZE - sizeof(KPEB)) / sizeof(PVOID);
 
             ExInitializeRundownProtection(&Peb->RundownProtect);
-
-            InitializeListHead (&Peb->FlsListHead);
-            RtlInitializeBitMap(&Peb->FlsBitmap, Peb->FlsBitmapBits, RTL_BITS_OF(Peb->FlsBitmapBits));
 
             Status = RtlDuplicateUnicodeString(RTL_DUPLICATE_UNICODE_STRING_NULL_TERMINATE,
                 RegistryPath, &Peb->RegistryPath);
@@ -96,11 +94,15 @@ namespace Mi
             //    break;
             //}
 
+            MI_NAME_PRIVATE(RtlFlsCreate)();
+
         } while (false);
 
         return Status;
     }
 
+    _Must_inspect_result_
+    _IRQL_requires_max_(APC_LEVEL)
     NTSTATUS MICORE_API MI_NAME_PRIVATE(FreeProcessEnvironmentBlock)()
     {
         PAGED_CODE();
@@ -115,6 +117,8 @@ namespace Mi
             }
 
             ExWaitForRundownProtectionRelease(&Peb->RundownProtect);
+
+            MI_NAME_PRIVATE(RtlFlsCleanup)();
 
             //if (Peb->Environment) {
             //    Status = RtlDestroyEnvironment(Peb->Environment);
@@ -148,6 +152,7 @@ namespace Mi
         return Status;
     }
 
+    _IRQL_requires_max_(DISPATCH_LEVEL)
     PKPEB MICORE_API MI_NAME_PRIVATE(RtlGetCurrentPeb)()
     {
         return MiCoreProcessEnvironmentBlock;
