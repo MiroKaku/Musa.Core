@@ -36,30 +36,24 @@ namespace Mi
     {
         PAGED_CODE();
 
-        auto Empty = false;
-
         do {
             PLIST_ENTRY Entry = nullptr;
 
         #pragma warning(suppress: 28150)
             const auto LockIrql = ExAcquireSpinLockExclusive(&RtlFlsContext.Lock);
             __try {
-                Empty = IsListEmpty(&RtlFlsContext.FlsListHead);
-                if (Empty) {
-                    __leave;
+                if (!IsListEmpty(&RtlFlsContext.FlsListHead)) {
+                    Entry = RemoveHeadList(&RtlFlsContext.FlsListHead);
                 }
-                Entry = RemoveHeadList(&RtlFlsContext.FlsListHead);
             }
             __finally {
                 ExReleaseSpinLockExclusive(&RtlFlsContext.Lock, LockIrql);
             }
 
-            if (Empty) {
-                break;
+            if (Entry != nullptr) {
+                RtlProcessFlsData(CONTAINING_RECORD(Entry, RTL_FLS_DATA, Entry),
+                    RTLP_FLS_DATA_CLEANUP_RUN_CALLBACKS | RTLP_FLS_DATA_CLEANUP_DEALLOCATE);
             }
-
-            RtlProcessFlsData(CONTAINING_RECORD(Entry, RTL_FLS_DATA, Entry),
-                RTLP_FLS_DATA_CLEANUP_RUN_CALLBACKS | RTLP_FLS_DATA_CLEANUP_DEALLOCATE);
 
             const auto FlsCallback = static_cast<PFLS_CALLBACK_FUNCTION*>(InterlockedCompareExchangePointer(
                 reinterpret_cast<PVOID volatile*>(&RtlFlsContext.FlsCallback), nullptr, RtlFlsContext.FlsCallback));
