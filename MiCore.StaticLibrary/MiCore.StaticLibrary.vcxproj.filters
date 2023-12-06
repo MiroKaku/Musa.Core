@@ -28,6 +28,15 @@
     <ClInclude Include="..\MiCore\MiCore.Utility.h">
       <Filter>MiCore</Filter>
     </ClInclude>
+    <ClInclude Include="..\MiCore\Thunks\Ntdll.FiberLocalStorage.Private.h">
+      <Filter>MiCore\Thunks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MiCore\Thunks\Ntdll.Heap.Private.h">
+      <Filter>MiCore\Thunks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MiCore\Thunks\KernelBase.NLS.Private.h">
+      <Filter>MiCore\Thunks</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\MiCore\MiCore.cpp">
@@ -52,6 +61,27 @@
       <Filter>MiCore</Filter>
     </ClCompile>
     <ClCompile Include="..\MiCore\Thunks\Ntdll.Heap.cpp">
+      <Filter>MiCore\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MiCore\Thunks\KernelBase.Debug.cpp">
+      <Filter>MiCore\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MiCore\Thunks\KernelBase.Error.cpp">
+      <Filter>MiCore\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MiCore\Thunks\Ntdll.Error.cpp">
+      <Filter>MiCore\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MiCore\Thunks\Ntdll.FiberLocalStorage.cpp">
+      <Filter>MiCore\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MiCore\Thunks\Ntdll.Pool.cpp">
+      <Filter>MiCore\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MiCore\Thunks\Ntdll.Utility.cpp">
+      <Filter>MiCore\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MiCore\Thunks\KernelBase.NLS.cpp">
       <Filter>MiCore\Thunks</Filter>
     </ClCompile>
   </ItemGroup>

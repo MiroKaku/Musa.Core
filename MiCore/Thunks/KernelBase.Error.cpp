@@ -1,3 +1,4 @@
+#include <intrin.h>
 
 
 EXTERN_C_START

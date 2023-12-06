@@ -33,6 +33,9 @@
     <ClInclude Include="..\MiCore\MiCore.SystemCall.h" />
     <ClInclude Include="..\MiCore\MiCore.SystemEnvironmentBlock.Private.h" />
     <ClInclude Include="..\MiCore\MiCore.Utility.h" />
+    <ClInclude Include="..\MiCore\Thunks\KernelBase.NLS.Private.h" />
+    <ClInclude Include="..\MiCore\Thunks\Ntdll.FiberLocalStorage.Private.h" />
+    <ClInclude Include="..\MiCore\Thunks\Ntdll.Heap.Private.h" />
     <ClInclude Include="universal.h" />
   </ItemGroup>
   <ItemGroup>
@@ -45,7 +48,14 @@
     <ClCompile Include="..\MiCore\MiCore.SystemCall.cpp" />
     <ClCompile Include="..\MiCore\MiCore.SystemCall.Stubs.cpp" />
     <ClCompile Include="..\MiCore\MiCore.Utility.cpp" />
+    <ClCompile Include="..\MiCore\Thunks\KernelBase.Debug.cpp" />
+    <ClCompile Include="..\MiCore\Thunks\KernelBase.Error.cpp" />
+    <ClCompile Include="..\MiCore\Thunks\KernelBase.NLS.cpp" />
+    <ClCompile Include="..\MiCore\Thunks\Ntdll.Error.cpp" />
+    <ClCompile Include="..\MiCore\Thunks\Ntdll.FiberLocalStorage.cpp" />
     <ClCompile Include="..\MiCore\Thunks\Ntdll.Heap.cpp" />
+    <ClCompile Include="..\MiCore\Thunks\Ntdll.Pool.cpp" />
+    <ClCompile Include="..\MiCore\Thunks\Ntdll.Utility.cpp" />
   </ItemGroup>
   <Import Project="..\Mile.Project.Windows\Mile.Project.Cpp.targets" />
 </Project>
