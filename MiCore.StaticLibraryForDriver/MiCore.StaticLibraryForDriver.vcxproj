@@ -56,7 +56,9 @@
     <ClCompile Include="..\MiCore\MiCore.Utility.cpp" />
     <ClCompile Include="..\MiCore\Thunks\KernelBase.Debug.cpp" />
     <ClCompile Include="..\MiCore\Thunks\KernelBase.Error.cpp" />
+    <ClCompile Include="..\MiCore\Thunks\KernelBase.FiberLocalStorage.cpp" />
     <ClCompile Include="..\MiCore\Thunks\KernelBase.NLS.cpp" />
+    <ClCompile Include="..\MiCore\Thunks\KernelBase.ThreadLocalStorage.cpp" />
     <ClCompile Include="..\MiCore\Thunks\Ntdll.Error.cpp" />
     <ClCompile Include="..\MiCore\Thunks\Ntdll.FiberLocalStorage.cpp" />
     <ClCompile Include="..\MiCore\Thunks\Ntdll.Heap.cpp" />

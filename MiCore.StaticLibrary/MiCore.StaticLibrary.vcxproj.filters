@@ -84,5 +84,11 @@
     <ClCompile Include="..\MiCore\Thunks\KernelBase.NLS.cpp">
       <Filter>MiCore\Thunks</Filter>
     </ClCompile>
+    <ClCompile Include="..\MiCore\Thunks\KernelBase.FiberLocalStorage.cpp">
+      <Filter>MiCore\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MiCore\Thunks\KernelBase.ThreadLocalStorage.cpp">
+      <Filter>MiCore\Thunks</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
