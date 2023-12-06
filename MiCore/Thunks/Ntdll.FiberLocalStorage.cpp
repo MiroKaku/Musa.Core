@@ -50,18 +50,20 @@ namespace Mi
                 ExReleaseSpinLockExclusive(&RtlFlsContext.Lock, LockIrql);
             }
 
-            if (Entry != nullptr) {
-                RtlProcessFlsData(CONTAINING_RECORD(Entry, RTL_FLS_DATA, Entry),
-                    RTLP_FLS_DATA_CLEANUP_RUN_CALLBACKS | RTLP_FLS_DATA_CLEANUP_DEALLOCATE);
+            if (Entry == nullptr) {
+                break;
             }
 
-            const auto FlsCallback = static_cast<PFLS_CALLBACK_FUNCTION*>(InterlockedCompareExchangePointer(
-                reinterpret_cast<PVOID volatile*>(&RtlFlsContext.FlsCallback), nullptr, RtlFlsContext.FlsCallback));
-            if (FlsCallback) {
-                RtlFreeHeap(RtlGetDefaultHeap(), HEAP_NO_SERIALIZE, FlsCallback);
-            }
+            RtlProcessFlsData(CONTAINING_RECORD(Entry, RTL_FLS_DATA, Entry),
+                RTLP_FLS_DATA_CLEANUP_RUN_CALLBACKS | RTLP_FLS_DATA_CLEANUP_DEALLOCATE);
 
         } while (true);
+
+        const auto FlsCallback = static_cast<PFLS_CALLBACK_FUNCTION*>(InterlockedCompareExchangePointer(
+            reinterpret_cast<PVOID volatile*>(&RtlFlsContext.FlsCallback), nullptr, RtlFlsContext.FlsCallback));
+        if (FlsCallback) {
+            RtlFreeHeap(RtlGetDefaultHeap(), HEAP_NO_SERIALIZE, FlsCallback);
+        }
     }
 
     _IRQL_requires_max_(APC_LEVEL)
