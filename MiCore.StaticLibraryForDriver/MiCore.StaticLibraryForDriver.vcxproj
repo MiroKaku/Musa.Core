@@ -53,6 +53,7 @@
     <ClCompile Include="..\MiCore\MiCore.SystemEnvironmentBlock.Process.cpp" />
     <ClCompile Include="..\MiCore\MiCore.SystemEnvironmentBlock.Thread.cpp" />
     <ClCompile Include="..\MiCore\MiCore.Utility.cpp" />
+    <ClCompile Include="..\MiCore\Thunks\KernelBase.Debug.cpp" />
     <ClCompile Include="..\MiCore\Thunks\Ntdll.Error.cpp" />
     <ClCompile Include="..\MiCore\Thunks\Ntdll.FiberLocalStorage.cpp" />
     <ClCompile Include="..\MiCore\Thunks\Ntdll.Heap.cpp" />

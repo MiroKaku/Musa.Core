@@ -85,5 +85,8 @@
     <ClCompile Include="..\MiCore\Thunks\Ntdll.Error.cpp">
       <Filter>MiCore\Thunks</Filter>
     </ClCompile>
+    <ClCompile Include="..\MiCore\Thunks\KernelBase.Debug.cpp">
+      <Filter>MiCore\Thunks</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
