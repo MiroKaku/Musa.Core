@@ -37,6 +37,12 @@
     <ClInclude Include="..\MiCore\Thunks\KernelBase.NLS.Private.h">
       <Filter>MiCore\Thunks</Filter>
     </ClInclude>
+    <ClInclude Include="..\MiCore\MiCore.SystemEnvironmentBlock.Process.h">
+      <Filter>MiCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MiCore\MiCore.SystemEnvironmentBlock.Thread.h">
+      <Filter>MiCore</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\MiCore\MiCore.cpp">
@@ -88,6 +94,18 @@
       <Filter>MiCore\Thunks</Filter>
     </ClCompile>
     <ClCompile Include="..\MiCore\Thunks\KernelBase.ThreadLocalStorage.cpp">
+      <Filter>MiCore\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MiCore\MiCore.SystemEnvironmentBlock.Process.cpp">
+      <Filter>MiCore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MiCore\MiCore.SystemEnvironmentBlock.Thread.cpp">
+      <Filter>MiCore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MiCore\Thunks\KernelBase.PerformanceCounter.cpp">
+      <Filter>MiCore\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MiCore\Thunks\Ntdll.PerformanceCounter.cpp">
       <Filter>MiCore\Thunks</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,6 +1,6 @@
-#include "MiCore.Utility.h"
 #ifdef _KERNEL_MODE
 
+#include "MiCore.Utility.h"
 #include "MiCore.SystemEnvironmentBlock.Private.h"
 #include "MiCore.SystemEnvironmentBlock.Thread.h"
 

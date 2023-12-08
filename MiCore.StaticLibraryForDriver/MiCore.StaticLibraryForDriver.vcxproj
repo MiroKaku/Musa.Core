@@ -58,10 +58,12 @@
     <ClCompile Include="..\MiCore\Thunks\KernelBase.Error.cpp" />
     <ClCompile Include="..\MiCore\Thunks\KernelBase.FiberLocalStorage.cpp" />
     <ClCompile Include="..\MiCore\Thunks\KernelBase.NLS.cpp" />
+    <ClCompile Include="..\MiCore\Thunks\KernelBase.PerformanceCounter.cpp" />
     <ClCompile Include="..\MiCore\Thunks\KernelBase.ThreadLocalStorage.cpp" />
     <ClCompile Include="..\MiCore\Thunks\Ntdll.Error.cpp" />
     <ClCompile Include="..\MiCore\Thunks\Ntdll.FiberLocalStorage.cpp" />
     <ClCompile Include="..\MiCore\Thunks\Ntdll.Heap.cpp" />
+    <ClCompile Include="..\MiCore\Thunks\Ntdll.PerformanceCounter.cpp" />
     <ClCompile Include="..\MiCore\Thunks\Ntdll.Pool.cpp" />
     <ClCompile Include="..\MiCore\Thunks\Ntdll.Utility.cpp" />
   </ItemGroup>
