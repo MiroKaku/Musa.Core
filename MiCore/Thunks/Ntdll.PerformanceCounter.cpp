@@ -4,7 +4,7 @@
 EXTERN_C_START
 namespace Mi
 {
-    LOGICAL WINAPI MI_NAME(RtlQueryPerformanceCounter)(
+    LOGICAL NTAPI MI_NAME(RtlQueryPerformanceCounter)(
         _Out_ PLARGE_INTEGER PerformanceCount
         )
     {
@@ -13,7 +13,7 @@ namespace Mi
     }
     MI_IAT_SYMBOL(RtlQueryPerformanceCounter, 4);
 
-    LOGICAL WINAPI MI_NAME(RtlQueryPerformanceFrequency)(
+    LOGICAL NTAPI MI_NAME(RtlQueryPerformanceFrequency)(
         _Out_ PLARGE_INTEGER Frequency)
     {
         KeQueryPerformanceCounter(Frequency);

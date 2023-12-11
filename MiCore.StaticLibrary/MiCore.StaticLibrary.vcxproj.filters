@@ -43,6 +43,9 @@
     <ClInclude Include="..\MiCore\MiCore.SystemEnvironmentBlock.Thread.h">
       <Filter>MiCore</Filter>
     </ClInclude>
+    <ClInclude Include="..\MiCore\Thunks\Ntdll.RealTime.Private.h">
+      <Filter>MiCore\Thunks</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\MiCore\MiCore.cpp">
@@ -106,6 +109,12 @@
       <Filter>MiCore\Thunks</Filter>
     </ClCompile>
     <ClCompile Include="..\MiCore\Thunks\Ntdll.PerformanceCounter.cpp">
+      <Filter>MiCore\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MiCore\Thunks\Ntdll.RealTime.cpp">
+      <Filter>MiCore\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MiCore\Thunks\KernelBase.RealTime.cpp">
       <Filter>MiCore\Thunks</Filter>
     </ClCompile>
   </ItemGroup>
