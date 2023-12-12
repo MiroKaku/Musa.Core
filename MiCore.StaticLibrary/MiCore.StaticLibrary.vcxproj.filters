@@ -117,5 +117,8 @@
     <ClCompile Include="..\MiCore\Thunks\KernelBase.RealTime.cpp">
       <Filter>MiCore\Thunks</Filter>
     </ClCompile>
+    <ClCompile Include="..\MiCore\Thunks\KernelBase.Heap.cpp">
+      <Filter>MiCore\Thunks</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

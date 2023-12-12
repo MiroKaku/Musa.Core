@@ -1,6 +1,7 @@
 #ifdef _KERNEL_MODE
 
 #include "MiCore.SystemEnvironmentBlock.Private.h"
+#include "MiCore.SystemEnvironmentBlock.Thread.h"
 #include "MiCore.SystemEnvironmentBlock.Process.h"
 #include "Thunks/Ntdll.FiberLocalStorage.Private.h"
 
@@ -74,6 +75,11 @@ namespace Mi
                 }
             }
 
+            Status = MI_NAME_PRIVATE(SetupThreadEnvironmentBlock)(DriverObject, RegistryPath);
+            if (!NT_SUCCESS(Status)) {
+                break;
+            }
+
             Peb->DefaultHeap = RtlCreateHeap(HEAP_GROWABLE, nullptr,
                 0, 0, nullptr, nullptr);
             if (Peb->DefaultHeap == nullptr) {
@@ -132,15 +138,20 @@ namespace Mi
             //    break;
             //}
 
-            RtlFreeUnicodeString(&Peb->RegistryPath);
-            RtlFreeUnicodeString(&Peb->ImagePathName);
-            RtlFreeUnicodeString(&Peb->ImageBaseName);
-
             for (auto Idx = static_cast<int>(Peb->MaximumNumberOfHeaps - 1); Idx >= 0 ; --Idx) {
                 if (Peb->ProcessHeaps[Idx]) {
                     RtlDestroyHeap(Peb->ProcessHeaps[Idx]);
                 }
             }
+
+            Status = MI_NAME_PRIVATE(FreeThreadEnvironmentBlock)();
+            if (!NT_SUCCESS(Status)) {
+                break;
+            }
+
+            RtlFreeUnicodeString(&Peb->RegistryPath);
+            RtlFreeUnicodeString(&Peb->ImagePathName);
+            RtlFreeUnicodeString(&Peb->ImageBaseName);
 
             ExFreePoolWithTag(Peb, MI_TAG);
 

@@ -56,6 +56,7 @@
     <ClCompile Include="..\MiCore\Thunks\KernelBase.Debug.cpp" />
     <ClCompile Include="..\MiCore\Thunks\KernelBase.Error.cpp" />
     <ClCompile Include="..\MiCore\Thunks\KernelBase.FiberLocalStorage.cpp" />
+    <ClCompile Include="..\MiCore\Thunks\KernelBase.Heap.cpp" />
     <ClCompile Include="..\MiCore\Thunks\KernelBase.NLS.cpp" />
     <ClCompile Include="..\MiCore\Thunks\KernelBase.PerformanceCounter.cpp" />
     <ClCompile Include="..\MiCore\Thunks\KernelBase.RealTime.cpp" />

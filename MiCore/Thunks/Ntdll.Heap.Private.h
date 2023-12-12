@@ -1,8 +1,7 @@
 #pragma once
-#ifdef _KERNEL_MODE
-
 
 EXTERN_C_START
+
 
 PVOID NTAPI MI_NAME(RtlGetDefaultHeap)();
 
@@ -13,6 +12,8 @@ _VEIL_DECLARE_ALTERNATE_NAME(RtlGetDefaultHeap@0, _Mi_RtlGetDefaultHeap@0);
 #else
 _VEIL_DECLARE_ALTERNATE_NAME(RtlGetDefaultHeap, _Mi_RtlGetDefaultHeap);
 #endif
+
+#ifdef _KERNEL_MODE
 
 _IRQL_requires_max_(APC_LEVEL)
 _Must_inspect_result_
@@ -88,7 +89,7 @@ NTSTATUS NTAPI MI_NAME(RtlZeroHeap)(
     _In_ ULONG Flags
     );
 
-EXTERN_C_END
-
-
 #endif // _KERNEL_MODE
+
+
+EXTERN_C_END

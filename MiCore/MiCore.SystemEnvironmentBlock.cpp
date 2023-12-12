@@ -1,7 +1,5 @@
 #include "MiCore.SystemEnvironmentBlock.h"
-#include "MiCore.SystemEnvironmentBlock.Private.h"
 #include "MiCore.SystemEnvironmentBlock.Process.h"
-#include "MiCore.SystemEnvironmentBlock.Thread.h"
 #include "MiCore.Utility.h"
 
 
@@ -70,11 +68,6 @@ namespace Mi
                 break;
             }
 
-            Status = MI_NAME_PRIVATE(SetupThreadEnvironmentBlock)(DriverObject, RegistryPath);
-            if (!NT_SUCCESS(Status)) {
-                break;
-            }
-
             MiCoreHeap = RtlCreateHeap(HEAP_GROWABLE | HEAP_ZERO_MEMORY, nullptr,
                 0, 0, nullptr, nullptr);
             if (MiCoreHeap == nullptr) {
@@ -113,11 +106,6 @@ namespace Mi
 
             if (MiCoreHeap) {
                 MiCoreHeap = RtlDestroyHeap(MiCoreHeap);
-            }
-
-            Status = MI_NAME_PRIVATE(FreeThreadEnvironmentBlock)();
-            if (!NT_SUCCESS(Status)) {
-                break;
             }
 
             Status = MI_NAME_PRIVATE(FreeProcessEnvironmentBlock)();

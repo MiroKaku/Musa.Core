@@ -383,6 +383,8 @@ namespace Mi
                 }
                 ExFreePoolWithTag(Heap, MI_TAG);
             }
+
+            RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
         }
 
         return HeapHandle;
@@ -548,30 +550,33 @@ namespace Mi
         _In_ SIZE_T Size
         )
     {
-        if (HeapHandle == nullptr) {
-            return nullptr;
-        }
-
-        const auto Heap = static_cast<PHEAP>(FastDecodePointer(HeapHandle));
-        if (Heap == nullptr) {
-            return nullptr;
-        }
-
-        SetFlag(Flags, Heap->Flags);
-
-        if (Size > MAXINT_PTR) {
-            return nullptr;
-        }
+        NTSTATUS Status      = STATUS_SUCCESS;
+        PVOID    BaseAddress = nullptr;
 
         auto BlockSize = sizeof(HEAP_ENTRY);
         if (Size < PAGE_SIZE) {
             BlockSize += (Size ? Size : 1);
         }
 
-        NTSTATUS Status      = STATUS_SUCCESS;
-        PVOID    BaseAddress = nullptr;
-
         do {
+            if (HeapHandle == nullptr) {
+                Status = STATUS_INVALID_PARAMETER;
+                break;
+            }
+
+            const auto Heap = static_cast<PHEAP>(FastDecodePointer(HeapHandle));
+            if (Heap == nullptr) {
+                Status = STATUS_INVALID_PARAMETER;
+                break;
+            }
+
+            SetFlag(Flags, Heap->Flags);
+
+            if (Size > MAXINT_PTR) {
+                Status = STATUS_INVALID_PARAMETER;
+                break;
+            }
+
             const auto Block = static_cast<PHEAP_ENTRY>(Heap->Allocate(static_cast<POOL_TYPE>(Heap->Type), BlockSize, Heap->Tag));
             if (Block == nullptr) {
                 Status = STATUS_NO_MEMORY;
@@ -638,6 +643,10 @@ namespace Mi
             }
         }
 
+        if (!NT_SUCCESS(Status)) {
+            RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
+        }
+
         return BaseAddress;
     }
     MI_IAT_SYMBOL(RtlAllocateHeap, 12);
@@ -653,28 +662,33 @@ namespace Mi
         _In_ SIZE_T Size
         )
     {
-        if (HeapHandle == nullptr) {
-            return nullptr;
-        }
-
-        const auto Heap = static_cast<PHEAP>(FastDecodePointer(HeapHandle));
-        if (Heap == nullptr) {
-            return nullptr;
-        }
-
-        SetFlag(Flags, Heap->Flags);
-
-        if (BooleanFlagOn(Flags, HEAP_REALLOC_IN_PLACE_ONLY)) {
-            return nullptr;
-        }
-
-        if (Size > MAXINT_PTR) {
-            return nullptr;
-        }
-
-        PVOID NewAddress;
+        NTSTATUS Status     = STATUS_SUCCESS;
+        PVOID    NewAddress = nullptr;
 
         do {
+            if (HeapHandle == nullptr) {
+                Status = STATUS_INVALID_PARAMETER;
+                break;
+            }
+
+            const auto Heap = static_cast<PHEAP>(FastDecodePointer(HeapHandle));
+            if (Heap == nullptr) {
+                Status = STATUS_INVALID_PARAMETER;
+                break;
+            }
+
+            SetFlag(Flags, Heap->Flags);
+
+            if (BooleanFlagOn(Flags, HEAP_REALLOC_IN_PLACE_ONLY)) {
+                Status = STATUS_INVALID_PARAMETER;
+                break;
+            }
+
+            if (Size > MAXINT_PTR) {
+                Status = STATUS_INVALID_PARAMETER;
+                break;
+            }
+
             SIZE_T OldSize = 0;
 
             if (BaseAddress) {
@@ -688,6 +702,7 @@ namespace Mi
 
             NewAddress = RtlAllocateHeap(HeapHandle, Flags & ~HEAP_ZERO_MEMORY, (Size ? Size : 1));
             if (NewAddress == nullptr) {
+                Status = RtlGetLastNtStatus();
                 break;
             }
 
@@ -716,6 +731,10 @@ namespace Mi
 
         } while (false);
 
+        if (!NT_SUCCESS(Status)) {
+            RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
+        }
+
         return NewAddress;
     }
     MI_IAT_SYMBOL(RtlReAllocateHeap, 16);
@@ -735,11 +754,13 @@ namespace Mi
         }
 
         if (HeapHandle == nullptr) {
+            RtlSetLastWin32ErrorAndNtStatusFromNtStatus(STATUS_INVALID_PARAMETER);
             return Result;
         }
 
         const auto Heap = static_cast<PHEAP>(FastDecodePointer(HeapHandle));
         if (Heap == nullptr) {
+            RtlSetLastWin32ErrorAndNtStatusFromNtStatus(STATUS_INVALID_PARAMETER);
             return Result;
         }
 
@@ -772,6 +793,10 @@ namespace Mi
             if (LockAcquired) {
                 MI_NAME_PRIVATE(RtlReleaseHeapLockExclusive)(Heap, LockIrql);
             }
+        }
+
+        if (!Result) {
+            RtlSetLastWin32ErrorAndNtStatusFromNtStatus(STATUS_INVALID_PARAMETER);
         }
 
         return Result;
