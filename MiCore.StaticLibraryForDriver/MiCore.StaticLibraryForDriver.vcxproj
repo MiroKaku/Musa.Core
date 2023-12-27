@@ -37,6 +37,7 @@
     <ClInclude Include="..\MiCore\MiCore.SystemEnvironmentBlock.Process.h" />
     <ClInclude Include="..\MiCore\MiCore.SystemEnvironmentBlock.Thread.h" />
     <ClInclude Include="..\MiCore\MiCore.Utility.h" />
+    <ClInclude Include="..\MiCore\Thunks\KernelBase.Handle.Private.h" />
     <ClInclude Include="..\MiCore\Thunks\KernelBase.NLS.Private.h" />
     <ClInclude Include="..\MiCore\Thunks\Ntdll.FiberLocalStorage.Private.h" />
     <ClInclude Include="..\MiCore\Thunks\Ntdll.Heap.Private.h" />
@@ -58,6 +59,7 @@
     <ClCompile Include="..\MiCore\Thunks\KernelBase.Debug.cpp" />
     <ClCompile Include="..\MiCore\Thunks\KernelBase.Error.cpp" />
     <ClCompile Include="..\MiCore\Thunks\KernelBase.FiberLocalStorage.cpp" />
+    <ClCompile Include="..\MiCore\Thunks\KernelBase.Handle.cpp" />
     <ClCompile Include="..\MiCore\Thunks\KernelBase.Heap.cpp" />
     <ClCompile Include="..\MiCore\Thunks\KernelBase.NLS.cpp" />
     <ClCompile Include="..\MiCore\Thunks\KernelBase.PerformanceCounter.cpp" />
