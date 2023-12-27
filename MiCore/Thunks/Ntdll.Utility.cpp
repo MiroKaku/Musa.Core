@@ -8,7 +8,7 @@ namespace Mi
 {
     PVOID NTAPI MI_NAME(RtlEncodePointer)(
         _In_ PVOID Ptr
-    )
+        )
     {
         return FastEncodePointer(Ptr);
     }
@@ -22,6 +22,21 @@ namespace Mi
     }
     MI_IAT_SYMBOL(RtlDecodePointer, 4);
 
+    PVOID NTAPI MI_NAME(RtlEncodeSystemPointer)(
+        _In_ PVOID Ptr
+    )
+    {
+        return FastEncodePointer(Ptr, SharedUserData->Cookie);
+    }
+    MI_IAT_SYMBOL(RtlEncodeSystemPointer, 4);
+
+    PVOID NTAPI MI_NAME(RtlDecodeSystemPointer)(
+        _In_ PVOID Ptr
+    )
+    {
+        return FastDecodePointer(Ptr, SharedUserData->Cookie);
+    }
+    MI_IAT_SYMBOL(RtlDecodeSystemPointer, 4);
 
 }
 EXTERN_C_END

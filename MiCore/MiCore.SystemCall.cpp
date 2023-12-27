@@ -814,9 +814,7 @@ namespace Mi
     _IRQL_requires_max_(APC_LEVEL)
     NTSTATUS MICORE_API MI_NAME_PRIVATE(FreeSystemCall)()
     {
-    #ifdef _KERNEL_MODE
         PAGED_CODE();
-    #endif
 
         NTSTATUS Status = STATUS_SUCCESS;
 

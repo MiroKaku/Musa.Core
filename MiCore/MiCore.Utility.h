@@ -22,17 +22,17 @@ namespace Mi
     constexpr int MAXIMUM_POINTER_SHIFT = sizeof(uintptr_t) * 8;
 
     template <typename T>
-    constexpr T FastDecodePointer(T const Ptr) noexcept
+    constexpr T FastDecodePointer(T const Ptr, uintptr_t Cookie = __security_cookie) noexcept
     {
-        return reinterpret_cast<T>(RotatePointerValue(reinterpret_cast<uintptr_t>(Ptr) ^ __security_cookie,
-            static_cast<int>(__security_cookie % MAXIMUM_POINTER_SHIFT)));
+        return reinterpret_cast<T>(RotatePointerValue(reinterpret_cast<uintptr_t>(Ptr),
+            MAXIMUM_POINTER_SHIFT - static_cast<int>(Cookie % MAXIMUM_POINTER_SHIFT)) ^ Cookie);
     }
 
     template <typename T>
-    constexpr T FastEncodePointer(T const Ptr) noexcept
+    constexpr T FastEncodePointer(T const Ptr, uintptr_t Cookie = __security_cookie) noexcept
     {
-        return reinterpret_cast<T>(RotatePointerValue(reinterpret_cast<uintptr_t>(Ptr),
-            MAXIMUM_POINTER_SHIFT - static_cast<int>(__security_cookie % MAXIMUM_POINTER_SHIFT)) ^ __security_cookie);
+        return reinterpret_cast<T>(RotatePointerValue(reinterpret_cast<uintptr_t>(Ptr) ^ Cookie,
+            static_cast<int>(Cookie % MAXIMUM_POINTER_SHIFT)));
     }
 
     // Hash

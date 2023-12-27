@@ -75,9 +75,7 @@ namespace Mi
 
     NTSTATUS MICORE_API MiCoreShutdown()
     {
-    #if _KERNEL_MODE
         PAGED_CODE();
-    #endif
 
         NTSTATUS Status;
 

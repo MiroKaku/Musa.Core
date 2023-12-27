@@ -22,9 +22,7 @@ namespace Mi
         _In_ int CountOfWideChar
     )
     {
-    #ifdef _KERNEL_MODE
         PAGED_CODE();
-    #endif
 
         int ReturnLength = 0;
         NTSTATUS Status  = STATUS_NOT_SUPPORTED;
@@ -148,9 +146,7 @@ namespace Mi
         _Out_opt_ LPBOOL UsedDefaultChar
     )
     {
-    #ifdef _KERNEL_MODE
         PAGED_CODE();
-    #endif
 
         int ReturnLength = 0;
         NTSTATUS Status  = STATUS_NOT_SUPPORTED;

@@ -32,6 +32,9 @@ EXTERN_C_END
 #define MI_IAT_SYMBOL(name, stack) _VEIL_DEFINE_IAT_SYMBOL(name, MI_NAME(name))
 #endif
 
+#define PAGED_CODE()        NOP_FUNCTION;
+#define PAGED_CODE_LOCKED() NOP_FUNCTION;
+
 // Logging
 #ifdef _DEBUG
 #define MiLOG(fmt, ...) DbgPrintEx(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, \
