@@ -866,6 +866,202 @@ namespace Mi
     }
     MI_IAT_SYMBOL(RtlZeroHeap, 12);
 
+    VOID NTAPI MI_NAME(RtlProtectHeap)(
+        _In_ PVOID HeapHandle,
+        _In_ BOOLEAN MakeReadOnly
+        )
+    {
+        UNREFERENCED_PARAMETER(HeapHandle);
+        UNREFERENCED_PARAMETER(MakeReadOnly);
+
+        return;
+    }
+    MI_IAT_SYMBOL(RtlProtectHeap, 8);
+
+    BOOLEAN NTAPI MI_NAME(RtlLockHeap)(
+        _In_ PVOID HeapHandle
+        )
+    {
+        UNREFERENCED_PARAMETER(HeapHandle);
+
+        return TRUE;
+    }
+    MI_IAT_SYMBOL(RtlLockHeap, 4);
+
+    BOOLEAN NTAPI MI_NAME(RtlUnlockHeap)(
+        _In_ PVOID HeapHandle
+        )
+    {
+        UNREFERENCED_PARAMETER(HeapHandle);
+
+        return TRUE;
+    }
+    MI_IAT_SYMBOL(RtlUnlockHeap, 4);
+
+    NTSTATUS NTAPI MI_NAME(RtlExtendHeap)(
+        _In_ PVOID  HeapHandle,
+        _In_ ULONG  Flags,
+        _In_ PVOID  Base,
+        _In_ SIZE_T Size
+        )
+    {
+        UNREFERENCED_PARAMETER(HeapHandle);
+        UNREFERENCED_PARAMETER(Flags);
+        UNREFERENCED_PARAMETER(Base);
+        UNREFERENCED_PARAMETER(Size);
+
+        return STATUS_SUCCESS;
+    }
+    MI_IAT_SYMBOL(RtlExtendHeap, 16);
+
+    SIZE_T NTAPI MI_NAME(RtlCompactHeap)(
+        _In_ PVOID HeapHandle,
+        _In_ ULONG Flags
+        )
+    {
+        UNREFERENCED_PARAMETER(HeapHandle);
+        UNREFERENCED_PARAMETER(Flags);
+
+        return 0;
+    }
+    MI_IAT_SYMBOL(RtlCompactHeap, 8);
+
+    BOOLEAN NTAPI MI_NAME(RtlValidateHeap)(
+        _In_opt_ PVOID HeapHandle,
+        _In_ ULONG Flags,
+        _In_opt_ PVOID BaseAddress
+        )
+    {
+        UNREFERENCED_PARAMETER(HeapHandle);
+        UNREFERENCED_PARAMETER(Flags);
+        UNREFERENCED_PARAMETER(BaseAddress);
+
+        return TRUE;
+    }
+    MI_IAT_SYMBOL(RtlValidateHeap, 12);
+
+    BOOLEAN NTAPI MI_NAME(RtlValidateProcessHeaps)(
+        VOID
+        )
+    {
+        return TRUE;
+    }
+    MI_IAT_SYMBOL(RtlValidateProcessHeaps, 0);
+
+    NTSTATUS NTAPI RtlQueryHeapInformation(
+        _In_opt_ PVOID HeapHandle,
+        _In_ HEAP_INFORMATION_CLASS HeapInformationClass,
+        _Out_opt_ PVOID HeapInformation,
+        _In_opt_ SIZE_T HeapInformationLength,
+        _Out_opt_ PSIZE_T ReturnLength
+        )
+    {
+        NTSTATUS Status;
+
+        do {
+            if (HeapHandle == nullptr) {
+                Status = STATUS_INVALID_PARAMETER;
+                break;
+            }
+
+            const auto Heap = static_cast<PHEAP>(FastDecodePointer(HeapHandle));
+            if (Heap == nullptr) {
+                Status = STATUS_INVALID_PARAMETER;
+                break;
+            }
+
+            switch (HeapInformationClass) {
+                default:
+                {
+                    Status = STATUS_UNSUCCESSFUL;
+                    break;
+                }
+                case HeapCompatibilityInformation:
+                {
+                    if (ReturnLength) {
+                        *ReturnLength = sizeof(ULONG);
+                    }
+
+                    if (HeapInformationLength < sizeof(ULONG)) {
+                        Status = STATUS_BUFFER_TOO_SMALL;
+                        break;
+                    }
+
+                    if (HeapInformation) {
+                        *static_cast<PULONG>(HeapInformation) = 1;
+                    }
+
+                    Status = STATUS_SUCCESS;
+                    break;
+                }
+            }
+
+        } while (false);
+
+        return Status;
+    }
+
+    NTSTATUS NTAPI RtlSetHeapInformation(
+        _In_ PVOID HeapHandle,
+        _In_ HEAP_INFORMATION_CLASS HeapInformationClass,
+        _In_opt_ PVOID HeapInformation,
+        _In_opt_ SIZE_T HeapInformationLength
+        )
+    {
+        NTSTATUS Status;
+
+        do {
+            if (HeapHandle == nullptr) {
+                Status = STATUS_INVALID_PARAMETER;
+                break;
+            }
+
+            const auto Heap = static_cast<PHEAP>(FastDecodePointer(HeapHandle));
+            if (Heap == nullptr) {
+                Status = STATUS_INVALID_PARAMETER;
+                break;
+            }
+
+            switch (HeapInformationClass) {
+                default:
+                {
+                    Status = STATUS_UNSUCCESSFUL;
+                    break;
+                }
+                case HeapCompatibilityInformation:
+                {
+                    if (HeapInformationLength < sizeof(ULONG)) {
+                        Status = STATUS_BUFFER_TOO_SMALL;
+                        break;
+                    }
+
+                    UNREFERENCED_PARAMETER(HeapInformation);
+
+                    Status = STATUS_UNSUCCESSFUL;
+                    break;
+                }
+            }
+
+        } while (false);
+
+        return Status;
+    }
+
+    VOID NTAPI MI_NAME(RtlDetectHeapLeaks)(
+        VOID
+        )
+    {
+        return;
+    }
+    MI_IAT_SYMBOL(RtlDetectHeapLeaks, 0);
+
+    VOID NTAPI MI_NAME(RtlFlushHeaps)(
+        VOID
+        )
+    {
+        return;
+    }
+    MI_IAT_SYMBOL(RtlFlushHeaps, 0);
 
 }
 EXTERN_C_END

@@ -5,7 +5,9 @@ EXTERN_C_START
 namespace Mi
 {
     _IRQL_requires_max_(DISPATCH_LEVEL)
-    HANDLE WINAPI MI_NAME(GetProcessHeap)()
+    HANDLE WINAPI MI_NAME(GetProcessHeap)(
+        VOID
+        )
     {
         return RtlGetDefaultHeap();
     }
@@ -15,7 +17,7 @@ namespace Mi
     DWORD WINAPI MI_NAME(GetProcessHeaps)(
         _In_ DWORD NumberOfHeaps,
         _Out_writes_to_(NumberOfHeaps, return) PHANDLE ProcessHeaps
-    )
+        )
     {
         return RtlGetProcessHeaps(NumberOfHeaps, ProcessHeaps);
     }
@@ -27,7 +29,7 @@ namespace Mi
         _In_ DWORD  Options,
         _In_ SIZE_T InitialSize,
         _In_ SIZE_T MaximumSize
-    )
+        )
     {
         return RtlCreateHeap(Options, nullptr,
             MaximumSize, InitialSize, nullptr, nullptr);
@@ -36,10 +38,10 @@ namespace Mi
 
     _IRQL_requires_max_(APC_LEVEL)
     BOOL WINAPI MI_NAME(HeapDestroy)(
-        _In_ HANDLE Heap
-    )
+        _In_ HANDLE HeapHandle
+        )
     {
-        return (RtlDestroyHeap(Heap) == nullptr);
+        return (RtlDestroyHeap(HeapHandle) == nullptr);
     }
     MI_IAT_SYMBOL(HeapDestroy, 4);
 
@@ -48,12 +50,12 @@ namespace Mi
     _Post_writable_byte_size_(Bytes)
     DECLSPEC_ALLOCATOR
     LPVOID WINAPI MI_NAME(HeapAlloc)(
-        _In_ HANDLE Heap,
+        _In_ HANDLE HeapHandle,
         _In_ DWORD  Flags,
         _In_ SIZE_T Bytes
-    )
+        )
     {
-        return RtlAllocateHeap(Heap, Flags, Bytes);
+        return RtlAllocateHeap(HeapHandle, Flags, Bytes);
     }
     MI_IAT_SYMBOL(HeapAlloc, 12);
 
@@ -63,125 +65,162 @@ namespace Mi
     _Post_writable_byte_size_(Bytes)
     DECLSPEC_ALLOCATOR
     LPVOID WINAPI MI_NAME(HeapReAlloc)(
-        _Inout_ HANDLE Heap,
+        _Inout_ HANDLE HeapHandle,
         _In_    DWORD  Flags,
         _Frees_ptr_opt_ LPVOID Mem,
         _In_    SIZE_T Bytes
-    )
+        )
     {
-        return RtlReAllocateHeap(Heap, Flags, Mem, Bytes);
+        return RtlReAllocateHeap(HeapHandle, Flags, Mem, Bytes);
     }
     MI_IAT_SYMBOL(HeapReAlloc, 16);
 
     _IRQL_requires_max_(DISPATCH_LEVEL)
     _Success_(return != FALSE)
     BOOL WINAPI MI_NAME(HeapFree)(
-        _Inout_ HANDLE Heap,
+        _Inout_ HANDLE HeapHandle,
         _In_    DWORD  Flags,
         __drv_freesMem(Mem) _Frees_ptr_opt_ LPVOID Mem
-    )
+        )
     {
-        return RtlFreeHeap(Heap, Flags, Mem);
+        return RtlFreeHeap(HeapHandle, Flags, Mem);
     }
     MI_IAT_SYMBOL(HeapFree, 12);
 
     _IRQL_requires_max_(DISPATCH_LEVEL)
     SIZE_T WINAPI MI_NAME(HeapSize)(
-        _In_ HANDLE  Heap,
+        _In_ HANDLE  HeapHandle,
         _In_ DWORD   Flags,
         _In_ LPCVOID Mem
-    )
+        )
     {
-        return RtlSizeHeap(Heap, Flags, const_cast<PVOID>(Mem));
+        return RtlSizeHeap(HeapHandle, Flags, const_cast<PVOID>(Mem));
     }
     MI_IAT_SYMBOL(HeapSize, 12);
 
     SIZE_T WINAPI MI_NAME(HeapCompact)(
-        _In_ HANDLE Heap,
+        _In_ HANDLE HeapHandle,
         _In_ DWORD  Flags
-    )
+        )
     {
-        UNREFERENCED_PARAMETER(Heap);
-        UNREFERENCED_PARAMETER(Flags);
-
-        DbgBreakPoint();
-
-        RtlSetLastWin32ErrorAndNtStatusFromNtStatus(STATUS_NOT_SUPPORTED);
-        return 0;
+        return RtlCompactHeap(HeapHandle, Flags);
     }
     MI_IAT_SYMBOL(HeapCompact, 8);
 
     BOOL WINAPI MI_NAME(HeapLock)(
-        _In_ HANDLE Heap
-    )
+        _In_ HANDLE HeapHandle
+        )
     {
-        UNREFERENCED_PARAMETER(Heap);
-
-        DbgBreakPoint();
-
-        RtlSetLastWin32ErrorAndNtStatusFromNtStatus(STATUS_NOT_SUPPORTED);
-        return FALSE;
+        return RtlLockHeap(HeapHandle);
     }
     MI_IAT_SYMBOL(HeapLock, 4);
 
     BOOL WINAPI MI_NAME(HeapUnlock)(
-        _In_ HANDLE Heap
-    )
+        _In_ HANDLE HeapHandle
+        )
     {
-        UNREFERENCED_PARAMETER(Heap);
-
-        DbgBreakPoint();
-
-        RtlSetLastWin32ErrorAndNtStatusFromNtStatus(STATUS_NOT_SUPPORTED);
-        return FALSE;
+        return RtlUnlockHeap(HeapHandle);
     }
     MI_IAT_SYMBOL(HeapUnlock, 4);
 
     BOOL WINAPI MI_NAME(HeapValidate)(
-        _In_ HANDLE Heap,
+        _In_ HANDLE HeapHandle,
         _In_ DWORD  Flags,
         _In_opt_ LPCVOID Mem
-    )
+        )
     {
-        UNREFERENCED_PARAMETER(Heap);
-        UNREFERENCED_PARAMETER(Flags);
-        UNREFERENCED_PARAMETER(Mem);
-
-        DbgBreakPoint();
-
-        RtlSetLastWin32ErrorAndNtStatusFromNtStatus(STATUS_NOT_SUPPORTED);
-        return FALSE;
+        return RtlValidateHeap(HeapHandle, Flags, Mem);
     }
     MI_IAT_SYMBOL(HeapValidate, 12);
 
-    BOOL WINAPI MI_NAME(HeapSummary)(
-        _In_ HANDLE Heap,
-        _In_ DWORD  Flags,
-        _Out_ LPHEAP_SUMMARY Summary
+    static
+    _Function_class_(RTL_HEAP_EXTENDED_ENUMERATION_ROUTINE)
+    NTSTATUS NTAPI HeapSummaryWorkerRoutine(
+        _In_ PHEAP_INFORMATION_ITEM Information,
+        _In_opt_ PVOID Context
     )
     {
-        UNREFERENCED_PARAMETER(Heap);
+        const auto Summary = static_cast<LPHEAP_SUMMARY>(Context);
+        if (Summary == nullptr) {
+            return STATUS_SUCCESS;
+        }
+
+        switch (Information->Level) {
+            default:
+            {
+                break;
+            }
+            case HeapExtendedHeapRegionInformationLevel:
+            {
+                Summary->cbReserved   += Information->HeapRegionInformation.ReserveSize;
+                Summary->cbMaxReserve += Information->HeapRegionInformation.ReserveSize;
+                break;
+            }
+            case HeapExtendedHeapRangeInformationLevel:
+            {
+                if (Information->HeapRangeInformation.Type == 1) {
+                    Summary->cbCommitted += Information->HeapRangeInformation.Size;
+                }
+                break;
+            }
+            case HeapExtendedHeapBlockInformationLevel:
+            {
+                Summary->cbAllocated += Information->HeapBlockInformation.DataSize;
+                break;
+            }
+        }
+
+        return STATUS_SUCCESS;
+    }
+
+    BOOL WINAPI MI_NAME(HeapSummary)(
+        _In_ HANDLE HeapHandle,
+        _In_ DWORD  Flags,
+        _Inout_ LPHEAP_SUMMARY Summary
+        )
+    {
         UNREFERENCED_PARAMETER(Flags);
-        UNREFERENCED_PARAMETER(Summary);
 
-        DbgBreakPoint();
+        if (Summary->cb != sizeof(*Summary)) {
+            RtlSetLastWin32ErrorAndNtStatusFromNtStatus(STATUS_INVALID_PARAMETER);
+            return FALSE;
+        }
 
-        RtlSetLastWin32ErrorAndNtStatusFromNtStatus(STATUS_NOT_SUPPORTED);
+        Summary->cbAllocated  = 0;
+        Summary->cbCommitted  = 0;
+        Summary->cbReserved   = 0;
+        Summary->cbMaxReserve = 0;
+
+        HEAP_EXTENDED_INFORMATION SummaryInformation{};
+        SummaryInformation.ProcessHandle    = ZwCurrentProcess();
+        SummaryInformation.HeapHandle       = HeapHandle;
+        SummaryInformation.Level            = HeapExtendedHeapBlockInformationLevel;
+        SummaryInformation.CallbackRoutine  = HeapSummaryWorkerRoutine;
+        SummaryInformation.CallbackContext  = Summary;
+
+        const auto Status = RtlQueryHeapInformation(HeapHandle, HeapExtendedInformation,
+            &SummaryInformation, sizeof(SummaryInformation), nullptr);
+        if (NT_SUCCESS(Status)) {
+            return TRUE;
+        }
+
+        RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
         return FALSE;
     }
     MI_IAT_SYMBOL(HeapSummary, 12);
 
     BOOL WINAPI MI_NAME(HeapWalk)(
-        _In_ HANDLE Heap,
+        _In_ HANDLE HeapHandle,
         _Inout_ LPPROCESS_HEAP_ENTRY Entry
     )
     {
-        UNREFERENCED_PARAMETER(Heap);
-        UNREFERENCED_PARAMETER(Entry);
+        const auto Status = RtlWalkHeap(HeapHandle,
+            reinterpret_cast<PRTL_HEAP_WALK_ENTRY>(Entry));
+        if (NT_SUCCESS(Status)) {
+            return TRUE;
+        }
 
-        DbgBreakPoint();
-
-        RtlSetLastWin32ErrorAndNtStatusFromNtStatus(STATUS_NOT_SUPPORTED);
+        RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
         return FALSE;
     }
     MI_IAT_SYMBOL(HeapWalk, 8);
@@ -193,14 +232,13 @@ namespace Mi
         _In_ SIZE_T HeapInformationLength
     )
     {
-        UNREFERENCED_PARAMETER(HeapHandle);
-        UNREFERENCED_PARAMETER(HeapInformationClass);
-        UNREFERENCED_PARAMETER(HeapInformation);
-        UNREFERENCED_PARAMETER(HeapInformationLength);
+        const auto Status = RtlSetHeapInformation(HeapHandle,
+            HeapInformationClass, HeapInformation, HeapInformationLength);
+        if (NT_SUCCESS(Status)) {
+            return TRUE;
+        }
 
-        DbgBreakPoint();
-
-        RtlSetLastWin32ErrorAndNtStatusFromNtStatus(STATUS_NOT_SUPPORTED);
+        RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
         return FALSE;
     }
     MI_IAT_SYMBOL(HeapSetInformation, 16);
@@ -213,19 +251,16 @@ namespace Mi
         _Out_opt_ PSIZE_T ReturnLength
     )
     {
-        UNREFERENCED_PARAMETER(HeapHandle);
-        UNREFERENCED_PARAMETER(HeapInformationClass);
-        UNREFERENCED_PARAMETER(HeapInformation);
-        UNREFERENCED_PARAMETER(HeapInformationLength);
-        UNREFERENCED_PARAMETER(ReturnLength);
+        const auto Status = RtlQueryHeapInformation(HeapHandle,
+            HeapInformationClass, HeapInformation, HeapInformationLength, ReturnLength);
+        if (NT_SUCCESS(Status)) {
+            return TRUE;
+        }
 
-        DbgBreakPoint();
-
-        RtlSetLastWin32ErrorAndNtStatusFromNtStatus(STATUS_NOT_SUPPORTED);
+        RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
         return FALSE;
     }
     MI_IAT_SYMBOL(HeapQueryInformation, 20);
-
 
 }
 EXTERN_C_END
