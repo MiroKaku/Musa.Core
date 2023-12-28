@@ -5,11 +5,7 @@ namespace Mi
 {
     BOOL WINAPI MI_NAME(IsDebuggerPresent)()
     {
-    #ifdef _KERNEL_MODE
-        return !KdRefreshDebuggerNotPresent();
-    #else
-        return NtCurrentPeb()->BeingDebugged;
-    #endif
+        return RtlIsAnyDebuggerPresent();
     }
     MI_IAT_SYMBOL(IsDebuggerPresent, 0);
 
