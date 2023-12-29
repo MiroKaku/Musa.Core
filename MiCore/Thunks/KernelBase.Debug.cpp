@@ -3,13 +3,17 @@
 EXTERN_C_START
 namespace Mi
 {
-    BOOL WINAPI MI_NAME(IsDebuggerPresent)()
+    BOOL WINAPI MI_NAME(IsDebuggerPresent)(
+        VOID
+        )
     {
         return RtlIsAnyDebuggerPresent();
     }
     MI_IAT_SYMBOL(IsDebuggerPresent, 0);
 
-    VOID WINAPI MI_NAME(DebugBreak)()
+    VOID WINAPI MI_NAME(DebugBreak)(
+        VOID
+        )
     {
         __debugbreak();
     }

@@ -37,6 +37,7 @@
     <ClInclude Include="..\MiCore\MiCore.Utility.h" />
     <ClInclude Include="..\MiCore\Thunks\KernelBase.Handle.Private.h" />
     <ClInclude Include="..\MiCore\Thunks\KernelBase.NLS.Private.h" />
+    <ClInclude Include="..\MiCore\Thunks\KernelBase.Private.h" />
     <ClInclude Include="..\MiCore\Thunks\Ntdll.FiberLocalStorage.Private.h" />
     <ClInclude Include="..\MiCore\Thunks\Ntdll.Heap.Private.h" />
     <ClInclude Include="..\MiCore\Thunks\Ntdll.RealTime.Private.h" />
@@ -61,7 +62,11 @@
     <ClCompile Include="..\MiCore\Thunks\KernelBase.Heap.cpp" />
     <ClCompile Include="..\MiCore\Thunks\KernelBase.NLS.cpp" />
     <ClCompile Include="..\MiCore\Thunks\KernelBase.PerformanceCounter.cpp" />
+    <ClCompile Include="..\MiCore\Thunks\KernelBase.Private.cpp" />
+    <ClCompile Include="..\MiCore\Thunks\KernelBase.Process.cpp" />
     <ClCompile Include="..\MiCore\Thunks\KernelBase.RealTime.cpp" />
+    <ClCompile Include="..\MiCore\Thunks\KernelBase.System.cpp" />
+    <ClCompile Include="..\MiCore\Thunks\KernelBase.Thread.cpp" />
     <ClCompile Include="..\MiCore\Thunks\KernelBase.ThreadLocalStorage.cpp" />
     <ClCompile Include="..\MiCore\Thunks\KernelBase.Utility.cpp" />
     <ClCompile Include="..\MiCore\Thunks\Ntdll.Error.cpp" />
@@ -69,6 +74,7 @@
     <ClCompile Include="..\MiCore\Thunks\Ntdll.Heap.cpp" />
     <ClCompile Include="..\MiCore\Thunks\Ntdll.PerformanceCounter.cpp" />
     <ClCompile Include="..\MiCore\Thunks\Ntdll.Pool.cpp" />
+    <ClCompile Include="..\MiCore\Thunks\Ntdll.System.cpp" />
     <ClCompile Include="..\MiCore\Thunks\Ntdll.RealTime.cpp" />
     <ClCompile Include="..\MiCore\Thunks\Ntdll.Utility.cpp" />
   </ItemGroup>
