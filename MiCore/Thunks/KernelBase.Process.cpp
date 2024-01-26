@@ -5,7 +5,7 @@ EXTERN_C_START
 namespace Mi
 {
     BOOL WINAPI MI_NAME(GetProcessTimes)(
-        _In_  HANDLE     Process,
+        _In_  HANDLE     ProcessHandle,
         _Out_ LPFILETIME CreationTime,
         _Out_ LPFILETIME ExitTime,
         _Out_ LPFILETIME KernelTime,
@@ -14,7 +14,7 @@ namespace Mi
     {
         KERNEL_USER_TIMES TimeInfo{};
 
-        const auto Status = ZwQueryInformationProcess(Process, ProcessTimes,
+        const auto Status = ZwQueryInformationProcess(ProcessHandle, ProcessTimes,
             &TimeInfo, sizeof(TimeInfo), nullptr);
         if (!NT_SUCCESS(Status)) {
             BaseSetLastNTError(Status);
@@ -55,11 +55,11 @@ namespace Mi
     MI_IAT_SYMBOL(ExitProcess, 4);
 
     BOOL WINAPI MI_NAME(TerminateProcess)(
-        _In_ HANDLE Process,
+        _In_ HANDLE ProcessHandle,
         _In_ UINT   ExitCode
         )
     {
-        const auto Status = ZwTerminateProcess(Process, ExitCode);
+        const auto Status = ZwTerminateProcess(ProcessHandle, ExitCode);
         if (NT_SUCCESS(Status)) {
             return TRUE;
         }
@@ -70,13 +70,13 @@ namespace Mi
     MI_IAT_SYMBOL(TerminateProcess, 8);
 
     BOOL WINAPI MI_NAME(GetExitCodeProcess)(
-        _In_  HANDLE  Process,
+        _In_  HANDLE  ProcessHandle,
         _Out_ LPDWORD ExitCode
         )
     {
         PROCESS_BASIC_INFORMATION BasicInformation{};
 
-        const auto Status = ZwQueryInformationProcess(Process, ProcessBasicInformation,
+        const auto Status = ZwQueryInformationProcess(ProcessHandle, ProcessBasicInformation,
             &BasicInformation, sizeof(BasicInformation), nullptr);
         if (NT_SUCCESS(Status)) {
             *ExitCode = BasicInformation.ExitStatus;
@@ -92,17 +92,17 @@ namespace Mi
         _In_ DWORD ProcessId
         )
     {
-        HANDLE ProcessHandle;
+        HANDLE Handle;
 
         if (ProcessId == 0 || ProcessId == GetCurrentProcessId()) {
-            ProcessHandle = GetCurrentProcess();
+            Handle = GetCurrentProcess();
         }
         else {
             auto ClientId         = CLIENT_ID { ULongToHandle(ProcessId) };
             auto ObjectAttributes = OBJECT_ATTRIBUTES RTL_CONSTANT_OBJECT_ATTRIBUTES(
                 static_cast<PCUNICODE_STRING>(nullptr), OBJ_KERNEL_HANDLE);
 
-            const auto Status = ZwOpenProcess(&ProcessHandle, PROCESS_QUERY_LIMITED_INFORMATION,
+            const auto Status = ZwOpenProcess(&Handle, PROCESS_QUERY_LIMITED_INFORMATION,
                 &ObjectAttributes, &ClientId);
             if (!NT_SUCCESS(Status)) {
                 BaseSetLastNTError(Status);
@@ -111,11 +111,11 @@ namespace Mi
         }
 
         SECTION_IMAGE_INFORMATION ProcessInformation{};
-        const auto Status = ZwQueryInformationProcess(ProcessHandle, ProcessImageInformation,
+        const auto Status = ZwQueryInformationProcess(Handle, ProcessImageInformation,
             &ProcessInformation, sizeof(ProcessInformation), nullptr);
 
-        if (ProcessHandle != GetCurrentProcess()) {
-            CloseHandle(ProcessHandle);
+        if (Handle != GetCurrentProcess()) {
+            CloseHandle(Handle);
         }
 
         if (!NT_SUCCESS(Status)) {
@@ -188,7 +188,7 @@ namespace Mi
 
     _IRQL_requires_max_(PASSIVE_LEVEL)
     BOOL WINAPI MI_NAME(SetPriorityClass)(
-        _In_ HANDLE Process,
+        _In_ HANDLE ProcessHandle,
         _In_ DWORD  PriorityClass
         )
     {
@@ -226,7 +226,7 @@ namespace Mi
 
         PROCESS_PRIORITY_CLASS PriorityInformation = { FALSE, Priority };
 
-        const auto Status = ZwSetInformationProcess(Process, ProcessPriorityClass,
+        const auto Status = ZwSetInformationProcess(ProcessHandle, ProcessPriorityClass,
             &PriorityInformation, sizeof(PriorityInformation));
 
         if (State) {
@@ -244,12 +244,12 @@ namespace Mi
 
     _IRQL_requires_max_(PASSIVE_LEVEL)
     BOOL WINAPI MI_NAME(GetPriorityClass)(
-        _In_ HANDLE Process
+        _In_ HANDLE ProcessHandle
         )
     {
         PROCESS_PRIORITY_CLASS PriorityInformation{};
 
-        const auto Status = ZwQueryInformationProcess(Process, ProcessPriorityClass,
+        const auto Status = ZwQueryInformationProcess(ProcessHandle, ProcessPriorityClass,
             &PriorityInformation, sizeof(PriorityInformation), nullptr);
         if (!NT_SUCCESS(Status)) {
             BaseSetLastNTError(Status);
@@ -292,32 +292,27 @@ namespace Mi
             return FALSE;
         }
 
-    #ifdef _KERNEL_MODE
-        // TODO:
-        PsGetProcessSessionId();
-    #else
-
         if (ProcessId == GetCurrentProcessId()) {
             *SessionId = ZwCurrentPeb()->SessionId;
             return TRUE;
         }
 
         NTSTATUS Status;
-        HANDLE   ProcessHandle = nullptr;
+        HANDLE   Handle = nullptr;
 
         do {
             auto ClientId         = CLIENT_ID { ULongToHandle(ProcessId) };
             auto ObjectAttributes = OBJECT_ATTRIBUTES RTL_CONSTANT_OBJECT_ATTRIBUTES(
                 static_cast<PCUNICODE_STRING>(nullptr), OBJ_KERNEL_HANDLE);
 
-            Status = ZwOpenProcess(&ProcessHandle, PROCESS_QUERY_LIMITED_INFORMATION,
+            Status = ZwOpenProcess(&Handle, PROCESS_QUERY_LIMITED_INFORMATION,
                 &ObjectAttributes, &ClientId);
             if (!NT_SUCCESS(Status)) {
                 break;
             }
 
             PROCESS_SESSION_INFORMATION SessionInformation{};
-            Status = ZwQueryInformationProcess(ProcessHandle, ProcessSessionInformation,
+            Status = ZwQueryInformationProcess(Handle, ProcessSessionInformation,
                 &SessionInformation, sizeof(SessionInformation), nullptr);
             if (!NT_SUCCESS(Status)) {
                 break;
@@ -326,8 +321,8 @@ namespace Mi
             *SessionId = SessionInformation.SessionId;
         } while (false);
 
-        if (ProcessHandle) {
-            (void)ZwClose(ProcessHandle);
+        if (Handle) {
+            (void)ZwClose(Handle);
         }
 
         if (!NT_SUCCESS(Status)) {
@@ -336,18 +331,17 @@ namespace Mi
         }
 
         return TRUE;
-    #endif
     }
     MI_IAT_SYMBOL(ProcessIdToSessionId, 8);
 
     _IRQL_requires_max_(PASSIVE_LEVEL)
     DWORD WINAPI MI_NAME(GetProcessId)(
-        _In_ HANDLE Process
+        _In_ HANDLE ProcessHandle
         )
     {
         PROCESS_BASIC_INFORMATION BasicInformation{};
 
-        const auto Status = ZwQueryInformationProcess(Process, ProcessBasicInformation,
+        const auto Status = ZwQueryInformationProcess(ProcessHandle, ProcessBasicInformation,
             &BasicInformation, sizeof(BasicInformation), nullptr);
         if (!NT_SUCCESS(Status)) {
             BaseSetLastNTError(Status);
@@ -357,6 +351,23 @@ namespace Mi
         return HandleToULong(BasicInformation.UniqueProcessId);
     }
     MI_IAT_SYMBOL(GetProcessId, 4);
+
+    _IRQL_requires_max_(PASSIVE_LEVEL)
+        BOOL WINAPI MI_NAME(FlushInstructionCache)(
+            _In_ HANDLE ProcessHandle,
+            _In_reads_bytes_opt_(Size) LPCVOID BaseAddress,
+            _In_ SIZE_T Size
+            )
+    {
+        const auto Status = ZwFlushInstructionCache(ProcessHandle, const_cast<PVOID>(BaseAddress), Size);
+        if (!NT_SUCCESS(Status)) {
+            BaseSetLastNTError(Status);
+            return FALSE;
+        }
+
+        return TRUE;
+    }
+    MI_IAT_SYMBOL(FlushInstructionCache, 12);
 
     _IRQL_requires_max_(PASSIVE_LEVEL)
     VOID WINAPI MI_NAME(FlushProcessWriteBuffers)(
@@ -395,30 +406,30 @@ namespace Mi
         _In_ DWORD ProcessId
         )
     {
-        HANDLE    Process  = nullptr;
+        HANDLE    Handle   = nullptr;
         CLIENT_ID ClientId = { ULongToHandle(ProcessId) };
 
         auto ObjectAttributes = OBJECT_ATTRIBUTES RTL_CONSTANT_OBJECT_ATTRIBUTES(
             static_cast<PCUNICODE_STRING>(nullptr),
             OBJ_KERNEL_HANDLE | (InheritHandle ? OBJ_INHERIT : 0ul));
 
-        const auto Status = ZwOpenProcess(&Process, DesiredAccess, &ObjectAttributes, &ClientId);
+        const auto Status = ZwOpenProcess(&Handle, DesiredAccess, &ObjectAttributes, &ClientId);
         if (!NT_SUCCESS(Status)) {
             BaseSetLastNTError(Status);
             return nullptr;
         }
 
-        return Process;
+        return Handle;
     }
     MI_IAT_SYMBOL(OpenProcess, 12);
 
     _IRQL_requires_max_(PASSIVE_LEVEL)
     BOOL WINAPI MI_NAME(GetProcessHandleCount)(
-        _In_  HANDLE Process,
+        _In_  HANDLE ProcessHandle,
         _Out_ PDWORD HandleCount
         )
     {
-        const auto Status = ZwQueryInformationProcess(Process, ProcessHandleCount,
+        const auto Status = ZwQueryInformationProcess(ProcessHandle, ProcessHandleCount,
             HandleCount, sizeof(*HandleCount), nullptr);
         if (!NT_SUCCESS(Status)) {
             BaseSetLastNTError(Status);
@@ -431,13 +442,13 @@ namespace Mi
 
     _IRQL_requires_max_(PASSIVE_LEVEL)
     BOOL WINAPI MI_NAME(GetProcessPriorityBoost)(
-        _In_  HANDLE Process,
+        _In_  HANDLE ProcessHandle,
         _Out_ PBOOL  DisablePriorityBoost
         )
     {
         DWORD DisableBoost;
 
-        const auto Status = ZwQueryInformationProcess(Process, ProcessPriorityBoost,
+        const auto Status = ZwQueryInformationProcess(ProcessHandle, ProcessPriorityBoost,
             &DisableBoost, sizeof(DisableBoost), nullptr);
         if (!NT_SUCCESS(Status)) {
             BaseSetLastNTError(Status);
@@ -452,13 +463,13 @@ namespace Mi
 
     _IRQL_requires_max_(PASSIVE_LEVEL)
     BOOL WINAPI MI_NAME(SetProcessPriorityBoost)(
-        _In_ HANDLE Process,
+        _In_ HANDLE ProcessHandle,
         _In_ BOOL   DisablePriorityBoost
         )
     {
         ULONG DisableBoost = DisablePriorityBoost ? TRUE : FALSE;
 
-        const auto Status = ZwSetInformationProcess(Process, ProcessPriorityBoost,
+        const auto Status = ZwSetInformationProcess(ProcessHandle, ProcessPriorityBoost,
             &DisableBoost, sizeof(DisableBoost));
         if (!NT_SUCCESS(Status)) {
             BaseSetLastNTError(Status);
@@ -469,59 +480,293 @@ namespace Mi
     }
     MI_IAT_SYMBOL(SetProcessPriorityBoost, 8);
 
-    BOOL WINAPI MI_NAME(Template)(
-        VOID
+    BOOL WINAPI MI_NAME(IsProcessCritical)(
+        _In_ HANDLE ProcessHandle,
+        _Out_ PBOOL Critical
         )
-    {}
-    MI_IAT_SYMBOL(Template, 0);
+    {
+        ULONG Information = 0;
+        const auto Status = ZwQueryInformationProcess(ProcessHandle, ProcessBreakOnTermination,
+            &Information, sizeof(Information), nullptr);
+        if (!NT_SUCCESS(Status)) {
+            BaseSetLastNTError(Status);
+            return FALSE;
+        }
 
-    BOOL WINAPI MI_NAME(Template)(
-        VOID
-        )
-    {}
-    MI_IAT_SYMBOL(Template, 0);
+        *Critical = !!Information;
+        return TRUE;
+    }
+    MI_IAT_SYMBOL(IsProcessCritical, 0);
 
-    BOOL WINAPI MI_NAME(Template)(
-        VOID
+    BOOL WINAPI MI_NAME(SetProcessInformation)(
+        _In_ HANDLE ProcessHandle,
+        _In_ PROCESS_INFORMATION_CLASS ProcessInformationClass,
+        _In_reads_bytes_(ProcessInformationSize) LPVOID ProcessInformation,
+        _In_ DWORD ProcessInformationSize
         )
-    {}
-    MI_IAT_SYMBOL(Template, 0);
+    {
+        NTSTATUS Status = STATUS_SUCCESS;
 
-    BOOL WINAPI MI_NAME(Template)(
-        VOID
-        )
-    {}
-    MI_IAT_SYMBOL(Template, 0);
+        do {
+            PROCESSINFOCLASS Class = ProcessPagePriority;
 
-    BOOL WINAPI MI_NAME(Template)(
-        VOID
-        )
-    {}
-    MI_IAT_SYMBOL(Template, 0);
+            switch (ProcessInformationClass) {
+            case ProcessMemoryPriority:
+            {
+                Class = ProcessPagePriority;
+                break;
+            }
+            case ProcessMemoryExhaustionInfo:
+            {
+                if (ProcessInformation == nullptr) {
+                    Status = STATUS_INVALID_PARAMETER;
+                    break;
+                }
 
-    BOOL WINAPI MI_NAME(Template)(
-        VOID
-        )
-    {}
-    MI_IAT_SYMBOL(Template, 0);
+                if (ProcessInformationSize != sizeof(PROCESS_MEMORY_EXHAUSTION_INFO)) {
+                    Status = STATUS_INFO_LENGTH_MISMATCH;
+                    break;
+                }
 
-    BOOL WINAPI MI_NAME(Template)(
-        VOID
-        )
-    {}
-    MI_IAT_SYMBOL(Template, 0);
+                const auto Information = static_cast<PROCESS_MEMORY_EXHAUSTION_INFO*>(ProcessInformation);
 
-    BOOL WINAPI MI_NAME(Template)(
-        VOID
-        )
-    {}
-    MI_IAT_SYMBOL(Template, 0);
+                if (Information->Version  != PME_CURRENT_VERSION ||
+                    Information->Reserved != 0u ||
+                    Information->Type     >= PMETypeMax) {
 
-    BOOL WINAPI MI_NAME(Template)(
-        VOID
+                    Status = STATUS_INVALID_PARAMETER;
+                    break;
+                }
+
+                Class = ProcessMemoryExhaustion;
+                break;
+            }
+            case ProcessInPrivateInfo:
+            {
+                if (ProcessInformation     != nullptr ||
+                    ProcessInformationSize != 0) {
+
+                    Status = STATUS_INVALID_PARAMETER;
+                    break;
+                }
+
+                Class = ProcessInPrivate;
+                break;
+            }
+            case ProcessPowerThrottling:
+            {
+                if (ProcessInformation == nullptr) {
+                    Status = STATUS_INVALID_PARAMETER;
+                    break;
+                }
+
+                if (ProcessInformationSize != sizeof(PROCESS_POWER_THROTTLING_STATE)) {
+                    Status = STATUS_INFO_LENGTH_MISMATCH;
+                    break;
+                }
+
+                Class = ProcessPowerThrottlingState;
+                break;
+            }
+            case ProcessTelemetryCoverageInfo:
+            {
+                if (ProcessInformation == nullptr) {
+                    Status = STATUS_INVALID_PARAMETER;
+                    break;
+                }
+
+                if (ProcessInformationSize != sizeof(TELEMETRY_COVERAGE_POINT)) {
+                    Status = STATUS_INFO_LENGTH_MISMATCH;
+                    break;
+                }
+
+                Class = ProcessTelemetryCoverage;
+                break;
+            }
+            case ProcessLeapSecondInfo:
+            {
+                if (ProcessInformation == nullptr) {
+                    Status = STATUS_INVALID_PARAMETER;
+                    break;
+                }
+
+                if (ProcessInformationSize != sizeof(PROCESS_LEAP_SECOND_INFO)) {
+                    Status = STATUS_INFO_LENGTH_MISMATCH;
+                    break;
+                }
+
+                const auto Information = static_cast<PROCESS_LEAP_SECOND_INFO*>(ProcessInformation);
+
+                if (Information->Flags & ~PROCESS_LEAP_SECOND_INFO_VALID_FLAGS) {
+                    Status = STATUS_INVALID_PARAMETER;
+                    break;
+                }
+
+                Class = ProcessLeapSecondInformation;
+                break;
+            }
+            default:
+            {
+                Status = STATUS_INVALID_PARAMETER;
+                break;
+            }
+            }
+
+            if (!NT_SUCCESS(Status)) {
+                break;
+            }
+
+            Status = ZwSetInformationProcess(ProcessHandle, Class,
+                ProcessInformation, ProcessInformationSize);
+
+        } while (false);
+
+        if (!NT_SUCCESS(Status)) {
+            BaseSetLastNTError(Status);
+            return FALSE;
+        }
+
+        return TRUE;
+    }
+    MI_IAT_SYMBOL(SetProcessInformation, 0);
+
+    BOOL WINAPI MI_NAME(GetProcessInformation)(
+        _In_ HANDLE ProcessHandle,
+        _In_ PROCESS_INFORMATION_CLASS ProcessInformationClass,
+        _Out_writes_bytes_(ProcessInformationSize) LPVOID ProcessInformation,
+        _In_ DWORD ProcessInformationSize
         )
-    {}
-    MI_IAT_SYMBOL(Template, 0);
+    {
+        NTSTATUS Status = STATUS_SUCCESS;
+
+        do {
+            PROCESSINFOCLASS Class = ProcessPagePriority;
+
+            switch (ProcessInformationClass) {
+            case ProcessMemoryPriority:
+            {
+                Class = ProcessPagePriority;
+                break;
+            }
+            case ProcessAppMemoryInfo:
+            {
+                // TODO:
+                Status = STATUS_NOT_IMPLEMENTED;
+                break;
+            }
+            case ProcessInPrivateInfo:
+            {
+                if (ProcessInformation == nullptr) {
+                    Status = STATUS_INVALID_PARAMETER;
+                    break;
+                }
+
+                if (ProcessInformationSize != sizeof(BOOLEAN)) {
+                    Status = STATUS_INFO_LENGTH_MISMATCH;
+                    break;
+                }
+
+                Class = ProcessInPrivate;
+                break;
+            }
+            case ProcessProtectionLevelInfo:
+            {
+                if (ProcessInformation == nullptr) {
+                    Status = STATUS_INVALID_PARAMETER;
+                    break;
+                }
+
+                if (ProcessInformationSize != sizeof(PROCESS_PROTECTION_LEVEL_INFORMATION)) {
+                    Status = STATUS_INFO_LENGTH_MISMATCH;
+                    break;
+                }
+
+                Class = ProcessProtectionInformation;
+                break;
+            }
+            case ProcessLeapSecondInfo:
+            {
+                if (ProcessInformation == nullptr) {
+                    Status = STATUS_INVALID_PARAMETER;
+                    break;
+                }
+
+                if (ProcessInformationSize != sizeof(PROCESS_LEAP_SECOND_INFO)) {
+                    Status = STATUS_INFO_LENGTH_MISMATCH;
+                    break;
+                }
+
+                Class = ProcessLeapSecondInformation;
+                break;
+            }
+            default:
+            {
+                Status = STATUS_INVALID_PARAMETER;
+                break;
+            }
+            }
+
+            if (!NT_SUCCESS(Status)) {
+                break;
+            }
+
+            Status = ZwQueryInformationProcess(ProcessHandle, Class,
+                ProcessInformation, ProcessInformationSize, nullptr);
+            if (!NT_SUCCESS(Status)) {
+                break;
+            }
+
+            if (ProcessInformationClass == ProcessProtectionLevelInfo) {
+                auto& ProtectionLevel = static_cast<PROCESS_PROTECTION_LEVEL_INFORMATION*>(ProcessInformation)->ProtectionLevel;
+
+                switch (ProtectionLevel) {
+                case PsProtectedValue(PsProtectedSignerNone, FALSE, PsProtectedTypeNone):
+                    ProtectionLevel = PROTECTION_LEVEL_NONE;
+                    break;
+                case PsProtectedValue(PsProtectedSignerWinTcb, FALSE, PsProtectedTypeProtectedLight):
+                    ProtectionLevel = PROTECTION_LEVEL_WINTCB_LIGHT;
+                    break;
+                case PsProtectedValue(PsProtectedSignerWindows, FALSE, PsProtectedTypeProtected):
+                    ProtectionLevel = PROTECTION_LEVEL_WINDOWS;
+                    break;
+                case PsProtectedValue(PsProtectedSignerWindows, FALSE, PsProtectedTypeProtectedLight):
+                    ProtectionLevel = PROTECTION_LEVEL_WINDOWS_LIGHT;
+                    break;
+                case PsProtectedValue(PsProtectedSignerAntimalware, FALSE, PsProtectedTypeProtectedLight):
+                    ProtectionLevel = PROTECTION_LEVEL_ANTIMALWARE_LIGHT;
+                    break;
+                case PsProtectedValue(PsProtectedSignerLsa, FALSE, PsProtectedTypeProtectedLight):
+                    ProtectionLevel = PROTECTION_LEVEL_LSA_LIGHT;
+                    break;
+                case PsProtectedValue(PsProtectedSignerWinTcb,    FALSE, PsProtectedTypeProtected):
+                case PsProtectedValue(PsProtectedSignerWinSystem, FALSE, PsProtectedTypeProtected):
+                    ProtectionLevel = PROTECTION_LEVEL_WINTCB;
+                    break;
+                case PsProtectedValue(PsProtectedSignerCodeGen, FALSE, PsProtectedTypeProtectedLight):
+                    ProtectionLevel = PROTECTION_LEVEL_CODEGEN_LIGHT;
+                    break;
+                case PsProtectedValue(PsProtectedSignerAuthenticode, FALSE, PsProtectedTypeProtected):
+                    ProtectionLevel = PROTECTION_LEVEL_AUTHENTICODE;
+                    break;
+                case PsProtectedValue(PsProtectedSignerApp, FALSE, PsProtectedTypeProtectedLight):
+                    ProtectionLevel = PROTECTION_LEVEL_PPL_APP;
+                    break;
+                default:
+                    Status = STATUS_NOT_SUPPORTED;
+                    break;
+                }
+            }
+
+        } while (false);
+
+        if (!NT_SUCCESS(Status)) {
+            BaseSetLastNTError(Status);
+            return FALSE;
+        }
+
+        return TRUE;
+    }
+    MI_IAT_SYMBOL(GetProcessInformation, 0);
 
 }
 EXTERN_C_END

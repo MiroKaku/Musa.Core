@@ -171,7 +171,7 @@ namespace Mi
                 HandleInfo.ProtectFromClose = BooleanFlagOn(Flags , HANDLE_FLAG_PROTECT_FROM_CLOSE) ? TRUE : FALSE;
             }
 
-            Status = NtSetInformationObject(Handle, ObjectHandleFlagInformation,
+            Status = ZwSetInformationObject(Handle, ObjectHandleFlagInformation,
                 &HandleInfo, sizeof(HandleInfo));
             if (NT_SUCCESS(Status)) {
                 return TRUE;
