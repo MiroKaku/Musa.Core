@@ -1,14 +1,46 @@
 #include "KernelBase.Private.h"
+#include "KernelBase.Thread.Private.h"
 
+
+#ifdef ALLOC_PRAGMA
+#pragma alloc_text(PAGE, MI_NAME(SwitchToThread))
+#pragma alloc_text(PAGE, MI_NAME(CreateThread))
+#pragma alloc_text(PAGE, MI_NAME(CreateRemoteThread))
+#pragma alloc_text(PAGE, MI_NAME(ExitThread))
+#pragma alloc_text(PAGE, MI_NAME(OpenThread))
+#pragma alloc_text(PAGE, MI_NAME(SetThreadPriority))
+#pragma alloc_text(PAGE, MI_NAME(GetThreadPriority))
+#pragma alloc_text(PAGE, MI_NAME(SetThreadPriorityBoost))
+#pragma alloc_text(PAGE, MI_NAME(GetThreadPriorityBoost))
+#pragma alloc_text(PAGE, MI_NAME(TerminateThread))
+#pragma alloc_text(PAGE, MI_NAME(GetExitCodeThread))
+#pragma alloc_text(PAGE, MI_NAME(SuspendThread))
+#pragma alloc_text(PAGE, MI_NAME(ResumeThread))
+#pragma alloc_text(PAGE, MI_NAME(SetThreadToken))
+#pragma alloc_text(PAGE, MI_NAME(OpenThreadToken))
+#pragma alloc_text(PAGE, MI_NAME(GetThreadId))
+#pragma alloc_text(PAGE, MI_NAME(GetCurrentThreadStackLimits))
+#pragma alloc_text(PAGE, MI_NAME(GetThreadContext))
+#pragma alloc_text(PAGE, MI_NAME(SetThreadContext))
+#pragma alloc_text(PAGE, MI_NAME(GetThreadTimes))
+#pragma alloc_text(PAGE, MI_NAME(SetThreadIdealProcessor))
+#pragma alloc_text(PAGE, MI_NAME(SetThreadIdealProcessorEx))
+#pragma alloc_text(PAGE, MI_NAME(GetThreadIdealProcessorEx))
+#pragma alloc_text(PAGE, MI_NAME(GetThreadIOPendingFlag))
+#pragma alloc_text(PAGE, MI_NAME(GetThreadInformation))
+#pragma alloc_text(PAGE, MI_NAME(SetThreadInformation))
+#pragma alloc_text(PAGE, MI_NAME(SetThreadDescription))
+#pragma alloc_text(PAGE, MI_NAME(GetThreadDescription))
+#endif
 
 EXTERN_C_START
 namespace Mi
 {
     _IRQL_requires_max_(PASSIVE_LEVEL)
-    BOOL WINAPI MI_NAME(SwitchToThread)(
-        VOID
-        )
+    BOOL WINAPI MI_NAME(SwitchToThread)()
     {
+        PAGED_CODE();
+
         if (ZwYieldExecution() != STATUS_NO_YIELD_PERFORMED) {
             return FALSE;
         }
@@ -27,6 +59,8 @@ namespace Mi
         _Out_opt_ LPDWORD ThreadId
         )
     {
+        PAGED_CODE();
+
         return CreateRemoteThreadEx(GetCurrentProcess(), ThreadAttributes, StackSize,
             StartAddress, Parameter, CreationFlags & (STACK_SIZE_PARAM_IS_A_RESERVATION | CREATE_SUSPENDED),
             nullptr, ThreadId);
@@ -44,48 +78,52 @@ namespace Mi
         _Out_opt_ LPDWORD ThreadId
         )
     {
+        PAGED_CODE();
+
         return CreateRemoteThreadEx(Process, ThreadAttributes, StackSize,
             StartAddress, Parameter, CreationFlags & (STACK_SIZE_PARAM_IS_A_RESERVATION | CREATE_SUSPENDED),
             nullptr, ThreadId);
     }
     MI_IAT_SYMBOL(CreateRemoteThread, 28);
 
-    _IRQL_requires_max_(PASSIVE_LEVEL)
-    HANDLE WINAPI MI_NAME(CreateRemoteThreadEx)(
-        _In_ HANDLE Process,
-        _In_opt_ LPSECURITY_ATTRIBUTES ThreadAttributes,
-        _In_ SIZE_T StackSize,
-        _In_ LPTHREAD_START_ROUTINE StartAddress,
-        _In_opt_ LPVOID Parameter,
-        _In_ DWORD CreationFlags,
-        _In_opt_ LPPROC_THREAD_ATTRIBUTE_LIST AttributeList,
-        _Out_opt_ LPDWORD ThreadId
-        )
-    {
-        // TODO:
-
-        NtCreateThreadEx
-
-
-
-
-
-
-
-
-
-
-
-
-
-    }
-    MI_IAT_SYMBOL(CreateRemoteThreadEx, 32);
+//#if defined _KERNEL_MODE
+//    _IRQL_requires_max_(PASSIVE_LEVEL)
+//    HANDLE WINAPI MI_NAME(CreateRemoteThreadEx)(
+//        _In_ HANDLE Process,
+//        _In_opt_ LPSECURITY_ATTRIBUTES ThreadAttributes,
+//        _In_ SIZE_T StackSize,
+//        _In_ LPTHREAD_START_ROUTINE StartAddress,
+//        _In_opt_ LPVOID Parameter,
+//        _In_ DWORD CreationFlags,
+//        _In_opt_ LPPROC_THREAD_ATTRIBUTE_LIST AttributeList,
+//        _Out_opt_ LPDWORD ThreadId
+//        )
+//    {
+//        // TODO:
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//    }
+//    MI_IAT_SYMBOL(CreateRemoteThreadEx, 32);
+//#endif
 
     _IRQL_requires_max_(PASSIVE_LEVEL)
     VOID WINAPI MI_NAME(ExitThread)(
         _In_ DWORD ExitCode
         )
     {
+        PAGED_CODE();
+
         return RtlExitUserThread(ExitCode);
     }
     MI_IAT_SYMBOL(ExitThread, 4);
@@ -113,6 +151,8 @@ namespace Mi
         _In_ DWORD ThreadId
         )
     {
+        PAGED_CODE();
+
         HANDLE    Handle   = nullptr;
         CLIENT_ID ClientId = { nullptr, ULongToHandle(ThreadId) };
 
@@ -122,7 +162,7 @@ namespace Mi
 
         const auto Status = ZwOpenThread(&Handle, DesiredAccess, &ObjectAttributes, &ClientId);
         if (!NT_SUCCESS(Status)) {
-            RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
+            BaseSetLastNTError(Status);
             return nullptr;
         }
 
@@ -136,6 +176,8 @@ namespace Mi
         _In_ int    Priority
         )
     {
+        PAGED_CODE();
+
         //
         // saturation is indicated by calling with a value of 16 or -16
         //
@@ -150,7 +192,7 @@ namespace Mi
         const auto Status = ZwSetInformationThread(ThreadHandle, ThreadBasePriority,
             &Priority, sizeof(Priority));
         if (!NT_SUCCESS(Status)) {
-            RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
+            BaseSetLastNTError(Status);
             return FALSE;
         }
 
@@ -163,12 +205,14 @@ namespace Mi
         _In_ HANDLE ThreadHandle
         )
     {
+        PAGED_CODE();
+
         THREAD_BASIC_INFORMATION BasicInfo{};
 
         const auto Status = ZwQueryInformationThread(ThreadHandle, ThreadBasicInformation,
             &BasicInfo, sizeof(BasicInfo), nullptr);
         if (!NT_SUCCESS(Status)) {
-            RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
+            BaseSetLastNTError(Status);
             return THREAD_PRIORITY_ERROR_RETURN;
         }
 
@@ -189,12 +233,14 @@ namespace Mi
         _In_ BOOL   DisablePriorityBoost
         )
     {
+        PAGED_CODE();
+
         ULONG DisableBoost = DisablePriorityBoost ? 1 : 0;
 
         const auto Status = ZwSetInformationThread(ThreadHandle,ThreadPriorityBoost,
             &DisableBoost, sizeof(DisableBoost));
         if (!NT_SUCCESS(Status)) {
-            RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
+            BaseSetLastNTError(Status);
             return FALSE;
         }
 
@@ -208,12 +254,14 @@ namespace Mi
         _Out_ PBOOL DisablePriorityBoost
         )
     {
+        PAGED_CODE();
+
         DWORD DisableBoost = FALSE;
 
         const auto Status = ZwQueryInformationThread(ThreadHandle, ThreadPriorityBoost,
             &DisableBoost, sizeof(DisableBoost), nullptr);
         if (!NT_SUCCESS(Status)) {
-            RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
+            BaseSetLastNTError(Status);
             return FALSE;
         }
 
@@ -228,9 +276,11 @@ namespace Mi
         _In_ DWORD  ExitCode
         )
     {
+        PAGED_CODE();
+
         const auto Status = ZwTerminateThread(ThreadHandle, ExitCode);
         if (!NT_SUCCESS(Status)) {
-            RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
+            BaseSetLastNTError(Status);
             return FALSE;
         }
 
@@ -244,12 +294,14 @@ namespace Mi
         _Out_ LPDWORD ExitCode
         )
     {
+        PAGED_CODE();
+
         THREAD_BASIC_INFORMATION BasicInformation{};
 
         const auto Status = ZwQueryInformationThread(ThreadHandle, ThreadBasicInformation,
             &BasicInformation, sizeof(BasicInformation), nullptr);
         if (!NT_SUCCESS(Status)) {
-            RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
+            BaseSetLastNTError(Status);
             return FALSE;
         }
 
@@ -263,11 +315,13 @@ namespace Mi
         _In_ HANDLE ThreadHandle
         )
     {
+        PAGED_CODE();
+
         DWORD PreviousSuspendCount = 0;
 
         const auto Status = ZwSuspendThread(ThreadHandle, &PreviousSuspendCount);
         if (!NT_SUCCESS(Status)) {
-            RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
+            BaseSetLastNTError(Status);
             return static_cast<DWORD>(-1);
         }
 
@@ -280,11 +334,13 @@ namespace Mi
         _In_ HANDLE ThreadHandle
         )
     {
+        PAGED_CODE();
+
         DWORD PreviousSuspendCount = 0;
 
         const auto Status = ZwResumeThread(ThreadHandle, &PreviousSuspendCount);
         if (!NT_SUCCESS(Status)) {
-            RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
+            BaseSetLastNTError(Status);
             return static_cast<DWORD>(-1);
         }
 
@@ -298,15 +354,17 @@ namespace Mi
         _In_opt_ HANDLE  Token
         )
     {
+        PAGED_CODE();
+
         HANDLE Handle = GetCurrentThread();
         if (ThreadHandle) {
             Handle = *ThreadHandle;
         }
 
         const auto Status = ZwSetInformationThread(Handle, ThreadImpersonationToken,
-            &Token, sizeof(Token));
+            &Token, sizeof(HANDLE));
         if (!NT_SUCCESS(Status)) {
-            RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
+            BaseSetLastNTError(Status);
             return FALSE;
         }
 
@@ -322,9 +380,11 @@ namespace Mi
         _Outptr_ PHANDLE TokenHandle
         )
     {
-        const auto Status = ZwOpenThreadToken(ThreadHandle, DesiredAccess, OpenAsSelf, TokenHandle);
+        PAGED_CODE();
+
+        const auto Status = ZwOpenThreadToken(ThreadHandle, DesiredAccess, static_cast<BOOLEAN>(OpenAsSelf), TokenHandle);
         if (!NT_SUCCESS(Status)) {
-            RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
+            BaseSetLastNTError(Status);
             return FALSE;
         }
 
@@ -337,6 +397,8 @@ namespace Mi
         _In_ HANDLE ThreadHandle
         )
     {
+        PAGED_CODE();
+
         THREAD_BASIC_INFORMATION BasicInformation{};
 
         const auto Status = ZwQueryInformationThread(ThreadHandle, ThreadBasicInformation,
@@ -352,7 +414,7 @@ namespace Mi
 
     _Success_(return != FALSE)
     BOOL WINAPI MI_NAME(InitializeProcThreadAttributeList)(
-        _Out_writes_bytes_to_opt_(*lpSize, *lpSize) LPPROC_THREAD_ATTRIBUTE_LIST AttributeList,
+        _Out_writes_bytes_to_opt_(*Size, *Size) LPPROC_THREAD_ATTRIBUTE_LIST AttributeList,
         _In_ DWORD AttributeCount,
         _Reserved_ DWORD Flags,
         _When_(AttributeList == nullptr, _Out_) _When_(AttributeList != nullptr, _Inout_) PSIZE_T Size
@@ -391,6 +453,7 @@ namespace Mi
         _Inout_ LPPROC_THREAD_ATTRIBUTE_LIST AttributeList
         )
     {
+        UNREFERENCED_PARAMETER(AttributeList);
         return;
     }
     MI_IAT_SYMBOL(DeleteProcThreadAttributeList, 4);
@@ -401,6 +464,8 @@ namespace Mi
         _Out_ PULONG_PTR HighLimit
         )
     {
+        PAGED_CODE();
+
     #ifdef _KERNEL_MODE
         IoGetStackLimits(LowLimit, HighLimit);
     #else
@@ -417,6 +482,8 @@ namespace Mi
         _Inout_ LPCONTEXT Context
         )
     {
+        PAGED_CODE();
+
         const auto Status = ZwGetContextThread(ThreadHandle, Context);
         if (!NT_SUCCESS(Status)) {
             BaseSetLastNTError(Status);
@@ -433,6 +500,8 @@ namespace Mi
         _In_ CONST CONTEXT* Context
         )
     {
+        PAGED_CODE();
+
         const auto Status = ZwSetContextThread(ThreadHandle, const_cast<PCONTEXT>(Context));
         if (!NT_SUCCESS(Status)) {
             BaseSetLastNTError(Status);
@@ -452,6 +521,8 @@ namespace Mi
         _Out_ LPFILETIME UserTime
         )
     {
+        PAGED_CODE();
+
         KERNEL_USER_TIMES TimeInfo{};
 
         const auto Status = ZwQueryInformationThread(ThreadHandle, ThreadTimes,
@@ -476,6 +547,8 @@ namespace Mi
         _In_ DWORD  IdealProcessor
         )
     {
+        PAGED_CODE();
+
         const auto Status = ZwSetInformationThread(ThreadHandle, ThreadIdealProcessor,
             &IdealProcessor, sizeof(IdealProcessor));
         if (!NT_SUCCESS(Status)) {
@@ -494,6 +567,8 @@ namespace Mi
         _Out_opt_ PPROCESSOR_NUMBER PreviousIdealProcessor
         )
     {
+        PAGED_CODE();
+
         PROCESSOR_NUMBER Information = *IdealProcessor;
 
         const auto Status = ZwSetInformationThread(ThreadHandle, ThreadIdealProcessorEx,
@@ -517,6 +592,8 @@ namespace Mi
         _In_ PPROCESSOR_NUMBER IdealProcessor
         )
     {
+        PAGED_CODE();
+
         const auto Status = ZwQueryInformationThread(ThreadHandle, ThreadIdealProcessorEx,
             IdealProcessor, sizeof(*IdealProcessor), nullptr);
         if (!NT_SUCCESS(Status)) {
@@ -534,7 +611,9 @@ namespace Mi
         _Out_ PBOOL IOIsPending
         )
     {
-        ULONG Pending;
+        PAGED_CODE();
+
+        ULONG Pending = 0;
 
         const auto Status = ZwQueryInformationThread(ThreadHandle, ThreadIsIoPending,
             &Pending, sizeof(Pending), nullptr);
@@ -549,6 +628,7 @@ namespace Mi
     }
     MI_IAT_SYMBOL(GetThreadIOPendingFlag, 8);
 
+    _IRQL_requires_max_(PASSIVE_LEVEL)
     BOOL WINAPI MI_NAME(GetThreadInformation)(
         _In_ HANDLE ThreadHandle,
         _In_ THREAD_INFORMATION_CLASS ThreadInformationClass,
@@ -556,6 +636,8 @@ namespace Mi
         _In_ DWORD ThreadInformationSize
         )
     {
+        PAGED_CODE();
+
         NTSTATUS Status = STATUS_SUCCESS;
 
         do {
@@ -580,6 +662,8 @@ namespace Mi
                 }
 
                 const auto PowerThrottling = static_cast<THREAD_POWER_THROTTLING_STATE*>(ThreadInformation);
+
+            #pragma warning(suppress: 6001)
                 if (PowerThrottling->Version != THREAD_POWER_THROTTLING_CURRENT_VERSION) {
                     Status = STATUS_INVALID_PARAMETER;
                     break;
@@ -610,6 +694,7 @@ namespace Mi
     }
     MI_IAT_SYMBOL(GetThreadInformation, 0);
 
+    _IRQL_requires_max_(PASSIVE_LEVEL)
     BOOL WINAPI MI_NAME(SetThreadInformation)(
         _In_ HANDLE ThreadHandle,
         _In_ THREAD_INFORMATION_CLASS ThreadInformationClass,
@@ -617,6 +702,8 @@ namespace Mi
         _In_ DWORD ThreadInformationSize
         )
     {
+        PAGED_CODE();
+
         NTSTATUS Status = STATUS_SUCCESS;
 
         do {
@@ -680,11 +767,14 @@ namespace Mi
     }
     MI_IAT_SYMBOL(SetThreadInformation, 0);
 
+    _IRQL_requires_max_(PASSIVE_LEVEL)
     HRESULT WINAPI MI_NAME(SetThreadDescription)(
         _In_ HANDLE ThreadHandle,
         _In_ PCWSTR ThreadDescription
         )
     {
+        PAGED_CODE();
+
         THREAD_NAME_INFORMATION Information{};
         auto Status = RtlInitUnicodeStringEx(&Information.ThreadName, ThreadDescription);
         if (NT_SUCCESS(Status)) {
@@ -696,11 +786,14 @@ namespace Mi
     }
     MI_IAT_SYMBOL(SetThreadDescription, 0);
 
+    _IRQL_requires_max_(PASSIVE_LEVEL)
     HRESULT WINAPI MI_NAME(GetThreadDescription)(
         _In_ HANDLE ThreadHandle,
         _Outptr_result_z_ PWSTR* ThreadDescription
         )
     {
+        PAGED_CODE();
+
         NTSTATUS Status;
 
         do {

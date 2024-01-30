@@ -87,19 +87,6 @@ namespace Mi
                 break;
             };
 
-            //Status = RtlCreateEnvironment(FALSE, &Peb->Environment);
-            //if (!NT_SUCCESS(Status)) {
-            //    break;
-            //}
-
-            //UNICODE_STRING SystemRoot{};
-            //RtlInitUnicodeString(&SystemRoot, RtlGetNtSystemRoot());
-            //
-            //Status = RtlSetCurrentDirectory_U(&SystemRoot);
-            //if (!NT_SUCCESS(Status)) {
-            //    break;
-            //}
-
             MI_NAME_PRIVATE(RtlFlsCreate)();
 
         } while (false);
@@ -125,18 +112,6 @@ namespace Mi
             ExWaitForRundownProtectionRelease(&Peb->RundownProtect);
 
             MI_NAME_PRIVATE(RtlFlsCleanup)();
-
-            //if (Peb->Environment) {
-            //    Status = RtlDestroyEnvironment(Peb->Environment);
-            //    if (!NT_SUCCESS(Status)) {
-            //        break;
-            //    }
-            //}
-
-            //Status = RtlSetCurrentDirectory_U(nullptr);
-            //if (!NT_SUCCESS(Status)) {
-            //    break;
-            //}
 
             for (auto Idx = static_cast<int>(Peb->MaximumNumberOfHeaps - 1); Idx >= 0 ; --Idx) {
                 if (Peb->ProcessHeaps[Idx]) {

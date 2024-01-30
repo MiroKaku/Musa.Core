@@ -1,4 +1,6 @@
 #pragma once
+#pragma warning(disable: 6101)
+
 // Config Macro
 #define POOL_NX_OPTIN 1
 #define POOL_ZERO_DOWN_LEVEL_SUPPORT 1

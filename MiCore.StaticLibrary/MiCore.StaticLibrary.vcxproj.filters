@@ -52,6 +52,15 @@
     <ClInclude Include="..\MiCore\Thunks\KernelBase.Private.h">
       <Filter>MiCore\Thunks</Filter>
     </ClInclude>
+    <ClInclude Include="..\MiCore\Thunks\KernelBase.Process.Private.h">
+      <Filter>MiCore\Thunks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MiCore\Thunks\KernelBase.System.Private.h">
+      <Filter>MiCore\Thunks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MiCore\Thunks\KernelBase.Thread.Private.h">
+      <Filter>MiCore\Thunks</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\MiCore\MiCore.cpp">

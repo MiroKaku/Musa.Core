@@ -1,9 +1,34 @@
 #include "KernelBase.Private.h"
+#include "KernelBase.Process.Private.h"
+#include "MiCore/MiCore.SystemEnvironmentBlock.Private.h"
 
+
+#ifdef ALLOC_PRAGMA
+#pragma alloc_text(PAGE, MI_NAME(GetProcessTimes))
+#pragma alloc_text(PAGE, MI_NAME(TerminateProcess))
+#pragma alloc_text(PAGE, MI_NAME(GetExitCodeProcess))
+#pragma alloc_text(PAGE, MI_NAME(GetProcessVersion))
+#pragma alloc_text(PAGE, MI_NAME(OpenProcessToken))
+#pragma alloc_text(PAGE, MI_NAME(SetPriorityClass))
+#pragma alloc_text(PAGE, MI_NAME(GetPriorityClass))
+#pragma alloc_text(PAGE, MI_NAME(ProcessIdToSessionId))
+#pragma alloc_text(PAGE, MI_NAME(GetProcessId))
+#pragma alloc_text(PAGE, MI_NAME(FlushInstructionCache))
+#pragma alloc_text(PAGE, MI_NAME(FlushProcessWriteBuffers))
+#pragma alloc_text(PAGE, MI_NAME(GetProcessIdOfThread))
+#pragma alloc_text(PAGE, MI_NAME(OpenProcess))
+#pragma alloc_text(PAGE, MI_NAME(GetProcessHandleCount))
+#pragma alloc_text(PAGE, MI_NAME(GetProcessPriorityBoost))
+#pragma alloc_text(PAGE, MI_NAME(SetProcessPriorityBoost))
+#pragma alloc_text(PAGE, MI_NAME(IsProcessCritical))
+#pragma alloc_text(PAGE, MI_NAME(SetProcessInformation))
+#pragma alloc_text(PAGE, MI_NAME(GetProcessInformation))
+#endif
 
 EXTERN_C_START
 namespace Mi
 {
+    _IRQL_requires_max_(PASSIVE_LEVEL)
     BOOL WINAPI MI_NAME(GetProcessTimes)(
         _In_  HANDLE     ProcessHandle,
         _Out_ LPFILETIME CreationTime,
@@ -12,6 +37,8 @@ namespace Mi
         _Out_ LPFILETIME UserTime
         )
     {
+        PAGED_CODE();
+
         KERNEL_USER_TIMES TimeInfo{};
 
         const auto Status = ZwQueryInformationProcess(ProcessHandle, ProcessTimes,
@@ -46,6 +73,7 @@ namespace Mi
     }
     MI_IAT_SYMBOL(GetCurrentProcessId, 0);
 
+#if defined _KERNEL_MODE
     VOID WINAPI MI_NAME(ExitProcess)(
         _In_ UINT ExitCode
         )
@@ -53,12 +81,22 @@ namespace Mi
         __fastfail(ExitCode);
     }
     MI_IAT_SYMBOL(ExitProcess, 4);
+#endif
 
+    _IRQL_requires_max_(PASSIVE_LEVEL)
     BOOL WINAPI MI_NAME(TerminateProcess)(
         _In_ HANDLE ProcessHandle,
         _In_ UINT   ExitCode
         )
     {
+        PAGED_CODE();
+
+    #if defined _KERNEL_MODE
+        if (ProcessHandle == GetCurrentProcess()) {
+            ExitProcess(ExitCode);
+        }
+    #endif
+
         const auto Status = ZwTerminateProcess(ProcessHandle, ExitCode);
         if (NT_SUCCESS(Status)) {
             return TRUE;
@@ -69,11 +107,14 @@ namespace Mi
     }
     MI_IAT_SYMBOL(TerminateProcess, 8);
 
+    _IRQL_requires_max_(PASSIVE_LEVEL)
     BOOL WINAPI MI_NAME(GetExitCodeProcess)(
         _In_  HANDLE  ProcessHandle,
         _Out_ LPDWORD ExitCode
         )
     {
+        PAGED_CODE();
+
         PROCESS_BASIC_INFORMATION BasicInformation{};
 
         const auto Status = ZwQueryInformationProcess(ProcessHandle, ProcessBasicInformation,
@@ -88,10 +129,13 @@ namespace Mi
     }
     MI_IAT_SYMBOL(GetExitCodeProcess, 8);
 
+    _IRQL_requires_max_(PASSIVE_LEVEL)
     DWORD WINAPI MI_NAME(GetProcessVersion)(
         _In_ DWORD ProcessId
         )
     {
+        PAGED_CODE();
+
         HANDLE Handle;
 
         if (ProcessId == 0 || ProcessId == GetCurrentProcessId()) {
@@ -132,14 +176,15 @@ namespace Mi
         )
     {
     #ifdef _KERNEL_MODE
-        const auto ProcessParameters = MI_NAME_PRIVATE(RtlGetCurrentPeb)();
+        // TODO
+        //const auto ProcessParameters = MI_NAME_PRIVATE(RtlGetCurrentPeb)();
 
         * StartupInfo = { sizeof(*StartupInfo) };
 
         if (StartupInfo->dwFlags & (STARTF_USESTDHANDLES | STARTF_USEHOTKEY | STARTF_HASSHELLDATA)) {
-            StartupInfo->hStdInput  = ProcessParameters->StandardInput;
-            StartupInfo->hStdOutput = ProcessParameters->StandardOutput;
-            StartupInfo->hStdError  = ProcessParameters->StandardError;
+            StartupInfo->hStdInput  = nullptr; /*ProcessParameters->StandardInput;*/
+            StartupInfo->hStdOutput = nullptr; /*ProcessParameters->StandardOutput;*/
+            StartupInfo->hStdError  = nullptr; /*ProcessParameters->StandardError;*/
         }
     #else
         const auto ProcessParameters = NtCurrentPeb()->ProcessParameters;
@@ -176,6 +221,8 @@ namespace Mi
         _Outptr_ PHANDLE TokenHandle
         )
     {
+        PAGED_CODE();
+
         const auto Status = ZwOpenProcessToken(ProcessHandle, DesiredAccess, TokenHandle);
         if (!NT_SUCCESS(Status)) {
             BaseSetLastNTError(Status);
@@ -192,7 +239,11 @@ namespace Mi
         _In_ DWORD  PriorityClass
         )
     {
+        PAGED_CODE();
+
+    #if !defined _KERNEL_MODE
         PVOID State = nullptr;
+    #endif
 
         UCHAR Priority;
         if (PriorityClass & IDLE_PRIORITY_CLASS) {
@@ -211,6 +262,7 @@ namespace Mi
             Priority = PROCESS_PRIORITY_CLASS_HIGH;
         }
         else if (PriorityClass & REALTIME_PRIORITY_CLASS) {
+        #if !defined _KERNEL_MODE
             State = BaseIsRealtimeAllowed(TRUE, FALSE);
             if (State) {
                 Priority = PROCESS_PRIORITY_CLASS_REALTIME;
@@ -218,6 +270,9 @@ namespace Mi
             else {
                 Priority = PROCESS_PRIORITY_CLASS_HIGH;
             }
+        #else
+            Priority = PROCESS_PRIORITY_CLASS_REALTIME;
+        #endif
         }
         else {
             BaseSetLastNTError(STATUS_INVALID_PARAMETER);
@@ -229,9 +284,11 @@ namespace Mi
         const auto Status = ZwSetInformationProcess(ProcessHandle, ProcessPriorityClass,
             &PriorityInformation, sizeof(PriorityInformation));
 
+    #if !defined _KERNEL_MODE
         if (State) {
             RtlReleasePrivilege(State);
         }
+    #endif
 
         if (!NT_SUCCESS(Status)) {
             BaseSetLastNTError(Status);
@@ -247,6 +304,8 @@ namespace Mi
         _In_ HANDLE ProcessHandle
         )
     {
+        PAGED_CODE();
+
         PROCESS_PRIORITY_CLASS PriorityInformation{};
 
         const auto Status = ZwQueryInformationProcess(ProcessHandle, ProcessPriorityClass,
@@ -287,13 +346,19 @@ namespace Mi
         _Out_ DWORD* SessionId
         )
     {
+        PAGED_CODE();
+
         if (SessionId == nullptr) {
             BaseSetLastNTError(STATUS_INVALID_PARAMETER);
             return FALSE;
         }
 
         if (ProcessId == GetCurrentProcessId()) {
+        #if !defined _KERNEL_MODE
             *SessionId = ZwCurrentPeb()->SessionId;
+        #else
+            * SessionId = PsGetCurrentProcessSessionId();
+        #endif
             return TRUE;
         }
 
@@ -339,6 +404,8 @@ namespace Mi
         _In_ HANDLE ProcessHandle
         )
     {
+        PAGED_CODE();
+
         PROCESS_BASIC_INFORMATION BasicInformation{};
 
         const auto Status = ZwQueryInformationProcess(ProcessHandle, ProcessBasicInformation,
@@ -348,17 +415,19 @@ namespace Mi
             return 0;
         }
 
-        return HandleToULong(BasicInformation.UniqueProcessId);
+        return static_cast<DWORD>(BasicInformation.UniqueProcessId);
     }
     MI_IAT_SYMBOL(GetProcessId, 4);
 
     _IRQL_requires_max_(PASSIVE_LEVEL)
-        BOOL WINAPI MI_NAME(FlushInstructionCache)(
-            _In_ HANDLE ProcessHandle,
-            _In_reads_bytes_opt_(Size) LPCVOID BaseAddress,
-            _In_ SIZE_T Size
-            )
+    BOOL WINAPI MI_NAME(FlushInstructionCache)(
+        _In_ HANDLE ProcessHandle,
+        _In_reads_bytes_opt_(Size) LPCVOID BaseAddress,
+        _In_ SIZE_T Size
+        )
     {
+        PAGED_CODE();
+
         const auto Status = ZwFlushInstructionCache(ProcessHandle, const_cast<PVOID>(BaseAddress), Size);
         if (!NT_SUCCESS(Status)) {
             BaseSetLastNTError(Status);
@@ -370,10 +439,10 @@ namespace Mi
     MI_IAT_SYMBOL(FlushInstructionCache, 12);
 
     _IRQL_requires_max_(PASSIVE_LEVEL)
-    VOID WINAPI MI_NAME(FlushProcessWriteBuffers)(
-        VOID
-        )
+    VOID WINAPI MI_NAME(FlushProcessWriteBuffers)()
     {
+        PAGED_CODE();
+
         const auto Status = ZwFlushProcessWriteBuffers();
         if (!NT_SUCCESS(Status)) {
             BaseSetLastNTError(Status);
@@ -386,6 +455,8 @@ namespace Mi
         _In_ HANDLE Thread
         )
     {
+        PAGED_CODE();
+
         THREAD_BASIC_INFORMATION BasicInformation{};
 
         const auto Status = ZwQueryInformationThread(Thread, ThreadBasicInformation,
@@ -406,6 +477,8 @@ namespace Mi
         _In_ DWORD ProcessId
         )
     {
+        PAGED_CODE();
+
         HANDLE    Handle   = nullptr;
         CLIENT_ID ClientId = { ULongToHandle(ProcessId) };
 
@@ -429,6 +502,8 @@ namespace Mi
         _Out_ PDWORD HandleCount
         )
     {
+        PAGED_CODE();
+
         const auto Status = ZwQueryInformationProcess(ProcessHandle, ProcessHandleCount,
             HandleCount, sizeof(*HandleCount), nullptr);
         if (!NT_SUCCESS(Status)) {
@@ -446,6 +521,8 @@ namespace Mi
         _Out_ PBOOL  DisablePriorityBoost
         )
     {
+        PAGED_CODE();
+
         DWORD DisableBoost;
 
         const auto Status = ZwQueryInformationProcess(ProcessHandle, ProcessPriorityBoost,
@@ -467,6 +544,8 @@ namespace Mi
         _In_ BOOL   DisablePriorityBoost
         )
     {
+        PAGED_CODE();
+
         ULONG DisableBoost = DisablePriorityBoost ? TRUE : FALSE;
 
         const auto Status = ZwSetInformationProcess(ProcessHandle, ProcessPriorityBoost,
@@ -480,11 +559,14 @@ namespace Mi
     }
     MI_IAT_SYMBOL(SetProcessPriorityBoost, 8);
 
+    _IRQL_requires_max_(PASSIVE_LEVEL)
     BOOL WINAPI MI_NAME(IsProcessCritical)(
         _In_ HANDLE ProcessHandle,
         _Out_ PBOOL Critical
         )
     {
+        PAGED_CODE();
+
         ULONG Information = 0;
         const auto Status = ZwQueryInformationProcess(ProcessHandle, ProcessBreakOnTermination,
             &Information, sizeof(Information), nullptr);
@@ -498,6 +580,7 @@ namespace Mi
     }
     MI_IAT_SYMBOL(IsProcessCritical, 0);
 
+    _IRQL_requires_max_(PASSIVE_LEVEL)
     BOOL WINAPI MI_NAME(SetProcessInformation)(
         _In_ HANDLE ProcessHandle,
         _In_ PROCESS_INFORMATION_CLASS ProcessInformationClass,
@@ -505,6 +588,8 @@ namespace Mi
         _In_ DWORD ProcessInformationSize
         )
     {
+        PAGED_CODE();
+
         NTSTATUS Status = STATUS_SUCCESS;
 
         do {
@@ -630,6 +715,7 @@ namespace Mi
     }
     MI_IAT_SYMBOL(SetProcessInformation, 0);
 
+    _IRQL_requires_max_(PASSIVE_LEVEL)
     BOOL WINAPI MI_NAME(GetProcessInformation)(
         _In_ HANDLE ProcessHandle,
         _In_ PROCESS_INFORMATION_CLASS ProcessInformationClass,
@@ -637,6 +723,8 @@ namespace Mi
         _In_ DWORD ProcessInformationSize
         )
     {
+        PAGED_CODE();
+
         NTSTATUS Status = STATUS_SUCCESS;
 
         do {

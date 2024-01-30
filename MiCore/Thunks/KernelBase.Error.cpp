@@ -1,3 +1,6 @@
+#include "KernelBase.Private.h"
+#include "MiCore/MiCore.SystemEnvironmentBlock.Private.h"
+
 #include <intrin.h>
 
 
@@ -66,17 +69,16 @@ namespace Mi
     }
     MI_IAT_SYMBOL(SetLastError, 4);
 
-    UINT WINAPI MI_NAME(GetErrorMode)(
-        VOID
-        )
+    UINT WINAPI MI_NAME(GetErrorMode)()
     {
+    #if !defined _KERNEL_MODE
         UINT Mode = 0;
 
         const auto Status = ZwQueryInformationProcess(ZwCurrentProcess(),
             ProcessDefaultHardErrorMode, &Mode, sizeof(Mode),
             nullptr);
         if (!NT_SUCCESS(Status)) {
-            RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
+            BaseSetLastNTError(Status);
             return 0;
         }
 
@@ -87,6 +89,9 @@ namespace Mi
             SetFlag(Mode, SEM_FAILCRITICALERRORS);
         }
         return Mode;
+    #else
+        return MI_NAME_PRIVATE(RtlGetCurrentPeb)()->HardErrorMode;
+    #endif
     }
     MI_IAT_SYMBOL(GetErrorMode, 0);
 
@@ -94,6 +99,7 @@ namespace Mi
         _In_ UINT Mode
         )
     {
+    #if !defined _KERNEL_MODE
         const auto PreviousMode = GetErrorMode();
 
         if (BooleanFlagOn(Mode, SEM_FAILCRITICALERRORS)) {
@@ -106,10 +112,14 @@ namespace Mi
         const auto Status = NtSetInformationProcess(NtCurrentProcess(),
             ProcessDefaultHardErrorMode, &Mode, sizeof(Mode));
         if (!NT_SUCCESS(Status)) {
-            RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
+            BaseSetLastNTError(Status);
         }
 
         return(PreviousMode);
+    #else
+        return InterlockedExchange(
+            reinterpret_cast<long volatile*>(&MI_NAME_PRIVATE(RtlGetCurrentPeb)()->HardErrorMode), Mode);
+    #endif
     }
     MI_IAT_SYMBOL(SetErrorMode, 4);
 
@@ -131,7 +141,7 @@ namespace Mi
             return TRUE;
         }
 
-        RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
+        BaseSetLastNTError(Status);
         return FALSE;
     }
     MI_IAT_SYMBOL(SetThreadErrorMode, 8);

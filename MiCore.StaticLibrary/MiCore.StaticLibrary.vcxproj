@@ -38,6 +38,9 @@
     <ClInclude Include="..\MiCore\Thunks\KernelBase.Handle.Private.h" />
     <ClInclude Include="..\MiCore\Thunks\KernelBase.NLS.Private.h" />
     <ClInclude Include="..\MiCore\Thunks\KernelBase.Private.h" />
+    <ClInclude Include="..\MiCore\Thunks\KernelBase.Process.Private.h" />
+    <ClInclude Include="..\MiCore\Thunks\KernelBase.System.Private.h" />
+    <ClInclude Include="..\MiCore\Thunks\KernelBase.Thread.Private.h" />
     <ClInclude Include="..\MiCore\Thunks\Ntdll.FiberLocalStorage.Private.h" />
     <ClInclude Include="..\MiCore\Thunks\Ntdll.Heap.Private.h" />
     <ClInclude Include="..\MiCore\Thunks\Ntdll.RealTime.Private.h" />

@@ -1,3 +1,4 @@
+#include "KernelBase.Private.h"
 
 
 EXTERN_C_START
@@ -14,7 +15,7 @@ namespace Mi
     #pragma warning(suppress: 6387)
         const auto Status = RtlFlsAlloc(Callback, &FlsIndex);
         if (!NT_SUCCESS(Status)) {
-            RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
+            BaseSetLastNTError(Status);
         }
 
         return FlsIndex;
@@ -30,7 +31,7 @@ namespace Mi
 
         const auto Status = RtlFlsGetValue(FlsIndex, &Value);
         if (!NT_SUCCESS(Status)) {
-            RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
+            BaseSetLastNTError(Status);
         }
 
         return Value;
@@ -46,7 +47,7 @@ namespace Mi
     #pragma warning(suppress: 6387)
         const auto Status = RtlFlsSetValue(FlsIndex, FlsData);
         if (!NT_SUCCESS(Status)) {
-            RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
+            BaseSetLastNTError(Status);
             return FALSE;
         }
 
@@ -61,7 +62,7 @@ namespace Mi
     {
         const auto Status = RtlFlsFree(FlsIndex);
         if (!NT_SUCCESS(Status)) {
-            RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
+            BaseSetLastNTError(Status);
             return FALSE;
         }
 

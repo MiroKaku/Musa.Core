@@ -1,3 +1,4 @@
+#include "KernelBase.Private.h"
 #include "Ntdll.Heap.Private.h"
 
 
@@ -182,7 +183,7 @@ namespace Mi
         UNREFERENCED_PARAMETER(Flags);
 
         if (Summary->cb != sizeof(*Summary)) {
-            RtlSetLastWin32ErrorAndNtStatusFromNtStatus(STATUS_INVALID_PARAMETER);
+            BaseSetLastNTError(STATUS_INVALID_PARAMETER);
             return FALSE;
         }
 
@@ -204,7 +205,7 @@ namespace Mi
             return TRUE;
         }
 
-        RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
+        BaseSetLastNTError(Status);
         return FALSE;
     }
     MI_IAT_SYMBOL(HeapSummary, 12);
@@ -220,7 +221,7 @@ namespace Mi
             return TRUE;
         }
 
-        RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
+        BaseSetLastNTError(Status);
         return FALSE;
     }
     MI_IAT_SYMBOL(HeapWalk, 8);
@@ -238,7 +239,7 @@ namespace Mi
             return TRUE;
         }
 
-        RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
+        BaseSetLastNTError(Status);
         return FALSE;
     }
     MI_IAT_SYMBOL(HeapSetInformation, 16);
@@ -257,10 +258,183 @@ namespace Mi
             return TRUE;
         }
 
-        RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
+        BaseSetLastNTError(Status);
         return FALSE;
     }
     MI_IAT_SYMBOL(HeapQueryInformation, 20);
+
+
+    //
+    // Local
+    //
+
+    HLOCAL WINAPI MI_NAME(LocalAlloc)(
+        _In_ UINT   Flags,
+        _In_ SIZE_T Bytes
+        )
+    {
+        DWORD HeapFlags = 0;
+
+        if (BooleanFlagOn(Flags, LMEM_MOVEABLE)) {
+            BaseSetLastNTError(STATUS_NOT_IMPLEMENTED);
+            return nullptr;
+        }
+
+        if (BooleanFlagOn(Flags, LMEM_ZEROINIT)) {
+            HeapFlags |= HEAP_ZERO_MEMORY;
+        }
+
+        return HeapAlloc(GetProcessHeap(), HeapFlags, Bytes);
+    }
+    MI_IAT_SYMBOL(LocalAlloc, 8);
+
+    HLOCAL WINAPI MI_NAME(LocalReAlloc)(
+        _Frees_ptr_opt_ HLOCAL Mem,
+        _In_ SIZE_T Bytes,
+        _In_ UINT   Flags
+        )
+    {
+        DWORD HeapFlags = 0;
+
+        if (BooleanFlagOn(Flags, LMEM_MOVEABLE)) {
+            BaseSetLastNTError(STATUS_NOT_IMPLEMENTED);
+            return nullptr;
+        }
+
+        if (BooleanFlagOn(Flags, LMEM_ZEROINIT)) {
+            HeapFlags |= HEAP_ZERO_MEMORY;
+        }
+
+        return HeapReAlloc(GetProcessHeap(), HeapFlags, Mem, Bytes);
+    }
+    MI_IAT_SYMBOL(LocalReAlloc, 12);
+
+    HLOCAL WINAPI MI_NAME(LocalFree)(
+        _Frees_ptr_opt_ HLOCAL Mem
+        )
+    {
+        if (HeapFree(GetProcessHeap(), 0, Mem)) {
+            return nullptr;
+        }
+
+        return Mem;
+    }
+    MI_IAT_SYMBOL(LocalFree, 4);
+
+    LPVOID WINAPI MI_NAME(LocalLock)(
+        _In_ HLOCAL Mem
+        )
+    {
+        return Mem;
+    }
+    MI_IAT_SYMBOL(LocalLock, 4);
+
+    BOOL WINAPI MI_NAME(LocalUnlock)(
+        _In_ HLOCAL Mem
+        )
+    {
+        UNREFERENCED_PARAMETER(Mem);
+        return TRUE;
+    }
+    MI_IAT_SYMBOL(LocalUnlock, 4);
+
+    HLOCAL WINAPI MI_NAME(LocalHandle)(
+        _In_ LPCVOID Mem
+        )
+    {
+        return const_cast<HLOCAL>(Mem);
+    }
+    MI_IAT_SYMBOL(LocalHandle, 4);
+
+    SIZE_T WINAPI MI_NAME(LocalSize)(
+        _In_ HLOCAL Mem
+        )
+    {
+        return HeapSize(GetProcessHeap(), 0, Mem);
+    }
+    MI_IAT_SYMBOL(LocalSize, 4);
+
+    UINT WINAPI MI_NAME(LocalFlags)(
+        _In_ HLOCAL Mem
+        )
+    {
+        UNREFERENCED_PARAMETER(Mem);
+        return 0;
+    }
+    MI_IAT_SYMBOL(LocalFlags, 4);
+
+
+    //
+    // Global
+    //
+
+    HGLOBAL WINAPI MI_NAME(GlobalAlloc)(
+        _In_ UINT   Flags,
+        _In_ SIZE_T Bytes
+        )
+    {
+        return LocalAlloc(Flags, Bytes);
+    }
+    MI_IAT_SYMBOL(GlobalAlloc, 8);
+
+    HGLOBAL WINAPI MI_NAME(GlobalReAlloc)(
+        _Frees_ptr_opt_ HGLOBAL Mem,
+        _In_ SIZE_T Bytes,
+        _In_ UINT   Flags
+        )
+    {
+        return LocalReAlloc(Mem, Bytes, Flags);
+    }
+    MI_IAT_SYMBOL(GlobalReAlloc, 12);
+
+    HGLOBAL WINAPI MI_NAME(GlobalFree)(
+        _Frees_ptr_opt_ HGLOBAL Mem
+        )
+    {
+        return LocalFree(Mem);
+    }
+    MI_IAT_SYMBOL(GlobalFree, 4);
+
+    LPVOID WINAPI MI_NAME(GlobalLock)(
+        _In_ HGLOBAL Mem
+        )
+    {
+        return LocalLock(Mem);
+    }
+    MI_IAT_SYMBOL(GlobalLock, 4);
+
+    BOOL WINAPI MI_NAME(GlobalUnlock)(
+        _In_ HGLOBAL Mem
+        )
+    {
+        return LocalUnlock(Mem);
+    }
+    MI_IAT_SYMBOL(GlobalUnlock, 4);
+
+    HGLOBAL WINAPI MI_NAME(GlobalHandle)(
+        _In_ LPCVOID Mem
+        )
+    {
+        return LocalHandle(Mem);
+    }
+    MI_IAT_SYMBOL(GlobalHandle, 4);
+
+    SIZE_T WINAPI MI_NAME(GlobalSize)(
+        _In_ HGLOBAL Mem
+        )
+    {
+        return LocalSize(Mem);
+    }
+    MI_IAT_SYMBOL(GlobalSize, 4);
+
+    UINT WINAPI MI_NAME(GlobalFlags)(
+        _In_ HGLOBAL Mem
+        )
+    {
+        return LocalFlags(Mem);
+    }
+    MI_IAT_SYMBOL(GlobalFlags, 4);
+
 
 }
 EXTERN_C_END

@@ -20,17 +20,12 @@ namespace Mi
         UNICODE_STRING  ImagePathName;
         UNICODE_STRING  ImageBaseName;
 
-        PVOID           StandardInput;
-        PVOID           StandardOutput;
-        PVOID           StandardError;
-
-        PVOID           Environment;
-        CURDIR          CurrentDirectory;
-
         ULONG           NumberOfHeaps;
         ULONG           MaximumNumberOfHeaps;
         PVOID           DefaultHeap;
         PVOID*          ProcessHeaps;
+
+        ULONG           HardErrorMode;
 
         PVOID           WaitOnAddressHashTable[128];
 

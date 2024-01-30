@@ -1,3 +1,4 @@
+#include "KernelBase.Private.h"
 #include "KernelBase.Handle.Private.h"
 
 #ifdef ALLOC_PRAGMA
@@ -24,7 +25,7 @@ namespace Mi
             return TRUE;
         }
 
-        RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
+        BaseSetLastNTError(Status);
         return FALSE;
     }
     MI_IAT_SYMBOL(CloseHandle, 4);
@@ -49,7 +50,7 @@ namespace Mi
             case STD_INPUT_HANDLE:
             case STD_OUTPUT_HANDLE:
             case STD_ERROR_HANDLE:
-                RtlSetLastWin32ErrorAndNtStatusFromNtStatus(STATUS_NOT_IMPLEMENTED);
+                BaseSetLastNTError(STATUS_NOT_IMPLEMENTED);
                 return FALSE;
             default:
                 break;
@@ -74,7 +75,7 @@ namespace Mi
             return TRUE;
         }
 
-        RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
+        BaseSetLastNTError(Status);
         return FALSE;
     }
     MI_IAT_SYMBOL(DuplicateHandle, 28);
@@ -93,7 +94,7 @@ namespace Mi
             return TRUE;
         }
 
-        RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
+        BaseSetLastNTError(Status);
         return FALSE;
     }
     MI_IAT_SYMBOL(CompareObjectHandles, 8);
@@ -113,7 +114,7 @@ namespace Mi
         case STD_INPUT_HANDLE:
         case STD_OUTPUT_HANDLE:
         case STD_ERROR_HANDLE:
-            RtlSetLastWin32ErrorAndNtStatusFromNtStatus(STATUS_NOT_IMPLEMENTED);
+            BaseSetLastNTError(STATUS_NOT_IMPLEMENTED);
             return FALSE;
         default:
             break;
@@ -134,7 +135,7 @@ namespace Mi
             return TRUE;
         }
 
-        RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
+        BaseSetLastNTError(Status);
         return FALSE;
     }
     MI_IAT_SYMBOL(GetHandleInformation, 8);
@@ -153,7 +154,7 @@ namespace Mi
         case STD_INPUT_HANDLE:
         case STD_OUTPUT_HANDLE:
         case STD_ERROR_HANDLE:
-            RtlSetLastWin32ErrorAndNtStatusFromNtStatus(STATUS_NOT_IMPLEMENTED);
+            BaseSetLastNTError(STATUS_NOT_IMPLEMENTED);
             return FALSE;
         default:
             break;
@@ -178,7 +179,7 @@ namespace Mi
             }
         }
 
-        RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
+        BaseSetLastNTError(Status);
         return FALSE;
     }
     MI_IAT_SYMBOL(SetHandleInformation, 12);

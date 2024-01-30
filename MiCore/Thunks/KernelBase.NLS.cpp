@@ -1,4 +1,5 @@
 // National Language Support
+#include "KernelBase.Private.h"
 #include "KernelBase.NLS.Private.h"
 
 #ifdef ALLOC_PRAGMA
@@ -125,7 +126,7 @@ namespace Mi
         } while (false);
 
         if (!NT_SUCCESS(Status)) {
-            RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
+            BaseSetLastNTError(Status);
         }
 
         return ReturnLength;
@@ -258,7 +259,7 @@ namespace Mi
         } while (false);
     
         if (!NT_SUCCESS(Status)) {
-            RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
+            BaseSetLastNTError(Status);
         }
 
         return ReturnLength;

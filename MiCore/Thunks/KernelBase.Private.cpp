@@ -3,6 +3,7 @@
 
 namespace Mi
 {
+#if !defined _KERNEL_MODE
     PVOID WINAPI BaseIsRealtimeAllowed(
         BOOLEAN LeaveEnabled,
         BOOLEAN Revert
@@ -24,6 +25,7 @@ namespace Mi
         RtlReleasePrivilege(State);
         return reinterpret_cast<PVOID>(TRUE);
     }
+#endif
 
 
 }
