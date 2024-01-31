@@ -2,6 +2,8 @@
 
 #include "MiCore/MiCore.Utility.h"
 
+#include <bcrypt.h>
+
 
 EXTERN_C_START
 namespace Mi
@@ -37,6 +39,23 @@ namespace Mi
         return FastDecodePointer(Ptr, SharedUserData->Cookie);
     }
     MI_IAT_SYMBOL(RtlDecodeSystemPointer, 4);
+
+    BOOLEAN NTAPI MI_NAME(RtlGenRandom)(
+        _Out_writes_bytes_(RandomBufferLength) PVOID RandomBuffer,
+        _In_ ULONG RandomBufferLength
+        )
+    {
+        const auto Status = BCryptGenRandom(nullptr, static_cast<PUCHAR>(RandomBuffer), RandomBufferLength,
+            BCRYPT_USE_SYSTEM_PREFERRED_RNG);
+        if (NT_SUCCESS(Status)) {
+            return TRUE;
+        }
+
+        RtlSetLastWin32ErrorAndNtStatusFromNtStatus(Status);
+        return FALSE;
+    }
+    MI_IAT_SYMBOL(RtlGenRandom, 8);
+
 
 }
 EXTERN_C_END

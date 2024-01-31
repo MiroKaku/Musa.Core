@@ -8,7 +8,6 @@
 #pragma alloc_text(PAGE, MI_NAME_PRIVATE(FreeEnvironmentBlock))
 #endif
 
-
 EXTERN_C_START
 namespace Mi
 {

@@ -61,6 +61,12 @@
     <ClInclude Include="..\MiCore\Thunks\KernelBase.Thread.Private.h">
       <Filter>MiCore\Thunks</Filter>
     </ClInclude>
+    <ClInclude Include="..\MiCore\Thunks\Ntdll.Debug.Private.h">
+      <Filter>MiCore\Thunks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MiCore\Thunks\KernelBase.Synchronize.Private.h">
+      <Filter>MiCore\Thunks</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\MiCore\MiCore.cpp">
@@ -154,6 +160,12 @@
       <Filter>MiCore\Thunks</Filter>
     </ClCompile>
     <ClCompile Include="..\MiCore\Thunks\KernelBase.System.cpp">
+      <Filter>MiCore\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MiCore\Thunks\Ntdll.Debug.cpp">
+      <Filter>MiCore\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MiCore\Thunks\KernelBase.Synchronize.cpp">
       <Filter>MiCore\Thunks</Filter>
     </ClCompile>
   </ItemGroup>

@@ -10,6 +10,9 @@
 
 
 EXTERN_C_START
+
+extern PVOID PsSystemDllBase;
+
 namespace Mi
 {
     extern PVOID MiCoreHeap;
@@ -20,6 +23,7 @@ namespace Mi
         auto ZwClose                = static_cast<decltype(::ZwClose)               *>(nullptr);
         auto ZwOpenDirectoryObject  = static_cast<decltype(::ZwOpenDirectoryObject) *>(nullptr);
         auto ZwOpenSection          = static_cast<decltype(::ZwOpenSection)         *>(nullptr);
+        auto ZwQuerySection         = static_cast<decltype(::ZwQuerySection)        *>(nullptr);
         auto ZwMapViewOfSection     = static_cast<decltype(::ZwMapViewOfSection)    *>(nullptr);
         auto ZwUnmapViewOfSection   = static_cast<decltype(::ZwUnmapViewOfSection)  *>(nullptr);
 
@@ -33,18 +37,21 @@ namespace Mi
             constexpr auto NameOfZwClose                = ANSI_STRING RTL_CONSTANT_STRING("ZwClose");
             constexpr auto NameOfZwOpenDirectoryObject  = ANSI_STRING RTL_CONSTANT_STRING("ZwOpenDirectoryObject");
             constexpr auto NameOfZwOpenSection          = ANSI_STRING RTL_CONSTANT_STRING("ZwOpenSection");
+            constexpr auto NameOfZwQuerySection         = ANSI_STRING RTL_CONSTANT_STRING("ZwQuerySection");
             constexpr auto NameOfZwMapViewOfSection     = ANSI_STRING RTL_CONSTANT_STRING("ZwMapViewOfSection");
             constexpr auto NameOfZwUnmapViewOfSection   = ANSI_STRING RTL_CONSTANT_STRING("ZwUnmapViewOfSection");
 
             ZwClose               = static_cast<decltype(ZwClose)              >(GetSystemRoutine(&NameOfZwClose));
             ZwOpenDirectoryObject = static_cast<decltype(ZwOpenDirectoryObject)>(GetSystemRoutine(&NameOfZwOpenDirectoryObject));
             ZwOpenSection         = static_cast<decltype(ZwOpenSection)        >(GetSystemRoutine(&NameOfZwOpenSection));
+            ZwQuerySection        = static_cast<decltype(ZwQuerySection)       >(GetSystemRoutine(&NameOfZwQuerySection));
             ZwMapViewOfSection    = static_cast<decltype(ZwMapViewOfSection)   >(GetSystemRoutine(&NameOfZwMapViewOfSection));
             ZwUnmapViewOfSection  = static_cast<decltype(ZwUnmapViewOfSection) >(GetSystemRoutine(&NameOfZwUnmapViewOfSection));
 
             if (ZwClose               == nullptr ||
                 ZwOpenDirectoryObject == nullptr ||
                 ZwOpenSection         == nullptr ||
+                ZwQuerySection        == nullptr ||
                 ZwMapViewOfSection    == nullptr ||
                 ZwUnmapViewOfSection  == nullptr) {
 
@@ -325,6 +332,15 @@ namespace Mi
             if (!NT_SUCCESS(Status)) {
                 break;
             }
+
+            SECTION_IMAGE_INFORMATION SectionImageInfo{};
+            Status = ZwQuerySection(SectionHandle, SectionImageInformation,
+                &SectionImageInfo, sizeof(SectionImageInfo), nullptr);
+            if (!NT_SUCCESS(Status)) {
+                break;
+            }
+
+            PsSystemDllBase = SectionImageInfo.TransferAddress;
 
             Status = ObReferenceObjectByHandle(SectionHandle, SECTION_MAP_READ | SECTION_QUERY,
                 *MmSectionObjectType, KernelMode, &SectionObject, nullptr);
@@ -659,6 +675,8 @@ namespace Mi
 
             ImageBaseOfNtdll = MiCoreNtBaseSecure;
         #endif
+
+            PsSystemDllBase = ImageBaseOfNtdll;
 
             Status = Mi::PEParser::ImageEnumerateExports([](const uint32_t Ordinal, const char* Name, const void* Address, void* Context)->bool
             {

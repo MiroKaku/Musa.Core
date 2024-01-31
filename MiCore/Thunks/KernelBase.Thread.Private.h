@@ -29,6 +29,20 @@ HANDLE WINAPI MI_NAME(CreateRemoteThread)(
     _Out_opt_ LPDWORD ThreadId
     );
 
+#if defined _KERNEL_MODE
+_IRQL_requires_max_(PASSIVE_LEVEL)
+HANDLE WINAPI MI_NAME(CreateRemoteThreadEx)(
+    _In_ HANDLE Process,
+    _In_opt_ LPSECURITY_ATTRIBUTES ThreadAttributes,
+    _In_ SIZE_T StackSize,
+    _In_ LPTHREAD_START_ROUTINE StartAddress,
+    _In_opt_ LPVOID Parameter,
+    _In_ DWORD CreationFlags,
+    _In_opt_ LPPROC_THREAD_ATTRIBUTE_LIST AttributeList,
+    _Out_opt_ LPDWORD ThreadId
+    );
+#endif
+
 _IRQL_requires_max_(PASSIVE_LEVEL)
 VOID WINAPI MI_NAME(ExitThread)(
     _In_ DWORD ExitCode

@@ -8,8 +8,10 @@
 #pragma alloc_text(PAGE, MiCoreShutdown)
 #endif
 
-
 EXTERN_C_START
+
+extern PVOID PsSystemDllBase = nullptr;
+
 namespace Mi
 {
 #ifdef _KERNEL_MODE

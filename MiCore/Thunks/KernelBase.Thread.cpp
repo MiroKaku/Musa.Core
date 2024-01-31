@@ -6,6 +6,7 @@
 #pragma alloc_text(PAGE, MI_NAME(SwitchToThread))
 #pragma alloc_text(PAGE, MI_NAME(CreateThread))
 #pragma alloc_text(PAGE, MI_NAME(CreateRemoteThread))
+#pragma alloc_text(PAGE, MI_NAME(CreateRemoteThreadEx))
 #pragma alloc_text(PAGE, MI_NAME(ExitThread))
 #pragma alloc_text(PAGE, MI_NAME(OpenThread))
 #pragma alloc_text(PAGE, MI_NAME(SetThreadPriority))
@@ -86,36 +87,75 @@ namespace Mi
     }
     MI_IAT_SYMBOL(CreateRemoteThread, 28);
 
-//#if defined _KERNEL_MODE
-//    _IRQL_requires_max_(PASSIVE_LEVEL)
-//    HANDLE WINAPI MI_NAME(CreateRemoteThreadEx)(
-//        _In_ HANDLE Process,
-//        _In_opt_ LPSECURITY_ATTRIBUTES ThreadAttributes,
-//        _In_ SIZE_T StackSize,
-//        _In_ LPTHREAD_START_ROUTINE StartAddress,
-//        _In_opt_ LPVOID Parameter,
-//        _In_ DWORD CreationFlags,
-//        _In_opt_ LPPROC_THREAD_ATTRIBUTE_LIST AttributeList,
-//        _Out_opt_ LPDWORD ThreadId
-//        )
-//    {
-//        // TODO:
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//    }
-//    MI_IAT_SYMBOL(CreateRemoteThreadEx, 32);
-//#endif
+#if defined _KERNEL_MODE
+    VEIL_DECLARE_STRUCT(MI_USER_THREAD_PARAMETER)
+    {
+        LPTHREAD_START_ROUTINE StartAddress;
+        LPVOID Parameter;
+    };
+
+    static void MI_NAME_PRIVATE(ThreadInitThunk)(
+        _In_ PVOID StartContext
+        )
+    {
+        const auto ThreadParameter = static_cast<PMI_USER_THREAD_PARAMETER>(StartContext);
+        if (ThreadParameter == nullptr) {
+            return;
+        }
+
+        ThreadParameter->StartAddress(ThreadParameter->Parameter);
+    }
+
+    _IRQL_requires_max_(PASSIVE_LEVEL)
+    HANDLE WINAPI MI_NAME(CreateRemoteThreadEx)(
+        _In_ HANDLE Process,
+        _In_opt_ LPSECURITY_ATTRIBUTES ThreadAttributes,
+        _In_ SIZE_T StackSize,
+        _In_ LPTHREAD_START_ROUTINE StartAddress,
+        _In_opt_ LPVOID Parameter,
+        _In_ DWORD CreationFlags,
+        _In_opt_ LPPROC_THREAD_ATTRIBUTE_LIST AttributeList,
+        _Out_opt_ LPDWORD ThreadId
+        )
+    {
+        PAGED_CODE();
+
+        UNREFERENCED_PARAMETER(StackSize);
+        UNREFERENCED_PARAMETER(CreationFlags);
+        UNREFERENCED_PARAMETER(AttributeList);
+
+        auto ObjectAttributes = OBJECT_ATTRIBUTES RTL_CONSTANT_OBJECT_ATTRIBUTES(
+            static_cast<PUNICODE_STRING>(nullptr), OBJ_KERNEL_HANDLE);
+
+        if (ThreadAttributes) {
+            if (ThreadAttributes->bInheritHandle) {
+                ObjectAttributes.Attributes |= OBJ_INHERIT;
+            }
+
+            ObjectAttributes.SecurityDescriptor = ThreadAttributes->lpSecurityDescriptor;
+        }
+
+        CLIENT_ID ClientId{};
+        MI_USER_THREAD_PARAMETER ThreadParameter;
+        ThreadParameter.StartAddress = StartAddress;
+        ThreadParameter.Parameter    = Parameter;
+
+        HANDLE ThreadHandle = nullptr;
+        const auto Status = PsCreateSystemThread(&ThreadHandle, THREAD_ALL_ACCESS, &ObjectAttributes, Process,
+            &ClientId, MI_NAME_PRIVATE(ThreadInitThunk), &ThreadParameter);
+        if (!NT_SUCCESS(Status)) {
+            BaseSetLastNTError(Status);
+            return nullptr;
+        }
+
+        if (ThreadId) {
+            *ThreadId = HandleToULong(ClientId.UniqueThread);
+        }
+
+        return ThreadHandle;
+    }
+    MI_IAT_SYMBOL(CreateRemoteThreadEx, 32);
+#endif
 
     _IRQL_requires_max_(PASSIVE_LEVEL)
     VOID WINAPI MI_NAME(ExitThread)(
