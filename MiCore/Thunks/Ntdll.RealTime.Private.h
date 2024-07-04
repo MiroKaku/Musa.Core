@@ -31,6 +31,7 @@ _VEIL_DECLARE_ALTERNATE_NAME(RtlQueryUnbiasedInterruptTimePrecise, _Mi_RtlQueryU
 #endif
 #endif // (NTDDI_VERSION >= NTDDI_WIN10_RS1)
 
+
 NTSTATUS NTAPI RtlQueryAuxiliaryCounterFrequency(
     _Out_ PULONG64 AuxiliaryCounterFrequency
 );
@@ -46,6 +47,16 @@ NTSTATUS NTAPI RtlConvertPerformanceCounterToAuxiliaryCounter(
     _Out_     PULONG64 AuxiliaryCounterValue,
     _Out_opt_ PULONG64 ConversionError
 );
+
+#ifdef _X86_
+_VEIL_DECLARE_ALTERNATE_NAME(RtlQueryAuxiliaryCounterFrequency@4, _Mi_RtlQueryAuxiliaryCounterFrequency@4);
+_VEIL_DECLARE_ALTERNATE_NAME(RtlConvertAuxiliaryCounterToPerformanceCounter@12, _Mi_RtlConvertAuxiliaryCounterToPerformanceCounter@12);
+_VEIL_DECLARE_ALTERNATE_NAME(RtlConvertPerformanceCounterToAuxiliaryCounter@12, _Mi_RtlConvertPerformanceCounterToAuxiliaryCounter@12);
+#else
+_VEIL_DECLARE_ALTERNATE_NAME(RtlQueryAuxiliaryCounterFrequency, _Mi_RtlQueryAuxiliaryCounterFrequency);
+_VEIL_DECLARE_ALTERNATE_NAME(RtlConvertAuxiliaryCounterToPerformanceCounter, _Mi_RtlConvertAuxiliaryCounterToPerformanceCounter);
+_VEIL_DECLARE_ALTERNATE_NAME(RtlConvertPerformanceCounterToAuxiliaryCounter, _Mi_RtlConvertPerformanceCounterToAuxiliaryCounter);
+#endif
 
 
 

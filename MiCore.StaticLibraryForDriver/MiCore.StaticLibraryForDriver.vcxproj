@@ -49,6 +49,7 @@
     <ClInclude Include="..\MiCore\Thunks\Ntdll.Heap.Private.h" />
     <ClInclude Include="..\MiCore\Thunks\Ntdll.RealTime.Private.h" />
     <ClInclude Include="..\MiCore\Thunks\Ntdll.Synchronize.Private.h" />
+    <ClInclude Include="..\MiCore\Thunks\Ntdll.Thread.Private.h" />
     <ClInclude Include="universal.h" />
   </ItemGroup>
   <ItemGroup>
@@ -87,6 +88,7 @@
     <ClCompile Include="..\MiCore\Thunks\Ntdll.RealTime.cpp" />
     <ClCompile Include="..\MiCore\Thunks\Ntdll.Synchronize.cpp" />
     <ClCompile Include="..\MiCore\Thunks\Ntdll.System.cpp" />
+    <ClCompile Include="..\MiCore\Thunks\Ntdll.Thread.cpp" />
     <ClCompile Include="..\MiCore\Thunks\Ntdll.Utility.cpp" />
   </ItemGroup>
   <Import Project="..\Mile.Project.Windows\Mile.Project.Cpp.targets" />

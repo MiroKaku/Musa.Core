@@ -948,7 +948,7 @@ namespace Mi
     }
     MI_IAT_SYMBOL(RtlValidateProcessHeaps, 0);
 
-    NTSTATUS NTAPI RtlQueryHeapInformation(
+    NTSTATUS NTAPI MI_NAME(RtlQueryHeapInformation)(
         _In_opt_ PVOID HeapHandle,
         _In_ HEAP_INFORMATION_CLASS HeapInformationClass,
         _Out_opt_ PVOID HeapInformation,
@@ -1000,8 +1000,9 @@ namespace Mi
 
         return Status;
     }
+    MI_IAT_SYMBOL(RtlQueryHeapInformation, 20);
 
-    NTSTATUS NTAPI RtlSetHeapInformation(
+    NTSTATUS NTAPI MI_NAME(RtlSetHeapInformation)(
         _In_ PVOID HeapHandle,
         _In_ HEAP_INFORMATION_CLASS HeapInformationClass,
         _In_opt_ PVOID HeapInformation,
@@ -1046,6 +1047,19 @@ namespace Mi
 
         return Status;
     }
+    MI_IAT_SYMBOL(RtlSetHeapInformation, 16);
+
+    NTSTATUS NTAPI MI_NAME(RtlWalkHeap)(
+        _In_ PVOID HeapHandle,
+        _Inout_ PRTL_HEAP_WALK_ENTRY Entry
+        )
+    {
+        UNREFERENCED_PARAMETER(HeapHandle);
+        UNREFERENCED_PARAMETER(Entry);
+
+        return STATUS_NOT_IMPLEMENTED;
+    }
+    MI_IAT_SYMBOL(RtlWalkHeap, 8);
 
     VOID NTAPI MI_NAME(RtlDetectHeapLeaks)(
         VOID

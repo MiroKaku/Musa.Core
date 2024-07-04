@@ -818,16 +818,16 @@ namespace Mi
     }
     MI_IAT_SYMBOL(TryEnterCriticalSection, 4);
 
-    _IRQL_requires_max_(APC_LEVEL)
-    DWORD WINAPI MI_NAME(SetCriticalSectionSpinCount)(
-        _Inout_ LPCRITICAL_SECTION CriticalSection,
-        _In_ DWORD SpinCount
-        )
-    {
-        PAGED_CODE();
-        return RtlSetCriticalSectionSpinCount(CriticalSection, SpinCount);
-    }
-    MI_IAT_SYMBOL(SetCriticalSectionSpinCount, 8);
+    //_IRQL_requires_max_(APC_LEVEL)
+    //DWORD WINAPI MI_NAME(SetCriticalSectionSpinCount)(
+    //    _Inout_ LPCRITICAL_SECTION CriticalSection,
+    //    _In_ DWORD SpinCount
+    //    )
+    //{
+    //    PAGED_CODE();
+    //    return RtlSetCriticalSectionSpinCount(CriticalSection, SpinCount);
+    //}
+    //MI_IAT_SYMBOL(SetCriticalSectionSpinCount, 8);
 
     //
     // Condition variable
