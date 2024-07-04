@@ -29,7 +29,7 @@
     <Link>
       <AdditionalOptions>/INTEGRITYCHECK %(AdditionalOptions)</AdditionalOptions>
       <AdditionalLibraryDirectories>$(OutDirFullPath);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>MiCore.StaticLibraryForDriver.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>MiCore.StaticLibraryForDriver.lib;Cng.lib%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
