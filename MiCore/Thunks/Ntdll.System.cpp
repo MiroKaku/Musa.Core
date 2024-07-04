@@ -43,5 +43,6 @@ namespace Mi
     }
     MI_IAT_SYMBOL(RtlGetCurrentProcessorNumberEx, 4);
 
+
 }
 EXTERN_C_END

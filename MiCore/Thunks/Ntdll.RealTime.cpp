@@ -4,6 +4,19 @@
 EXTERN_C_START
 namespace Mi
 {
+#ifdef _KERNEL_MODE
+    LARGE_INTEGER NTAPI MI_NAME(RtlGetSystemTimePrecise)(
+        VOID
+        )
+    {
+        LARGE_INTEGER SystemTime{};
+        KeQuerySystemTimePrecise(&SystemTime);
+
+        return SystemTime;
+    }
+    MI_IAT_SYMBOL(RtlGetSystemTimePrecise, 0);
+#endif
+
     BOOLEAN NTAPI MI_NAME(RtlGetInterruptTime)(
         _Out_ PLARGE_INTEGER InterruptTime
         )

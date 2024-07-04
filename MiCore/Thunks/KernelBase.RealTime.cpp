@@ -4,6 +4,17 @@
 EXTERN_C_START
 namespace Mi
 {
+    VOID WINAPI MI_NAME(GetSystemTimePreciseAsFileTime)(
+        _Out_ LPFILETIME SystemTimeAsFileTime
+        )
+    {
+        const auto SystemTimePrecise = RtlGetSystemTimePrecise();
+
+        SystemTimeAsFileTime->dwHighDateTime = SystemTimePrecise.HighPart;
+        SystemTimeAsFileTime->dwLowDateTime = SystemTimePrecise.LowPart;
+    }
+    MI_IAT_SYMBOL(GetSystemTimePreciseAsFileTime, 4);
+
     VOID WINAPI MI_NAME(QueryInterruptTime)(
         _Out_ PLARGE_INTEGER PerformanceCount
     )

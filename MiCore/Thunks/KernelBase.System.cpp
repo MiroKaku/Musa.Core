@@ -247,17 +247,6 @@ namespace Mi
     //
     // System Times
     //
-    
-    VOID WINAPI MI_NAME(GetSystemTimePreciseAsFileTime)(
-        _Out_ LPFILETIME SystemTimeAsFileTime
-        )
-    {
-        const auto SystemTimePrecise = RtlGetSystemTimePrecise();
-
-        SystemTimeAsFileTime->dwHighDateTime = SystemTimePrecise.HighPart;
-        SystemTimeAsFileTime->dwLowDateTime  = SystemTimePrecise.LowPart;
-    }
-    MI_IAT_SYMBOL(GetSystemTimePreciseAsFileTime, 4);
 
     _IRQL_requires_max_(PASSIVE_LEVEL)
     BOOL WINAPI MI_NAME(GetSystemTimes)(
