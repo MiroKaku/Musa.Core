@@ -7,25 +7,46 @@
 #pragma alloc_text(PAGE, MI_NAME(CreateMutexExW))
 #pragma alloc_text(PAGE, MI_NAME(OpenMutexW))
 #pragma alloc_text(PAGE, MI_NAME(ReleaseMutex))
+
 #pragma alloc_text(PAGE, MI_NAME(CreateEventW))
 #pragma alloc_text(PAGE, MI_NAME(CreateEventExW))
 #pragma alloc_text(PAGE, MI_NAME(OpenEventW))
 #pragma alloc_text(PAGE, MI_NAME(SetEvent))
 #pragma alloc_text(PAGE, MI_NAME(ResetEvent))
+
 #pragma alloc_text(PAGE, MI_NAME(CreateSemaphoreW))
 #pragma alloc_text(PAGE, MI_NAME(CreateSemaphoreExW))
 #pragma alloc_text(PAGE, MI_NAME(OpenSemaphoreW))
 #pragma alloc_text(PAGE, MI_NAME(ReleaseSemaphore))
+
 #pragma alloc_text(PAGE, MI_NAME(Sleep))
 #pragma alloc_text(PAGE, MI_NAME(SleepEx))
 #pragma alloc_text(PAGE, MI_NAME(WaitForSingleObject))
 #pragma alloc_text(PAGE, MI_NAME(WaitForSingleObjectEx))
 #pragma alloc_text(PAGE, MI_NAME(WaitForMultipleObjects))
 #pragma alloc_text(PAGE, MI_NAME(WaitForMultipleObjectsEx))
+
 #pragma alloc_text(PAGE, MI_NAME(InitOnceInitialize))
 #pragma alloc_text(PAGE, MI_NAME(InitOnceExecuteOnce))
 #pragma alloc_text(PAGE, MI_NAME(InitOnceBeginInitialize))
 #pragma alloc_text(PAGE, MI_NAME(InitOnceComplete))
+
+#pragma alloc_text(PAGE, MI_NAME(AcquireSRWLockExclusive))
+#pragma alloc_text(PAGE, MI_NAME(AcquireSRWLockShared))
+#pragma alloc_text(PAGE, MI_NAME(ReleaseSRWLockExclusive))
+#pragma alloc_text(PAGE, MI_NAME(ReleaseSRWLockShared))
+#pragma alloc_text(PAGE, MI_NAME(TryAcquireSRWLockExclusive))
+#pragma alloc_text(PAGE, MI_NAME(TryAcquireSRWLockShared))
+
+#pragma alloc_text(PAGE, MI_NAME(EnterCriticalSection))
+#pragma alloc_text(PAGE, MI_NAME(LeaveCriticalSection))
+#pragma alloc_text(PAGE, MI_NAME(TryEnterCriticalSection))
+#pragma alloc_text(PAGE, MI_NAME(SetCriticalSectionSpinCount))
+
+#pragma alloc_text(PAGE, MI_NAME(WakeConditionVariable))
+#pragma alloc_text(PAGE, MI_NAME(WakeAllConditionVariable))
+#pragma alloc_text(PAGE, MI_NAME(SleepConditionVariableCS))
+#pragma alloc_text(PAGE, MI_NAME(SleepConditionVariableSRW))
 #endif
 
 EXTERN_C_START
@@ -557,6 +578,7 @@ namespace Mi
     MI_IAT_SYMBOL(InitOnceInitialize, 4);
 
     _IRQL_requires_max_(APC_LEVEL)
+    _Must_inspect_result_
     BOOL WINAPI MI_NAME(InitOnceExecuteOnce)(
         _Inout_ PINIT_ONCE InitOnce,
         _In_ __callback PINIT_ONCE_FN InitFn,
@@ -587,6 +609,7 @@ namespace Mi
     MI_IAT_SYMBOL(InitOnceExecuteOnce, 16);
 
     _IRQL_requires_max_(APC_LEVEL)
+    _Must_inspect_result_
     BOOL WINAPI MI_NAME(InitOnceBeginInitialize)(
         _Inout_ LPINIT_ONCE InitOnce,
         _In_ DWORD Flags,
@@ -630,14 +653,269 @@ namespace Mi
     // R/W lock
     //
 
+    _IRQL_requires_max_(DISPATCH_LEVEL)
+    VOID WINAPI MI_NAME(InitializeSRWLock)(
+        _Out_ PSRWLOCK SRWLock
+        )
+    {
+        RtlInitializeSRWLock(SRWLock);
+    }
+    MI_IAT_SYMBOL(InitializeSRWLock, 4);
+
+    _IRQL_requires_max_(APC_LEVEL)
+    _Acquires_exclusive_lock_(*SRWLock)
+    VOID WINAPI MI_NAME(AcquireSRWLockExclusive)(
+        _Inout_ PSRWLOCK SRWLock
+        )
+    {
+        PAGED_CODE();
+        RtlAcquireSRWLockExclusive(SRWLock);
+    }
+    MI_IAT_SYMBOL(AcquireSRWLockExclusive, 4);
+
+    _IRQL_requires_max_(APC_LEVEL)
+    _Acquires_shared_lock_(*SRWLock)
+    VOID WINAPI MI_NAME(AcquireSRWLockShared)(
+        _Inout_ PSRWLOCK SRWLock
+        )
+    {
+        PAGED_CODE();
+        RtlAcquireSRWLockShared(SRWLock);
+    }
+    MI_IAT_SYMBOL(AcquireSRWLockShared, 4);
+
+    _IRQL_requires_max_(APC_LEVEL)
+    _Releases_exclusive_lock_(*SRWLock)
+    VOID WINAPI MI_NAME(ReleaseSRWLockExclusive)(
+        _Inout_ PSRWLOCK SRWLock
+        )
+    {
+        PAGED_CODE();
+        RtlReleaseSRWLockExclusive(SRWLock);
+    }
+    MI_IAT_SYMBOL(ReleaseSRWLockExclusive, 4);
+
+    _IRQL_requires_max_(APC_LEVEL)
+    _Releases_shared_lock_(*SRWLock)
+    VOID WINAPI MI_NAME(ReleaseSRWLockShared)(
+        _Inout_ PSRWLOCK SRWLock
+        )
+    {
+        PAGED_CODE();
+        RtlReleaseSRWLockShared(SRWLock);
+    }
+    MI_IAT_SYMBOL(ReleaseSRWLockShared, 4);
+
+    _IRQL_requires_max_(APC_LEVEL)
+    _When_(return != 0, _Acquires_exclusive_lock_(*SRWLock))
+    BOOLEAN WINAPI MI_NAME(TryAcquireSRWLockExclusive)(
+        _Inout_ PSRWLOCK SRWLock
+    )
+    {
+        PAGED_CODE();
+        return RtlTryAcquireSRWLockExclusive(SRWLock);
+    }
+    MI_IAT_SYMBOL(TryAcquireSRWLockExclusive, 4);
+
+    _IRQL_requires_max_(APC_LEVEL)
+    _When_(return != 0, _Acquires_shared_lock_(*SRWLock))
+    BOOLEAN WINAPI MI_NAME(TryAcquireSRWLockShared)(
+        _Inout_ PSRWLOCK SRWLock
+    )
+    {
+        PAGED_CODE();
+        return RtlTryAcquireSRWLockShared(SRWLock);
+    }
+    MI_IAT_SYMBOL(TryAcquireSRWLockShared, 4);
+
     //
     // Critical Section
     //
 
+    _IRQL_requires_max_(DISPATCH_LEVEL)
+    VOID WINAPI MI_NAME(InitializeCriticalSection)(
+        _Out_ LPCRITICAL_SECTION CriticalSection
+        )
+    {
+        (void)RtlInitializeCriticalSection(CriticalSection);
+    }
+    MI_IAT_SYMBOL(InitializeCriticalSection, 4);
+
+    _IRQL_requires_max_(DISPATCH_LEVEL)
+    _Must_inspect_result_
+    BOOL WINAPI MI_NAME(InitializeCriticalSectionAndSpinCount)(
+        _Out_ LPCRITICAL_SECTION CriticalSection,
+        _In_ DWORD SpinCount
+    )
+    {
+        const auto Status = RtlInitializeCriticalSectionAndSpinCount(CriticalSection, SpinCount);
+        if (NT_SUCCESS(Status)) {
+            return TRUE;
+        }
+
+        BaseSetLastNTError(Status);
+        return FALSE;
+    }
+    MI_IAT_SYMBOL(InitializeCriticalSectionAndSpinCount, 8);
+
+    _IRQL_requires_max_(DISPATCH_LEVEL)
+    _IRQL_requires_max_(APC_LEVEL)
+    BOOL WINAPI MI_NAME(InitializeCriticalSectionEx)(
+        _Out_ LPCRITICAL_SECTION CriticalSection,
+        _In_ DWORD SpinCount,
+        _In_ DWORD Flags
+    )
+    {
+        const auto Status = RtlInitializeCriticalSectionEx(CriticalSection, SpinCount, Flags);
+        if (NT_SUCCESS(Status)) {
+            return TRUE;
+        }
+
+        BaseSetLastNTError(Status);
+        return FALSE;
+    }
+    MI_IAT_SYMBOL(InitializeCriticalSectionEx, 12);
+
+    _IRQL_requires_max_(DISPATCH_LEVEL)
+    VOID WINAPI MI_NAME(DeleteCriticalSection)(
+        _Inout_ LPCRITICAL_SECTION CriticalSection
+        )
+    {
+        (void)RtlDeleteCriticalSection(CriticalSection);
+    }
+    MI_IAT_SYMBOL(DeleteCriticalSection, 4);
+
+    _IRQL_requires_max_(APC_LEVEL)
+    _Acquires_exclusive_lock_(*CriticalSection)
+    VOID WINAPI MI_NAME(EnterCriticalSection)(
+        _Inout_ LPCRITICAL_SECTION CriticalSection
+        )
+    {
+        PAGED_CODE();
+        (void)RtlEnterCriticalSection(CriticalSection);
+    }
+    MI_IAT_SYMBOL(EnterCriticalSection, 4);
+
+    _IRQL_requires_max_(APC_LEVEL)
+    _Releases_exclusive_lock_(*CriticalSection)
+    VOID WINAPI MI_NAME(LeaveCriticalSection)(
+        _Inout_ LPCRITICAL_SECTION CriticalSection
+        )
+    {
+        PAGED_CODE();
+        (void)RtlLeaveCriticalSection(CriticalSection);
+    }
+    MI_IAT_SYMBOL(LeaveCriticalSection, 4);
+
+    _IRQL_requires_max_(APC_LEVEL)
+    _When_(return != 0, _Acquires_exclusive_lock_(*CriticalSection))
+    BOOL WINAPI MI_NAME(TryEnterCriticalSection)(
+        _Inout_ LPCRITICAL_SECTION CriticalSection
+    )
+    {
+        PAGED_CODE();
+        return RtlTryEnterCriticalSection(CriticalSection);
+    }
+    MI_IAT_SYMBOL(TryEnterCriticalSection, 4);
+
+    _IRQL_requires_max_(APC_LEVEL)
+    DWORD WINAPI MI_NAME(SetCriticalSectionSpinCount)(
+        _Inout_ LPCRITICAL_SECTION CriticalSection,
+        _In_ DWORD SpinCount
+        )
+    {
+        PAGED_CODE();
+        return RtlSetCriticalSectionSpinCount(CriticalSection, SpinCount);
+    }
+    MI_IAT_SYMBOL(SetCriticalSectionSpinCount, 8);
 
     //
     // Condition variable
     //
+
+    _IRQL_requires_max_(DISPATCH_LEVEL)
+    VOID WINAPI MI_NAME(InitializeConditionVariable)(
+        _Out_ PCONDITION_VARIABLE ConditionVariable
+        )
+    {
+        RtlInitializeConditionVariable(ConditionVariable);
+    }
+    MI_IAT_SYMBOL(InitializeConditionVariable, 4);
+
+    _IRQL_requires_max_(PASSIVE_LEVEL)
+    BOOL WINAPI MI_NAME(SleepConditionVariableCS)(
+        _Inout_ PCONDITION_VARIABLE ConditionVariable,
+        _Inout_ PCRITICAL_SECTION CriticalSection,
+        _In_ DWORD Milliseconds
+        )
+    {
+        PAGED_CODE();
+
+        LARGE_INTEGER  Time;
+        LARGE_INTEGER* Timeout = nullptr;
+
+        if (Milliseconds != INFINITE) {
+            Time.QuadPart = Int32x32To64(Milliseconds, -10000);
+            Timeout = &Time;
+        }
+
+        const auto Status = RtlSleepConditionVariableCS(ConditionVariable, CriticalSection, Timeout);
+        if (NT_SUCCESS(Status)) {
+            return TRUE;
+        }
+
+        BaseSetLastNTError(Status);
+        return FALSE;
+    }
+    MI_IAT_SYMBOL(SleepConditionVariableCS, 12);
+
+    _IRQL_requires_max_(PASSIVE_LEVEL)
+    BOOL WINAPI MI_NAME(SleepConditionVariableSRW)(
+        _Inout_ PCONDITION_VARIABLE ConditionVariable,
+        _Inout_ PSRWLOCK SRWLock,
+        _In_ DWORD Milliseconds,
+        _In_ ULONG Flags
+        )
+    {
+        PAGED_CODE();
+
+        LARGE_INTEGER  Time;
+        LARGE_INTEGER* Timeout = nullptr;
+
+        if (Milliseconds != INFINITE) {
+            Time.QuadPart = Int32x32To64(Milliseconds, -10000);
+            Timeout = &Time;
+        }
+
+        const auto Status = RtlSleepConditionVariableSRW(ConditionVariable, SRWLock, Timeout, Flags);
+        if (NT_SUCCESS(Status)) {
+            return TRUE;
+        }
+
+        BaseSetLastNTError(Status);
+        return FALSE;
+    }
+    MI_IAT_SYMBOL(SleepConditionVariableSRW, 16);
+
+    _IRQL_requires_max_(PASSIVE_LEVEL)
+    VOID WINAPI MI_NAME(WakeConditionVariable)(
+        _Inout_ PCONDITION_VARIABLE ConditionVariable
+        )
+    {
+        PAGED_CODE();
+        RtlWakeConditionVariable(ConditionVariable);
+    }
+    MI_IAT_SYMBOL(WakeConditionVariable, 4);
+
+    _IRQL_requires_max_(PASSIVE_LEVEL)
+    VOID WINAPI MI_NAME(WakeAllConditionVariable)(
+        _Inout_ PCONDITION_VARIABLE ConditionVariable
+        )
+    {
+        PAGED_CODE();
+        RtlWakeAllConditionVariable(ConditionVariable);
+    }
+    MI_IAT_SYMBOL(WakeAllConditionVariable, 4);
 
 
 }

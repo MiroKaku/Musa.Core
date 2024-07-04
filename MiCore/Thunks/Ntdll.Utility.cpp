@@ -3,7 +3,7 @@
 #include "MiCore/MiCore.Utility.h"
 
 #include <bcrypt.h>
-
+#pragma comment(lib, "Cng.lib")
 
 EXTERN_C_START
 namespace Mi

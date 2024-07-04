@@ -31,7 +31,7 @@ namespace Mi
 
         // Heaps[1] ...
     };
-    static_assert(ALIGN_DOWN(sizeof(KPEB), 8) < PAGE_SIZE);
+    STATIC_ASSERT(ALIGN_DOWN(sizeof(KPEB), 8) < PAGE_SIZE);
 
     // Kernel Thread  Environment Block
     VEIL_DECLARE_STRUCT_ALIGN(KTEB, 8)

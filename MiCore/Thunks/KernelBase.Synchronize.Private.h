@@ -188,14 +188,138 @@ BOOL WINAPI MI_NAME(InitOnceComplete)(
     _In_opt_ LPVOID Context
     );
 
+//
+// R/W lock
+//
+
+_IRQL_requires_max_(DISPATCH_LEVEL)
+VOID WINAPI MI_NAME(InitializeSRWLock)(
+    _Out_ PSRWLOCK SRWLock
+    );
+
+_IRQL_requires_max_(APC_LEVEL)
+_Acquires_exclusive_lock_(*SRWLock)
+VOID WINAPI MI_NAME(AcquireSRWLockExclusive)(
+    _Inout_ PSRWLOCK SRWLock
+    );
+
+_IRQL_requires_max_(APC_LEVEL)
+_Acquires_shared_lock_(*SRWLock)
+VOID WINAPI MI_NAME(AcquireSRWLockShared)(
+    _Inout_ PSRWLOCK SRWLock
+    );
+
+_IRQL_requires_max_(APC_LEVEL)
+_Releases_exclusive_lock_(*SRWLock)
+VOID WINAPI MI_NAME(ReleaseSRWLockExclusive)(
+    _Inout_ PSRWLOCK SRWLock
+    );
+
+_IRQL_requires_max_(APC_LEVEL)
+_Releases_shared_lock_(*SRWLock)
+VOID WINAPI MI_NAME(ReleaseSRWLockShared)(
+    _Inout_ PSRWLOCK SRWLock
+    );
+
+_IRQL_requires_max_(APC_LEVEL)
+_When_(return != 0, _Acquires_exclusive_lock_(*SRWLock))
+BOOLEAN WINAPI MI_NAME(TryAcquireSRWLockExclusive)(
+    _Inout_ PSRWLOCK SRWLock
+    );
+
+_IRQL_requires_max_(APC_LEVEL)
+_When_(return != 0, _Acquires_shared_lock_(*SRWLock))
+BOOLEAN WINAPI MI_NAME(TryAcquireSRWLockShared)(
+    _Inout_ PSRWLOCK SRWLock
+    );
+
+//
+// Critical Section
+//
+
+_IRQL_requires_max_(DISPATCH_LEVEL)
+VOID WINAPI MI_NAME(InitializeCriticalSection)(
+    _Out_ LPCRITICAL_SECTION CriticalSection
+    );
+
+_IRQL_requires_max_(DISPATCH_LEVEL)
+_Must_inspect_result_
+BOOL WINAPI MI_NAME(InitializeCriticalSectionAndSpinCount)(
+    _Out_ LPCRITICAL_SECTION CriticalSection,
+    _In_ DWORD SpinCount
+    );
+
+_IRQL_requires_max_(DISPATCH_LEVEL)
+_Must_inspect_result_
+BOOL WINAPI MI_NAME(InitializeCriticalSectionEx)(
+    _Out_ LPCRITICAL_SECTION CriticalSection,
+    _In_ DWORD SpinCount,
+    _In_ DWORD Flags
+    );
+
+_IRQL_requires_max_(DISPATCH_LEVEL)
+VOID WINAPI MI_NAME(DeleteCriticalSection)(
+    _Inout_ LPCRITICAL_SECTION CriticalSection
+    );
+
+_IRQL_requires_max_(APC_LEVEL)
+_Acquires_exclusive_lock_(*CriticalSection)
+VOID WINAPI MI_NAME(EnterCriticalSection)(
+    _Inout_ LPCRITICAL_SECTION CriticalSection
+    );
+
+_IRQL_requires_max_(APC_LEVEL)
+_Releases_exclusive_lock_(*CriticalSection)
+VOID WINAPI MI_NAME(LeaveCriticalSection)(
+    _Inout_ LPCRITICAL_SECTION CriticalSection
+    );
+
+_IRQL_requires_max_(APC_LEVEL)
+_When_(return != 0, _Acquires_exclusive_lock_(*CriticalSection))
+BOOL WINAPI MI_NAME(TryEnterCriticalSection)(
+    _Inout_ LPCRITICAL_SECTION CriticalSection
+    );
+
+_IRQL_requires_max_(APC_LEVEL)
+DWORD WINAPI MI_NAME(SetCriticalSectionSpinCount)(
+    _Inout_ LPCRITICAL_SECTION CriticalSection,
+    _In_ DWORD SpinCount
+    );
 
 
+//
+// Condition variable
+//
 
+_IRQL_requires_max_(DISPATCH_LEVEL)
+VOID WINAPI MI_NAME(InitializeConditionVariable)(
+    _Out_ PCONDITION_VARIABLE ConditionVariable
+    );
 
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MI_NAME(SleepConditionVariableCS)(
+    _Inout_ PCONDITION_VARIABLE ConditionVariable,
+    _Inout_ PCRITICAL_SECTION CriticalSection,
+    _In_ DWORD Milliseconds
+    );
 
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MI_NAME(SleepConditionVariableSRW)(
+    _Inout_ PCONDITION_VARIABLE ConditionVariable,
+    _Inout_ PSRWLOCK SRWLock,
+    _In_ DWORD Milliseconds,
+    _In_ ULONG Flags
+    );
 
+_IRQL_requires_max_(PASSIVE_LEVEL)
+VOID WINAPI MI_NAME(WakeConditionVariable)(
+    _Inout_ PCONDITION_VARIABLE ConditionVariable
+    );
 
-
+_IRQL_requires_max_(PASSIVE_LEVEL)
+VOID WINAPI MI_NAME(WakeAllConditionVariable)(
+    _Inout_ PCONDITION_VARIABLE ConditionVariable
+    );
 
 
 
