@@ -14,15 +14,29 @@ namespace Mi
         _In_reads_opt_(NumberOfArguments) CONST ULONG_PTR* Arguments
     )
     {
+        /*
+         *  Exception Record
+         */
+
         EXCEPTION_RECORD ExceptionRecord{};
         ExceptionRecord.ExceptionCode    = static_cast<NTSTATUS>(ExceptionCode);
-        ExceptionRecord.ExceptionFlags   = ExceptionFlags;
+        ExceptionRecord.ExceptionFlags   = ExceptionFlags & EXCEPTION_NONCONTINUABLE;
         ExceptionRecord.ExceptionAddress = _ReturnAddress();
-        ExceptionRecord.NumberParameters = NumberOfArguments;
 
-        if (Arguments != nullptr) {
-            RtlCopyMemory(ExceptionRecord.ExceptionInformation, Arguments,
-                min(NumberOfArguments, _countof(ExceptionRecord.ExceptionInformation)));
+        /* Check if we have arguments */
+        if (!Arguments) {
+            /* We don't */
+            ExceptionRecord.NumberParameters = 0;
+        }
+        else {
+            /* We do, normalize the count */
+            if (NumberOfArguments > EXCEPTION_MAXIMUM_PARAMETERS)
+                NumberOfArguments = EXCEPTION_MAXIMUM_PARAMETERS;
+
+            /* Set the count of parameters and copy them */
+            ExceptionRecord.NumberParameters = NumberOfArguments;
+            RtlCopyMemory(ExceptionRecord.ExceptionInformation,
+                Arguments, NumberOfArguments * sizeof(ULONG_PTR));
         }
 
         RtlRaiseException(&ExceptionRecord);

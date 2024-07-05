@@ -92,6 +92,8 @@ namespace Mi
     {
         LPTHREAD_START_ROUTINE StartAddress;
         LPVOID Parameter;
+
+        KSEMAPHORE Signal;
     };
 
     static void MI_NAME_PRIVATE(ThreadInitThunk)(
@@ -103,7 +105,13 @@ namespace Mi
             return;
         }
 
-        ThreadParameter->StartAddress(ThreadParameter->Parameter);
+        const auto StartAddress = ThreadParameter->StartAddress;
+        const auto Parameter = ThreadParameter->Parameter;
+
+        KeReleaseSemaphore(&ThreadParameter->Signal,
+            IO_NO_INCREMENT, 1, FALSE);
+
+        StartAddress(Parameter);
     }
 
     _IRQL_requires_max_(PASSIVE_LEVEL)
@@ -139,6 +147,7 @@ namespace Mi
         MI_USER_THREAD_PARAMETER ThreadParameter;
         ThreadParameter.StartAddress = StartAddress;
         ThreadParameter.Parameter    = Parameter;
+        KeInitializeSemaphore(&ThreadParameter.Signal, 0, 1);
 
         HANDLE ThreadHandle = nullptr;
         const auto Status = PsCreateSystemThread(&ThreadHandle, THREAD_ALL_ACCESS, &ObjectAttributes, Process,
@@ -147,6 +156,9 @@ namespace Mi
             BaseSetLastNTError(Status);
             return nullptr;
         }
+
+        (void)KeWaitForSingleObject(&ThreadParameter.Signal,
+            Executive, KernelMode, FALSE, nullptr);
 
         if (ThreadId) {
             *ThreadId = HandleToULong(ClientId.UniqueThread);
