@@ -153,7 +153,7 @@ namespace Mi
             //
 
             if (Callback) {
-                if (InterlockedCompareExchangePointer(reinterpret_cast<PVOID volatile*>(RtlFlsContext.FlsCallback),
+                if (InterlockedCompareExchangePointer(reinterpret_cast<PVOID volatile*>(&RtlFlsContext.FlsCallback),
                     nullptr, nullptr) == nullptr) {
 
                     const auto FlsCallback = static_cast<PFLS_CALLBACK_FUNCTION*>(
@@ -165,7 +165,7 @@ namespace Mi
                         return STATUS_NO_MEMORY;
                     }
 
-                    if (InterlockedCompareExchangePointer(reinterpret_cast<PVOID volatile*>(RtlFlsContext.FlsCallback),
+                    if (InterlockedCompareExchangePointer(reinterpret_cast<PVOID volatile*>(&RtlFlsContext.FlsCallback),
                         FlsCallback, nullptr)) {
 
                         RtlFreeHeap(RtlGetDefaultHeap(), 0, FlsCallback);
@@ -225,7 +225,7 @@ namespace Mi
             RtlClearBits(&RtlFlsContext.FlsBitmap, FlsIndex, 1);
 
             const auto FlsCallback = static_cast<PFLS_CALLBACK_FUNCTION*>(InterlockedCompareExchangePointer(
-                reinterpret_cast<PVOID volatile*>(RtlFlsContext.FlsCallback), nullptr, nullptr));
+                reinterpret_cast<PVOID volatile*>(&RtlFlsContext.FlsCallback), nullptr, nullptr));
 
             if (FlsCallback) {
                 auto Entry = RtlFlsContext.FlsListHead.Flink;

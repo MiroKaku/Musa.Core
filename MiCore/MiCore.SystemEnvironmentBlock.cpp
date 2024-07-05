@@ -76,7 +76,8 @@ namespace Mi
 
         #ifdef MICORE_FLS_USE_THREAD_NOTIFY_CALLBACK
             if (DriverObject) {
-                Status = PsSetCreateThreadNotifyRoutineEx(PsCreateThreadNotifySubsystems, ThreadNotifyCallback);
+                // Must be linked with the /IntegrityCheck flag
+                Status = PsSetCreateThreadNotifyRoutineEx(PsCreateThreadNotifySubsystems, &ThreadNotifyCallback);
                 if (!NT_SUCCESS(Status)) {
                     break;
                 }

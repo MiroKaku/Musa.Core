@@ -98,7 +98,7 @@ LOGICAL NTAPI MI_NAME(RtlTryEnterCriticalSection)(
     _Inout_ PRTL_CRITICAL_SECTION CriticalSection
     );
 
-_IRQL_requires_max_(APC_LEVEL)
+_IRQL_requires_max_(DISPATCH_LEVEL)
 LOGICAL NTAPI MI_NAME(RtlIsCriticalSectionLocked)(
     _Inout_ PRTL_CRITICAL_SECTION CriticalSection
     );

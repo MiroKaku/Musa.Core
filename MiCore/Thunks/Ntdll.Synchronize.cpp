@@ -12,7 +12,6 @@
 #pragma alloc_text(PAGE, MI_NAME(RtlEnterCriticalSection))
 #pragma alloc_text(PAGE, MI_NAME(RtlLeaveCriticalSection))
 #pragma alloc_text(PAGE, MI_NAME(RtlTryEnterCriticalSection))
-#pragma alloc_text(PAGE, MI_NAME(RtlIsCriticalSectionLocked))
 
 #pragma alloc_text(PAGE, MI_NAME(RtlSleepConditionVariableCS))
 #pragma alloc_text(PAGE, MI_NAME(RtlSleepConditionVariableSRW))
@@ -26,6 +25,8 @@ namespace Mi
 {
 
 #if defined _KERNEL_MODE
+
+    PVOID NTAPI RtlGetDefaultHeap();
 
     //
     // R/W lock
@@ -167,8 +168,27 @@ namespace Mi
         UNREFERENCED_PARAMETER(SpinCount);
         UNREFERENCED_PARAMETER(Flags);
 
-        ExInitializePushLock(reinterpret_cast<PEX_PUSH_LOCK>(CriticalSection));
-        return STATUS_SUCCESS;
+        NTSTATUS Status;
+
+        *CriticalSection = {};
+        do {
+            CriticalSection->SpinCount = SpinCount;
+            CriticalSection->LockSemaphore = RtlAllocateHeap(RtlGetDefaultHeap(), HEAP_ZERO_MEMORY, sizeof(ERESOURCE));
+            if (CriticalSection->LockSemaphore == nullptr) {
+                Status = STATUS_INSUFFICIENT_RESOURCES;
+                break;
+            }
+
+            Status = ExInitializeResourceLite(static_cast<PERESOURCE>(CriticalSection->LockSemaphore));
+            if (!NT_SUCCESS(Status)) {
+                RtlFreeHeap(RtlGetDefaultHeap(), 0, CriticalSection->LockSemaphore);
+                break;
+            }
+
+        } while (false);
+
+        return Status;
+
     }
     MI_IAT_SYMBOL(RtlInitializeCriticalSectionEx, 12);
 
@@ -179,7 +199,17 @@ namespace Mi
     {
         UNREFERENCED_PARAMETER(CriticalSection);
 
-        return STATUS_SUCCESS;
+        NTSTATUS Status = STATUS_SUCCESS;
+
+        if (CriticalSection->LockSemaphore) {
+
+            Status = ExDeleteResourceLite(static_cast<PERESOURCE>(CriticalSection->LockSemaphore));
+            if (NT_SUCCESS(Status)) {
+                RtlFreeHeap(RtlGetDefaultHeap(), 0, CriticalSection->LockSemaphore);
+            }
+        }
+
+        return Status;
     }
     MI_IAT_SYMBOL(RtlDeleteCriticalSection, 4);
 
@@ -192,9 +222,9 @@ namespace Mi
         PAGED_CODE();
 
         KeEnterGuardedRegion();
-        ExAcquirePushLockExclusiveEx(reinterpret_cast<PEX_PUSH_LOCK>(CriticalSection), EX_DEFAULT_PUSH_LOCK_FLAGS);
-
-        return STATUS_SUCCESS;
+        return ExAcquireResourceExclusiveLite(static_cast<PERESOURCE>(CriticalSection->LockSemaphore), TRUE)
+            ? STATUS_SUCCESS
+            : STATUS_UNSUCCESSFUL;
     }
     MI_IAT_SYMBOL(RtlEnterCriticalSection, 4);
 
@@ -206,7 +236,7 @@ namespace Mi
     {
         PAGED_CODE();
 
-        ExReleasePushLockExclusiveEx(reinterpret_cast<PEX_PUSH_LOCK>(CriticalSection), EX_DEFAULT_PUSH_LOCK_FLAGS);
+        ExReleaseResourceLite(static_cast<PERESOURCE>(CriticalSection->LockSemaphore));
         KeLeaveGuardedRegion();
 
         return STATUS_SUCCESS;
@@ -222,7 +252,7 @@ namespace Mi
         PAGED_CODE();
 
         KeEnterGuardedRegion();
-        if (ExTryAcquirePushLockExclusiveEx(reinterpret_cast<PEX_PUSH_LOCK>(CriticalSection), EX_DEFAULT_PUSH_LOCK_FLAGS)) {
+        if (ExTryToAcquireResourceExclusiveLite(static_cast<PERESOURCE>(CriticalSection->LockSemaphore))) {
             return TRUE;
         }
 
@@ -230,21 +260,13 @@ namespace Mi
         return FALSE;
     }
     MI_IAT_SYMBOL(RtlTryEnterCriticalSection, 4);
-    
-    _IRQL_requires_max_(APC_LEVEL)
+
+    _IRQL_requires_max_(DISPATCH_LEVEL)
     LOGICAL NTAPI MI_NAME(RtlIsCriticalSectionLocked)(
         _Inout_ PRTL_CRITICAL_SECTION CriticalSection
     )
     {
-        PAGED_CODE();
-
-        if (!RtlTryEnterCriticalSection(CriticalSection)) {
-            return TRUE;
-
-        }
-
-        (void)RtlLeaveCriticalSection(CriticalSection);
-        return FALSE;
+        return ExIsResourceAcquiredExclusiveLite(static_cast<PERESOURCE>(CriticalSection->LockSemaphore));
     }
     MI_IAT_SYMBOL(RtlIsCriticalSectionLocked, 4);
 
