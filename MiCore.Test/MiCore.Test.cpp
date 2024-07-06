@@ -26,23 +26,17 @@ namespace Main
                 __leave;
             }
 
-            LARGE_INTEGER SystemTime{};
-            Status = ZwQuerySystemTime(&SystemTime);
-            if (!NT_SUCCESS(Status)) {
-                __leave;
+            char* Message = nullptr;
+
+            const unsigned long Chars =
+                FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                    nullptr, (DWORD)ERROR_INVALID_PARAMETER, 0, reinterpret_cast<char*>(&Message), 0, nullptr);
+            if (Chars) {
+                MiLOG("STATUS_INVALID_PARAMETER (%s)", Message);
             }
-
-            Status = RtlSystemTimeToLocalTime(&SystemTime, &SystemTime);
-            if (!NT_SUCCESS(Status)) {
-                __leave;
+            else {
+                MiLOG("STATUS_INVALID_PARAMETER format failed.");
             }
-
-            TIME_FIELDS Time{};
-            RtlTimeToTimeFields(&SystemTime, &Time);
-
-            MiLOG("Loading time is %04d/%02d/%02d %02d:%02d:%02d",
-                Time.Year, Time.Month, Time.Day,
-                Time.Hour, Time.Minute, Time.Second);
 
             (void)getchar();
         }

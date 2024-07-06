@@ -25,6 +25,19 @@ EXTERN_C DRIVER_UNLOAD     DriverUnload;
 #endif
 
 
+EXTERN_C
+NTSTATUS NTAPI RtlFindAndFormatMessage(
+    _In_     DWORD      Flags,
+    _In_opt_ LPCVOID    Source,
+    _In_     DWORD      MessageId,
+    _In_     DWORD      LanguageId,
+    _When_((Flags& FORMAT_MESSAGE_ALLOCATE_BUFFER) != 0, _At_((LPWSTR*)Buffer, _Outptr_result_z_))
+    _When_((Flags& FORMAT_MESSAGE_ALLOCATE_BUFFER) == 0, _Out_writes_z_(*Size))
+    LPWSTR     Buffer,
+    _Inout_  DWORD* Size,
+    _In_opt_ va_list* Arguments
+);
+
 namespace Main
 {
     EXTERN_C VOID DriverUnload(
@@ -58,23 +71,18 @@ namespace Main
                 break;
             }
 
-            LARGE_INTEGER SystemTime{};
-            Status = ZwQuerySystemTime(&SystemTime);
-            if (!NT_SUCCESS(Status)) {
-                break;
+            char* Message = nullptr;
+
+            // TODO: Fix Me, RtlFindMessage can't access ntdll.
+            const unsigned long Chars =
+                FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                    nullptr, (DWORD)ERROR_INVALID_PARAMETER, 0, reinterpret_cast<char*>(&Message), 0, nullptr);
+            if (Chars) {
+                MiLOG("STATUS_INVALID_PARAMETER (%s)", Message);
             }
-
-            Status = RtlSystemTimeToLocalTime(&SystemTime, &SystemTime);
-            if (!NT_SUCCESS(Status)) {
-                break;
+            else {
+                MiLOG("STATUS_INVALID_PARAMETER format failed.");
             }
-
-            TIME_FIELDS Time{};
-            RtlTimeToTimeFields(&SystemTime, &Time);
-
-            MiLOG("Loading time is %04d/%02d/%02d %02d:%02d:%02d",
-                Time.Year, Time.Month, Time.Day,
-                Time.Hour, Time.Minute, Time.Second);
 
         } while (false);
 

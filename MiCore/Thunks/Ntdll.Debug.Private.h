@@ -17,7 +17,7 @@ NTSTATUS NTAPI RtlFindAndFormatMessage(
     _In_opt_ va_list*   Arguments
     );
 
-BOOLEAN NTAPI MI_NAME(RtlFindAndFormatMessage)(
+NTSTATUS NTAPI MI_NAME(RtlFindAndFormatMessage)(
     _In_     DWORD      Flags,
     _In_opt_ LPCVOID    Source,
     _In_     DWORD      MessageId,
