@@ -71,8 +71,8 @@ Recommended for use with [Veil](https://github.com/MiroKaku/Veil).
     }
     ```
 
-- [ ] Support part of RtlXxxx API.
-- [ ] Support part of KernelBase API.
+- [x] Support part of RtlXxxx API.
+- [x] Support part of KernelBase API.
 - [ ] Support part of Advapi32 API.
 
 ## Progress

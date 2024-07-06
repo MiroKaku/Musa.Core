@@ -71,8 +71,8 @@ MiCore 是 MiUCRT (原 [ucxxrt](https://github.com/MiroKaku/ucxxrt)) 的底层AP
     }
     ```
 
-- [ ] 支持部分 RuntimeLibrary(Rtl) 系列的 APIs
-- [ ] 支持部分 KernelBase 模块的 APIs
+- [x] 支持部分 RuntimeLibrary(Rtl) 系列的 APIs
+- [x] 支持部分 KernelBase 模块的 APIs
 - [ ] 支持部分 Advapi32 模块的的 APIs
 
 ## 进度
