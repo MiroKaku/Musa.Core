@@ -1,0 +1,184 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Musa.Core">
+      <UniqueIdentifier>{f104112a-1cd0-4cc4-ac76-3b59b9023ac6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Musa.Core\Thunks">
+      <UniqueIdentifier>{fa90d826-628e-4e8b-854f-cab4b1aa86c2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="universal.h" />
+    <ClInclude Include="..\Musa.Core\Musa.Core.SystemCall.h">
+      <Filter>Musa.Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Musa.Core.PEParser.h">
+      <Filter>Musa.Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Musa.Core.h">
+      <Filter>Musa.Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Musa.Core.SystemEnvironmentBlock.h">
+      <Filter>Musa.Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Musa.Core.SystemEnvironmentBlock.Private.h">
+      <Filter>Musa.Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Musa.Core.Utility.h">
+      <Filter>Musa.Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\Ntdll.FiberLocalStorage.Private.h">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\Ntdll.Heap.Private.h">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\KernelBase.NLS.Private.h">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Musa.Core.SystemEnvironmentBlock.Process.h">
+      <Filter>Musa.Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Musa.Core.SystemEnvironmentBlock.Thread.h">
+      <Filter>Musa.Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\Ntdll.RealTime.Private.h">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\KernelBase.Handle.Private.h">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\KernelBase.Private.h">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\KernelBase.Process.Private.h">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\KernelBase.System.Private.h">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\KernelBase.Thread.Private.h">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\Ntdll.Debug.Private.h">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\KernelBase.Synchronize.Private.h">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\Ntdll.Synchronize.Private.h">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\Ntdll.Thread.Private.h">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Musa.Core\Musa.Core.cpp">
+      <Filter>Musa.Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Musa.Core.SystemCall.cpp">
+      <Filter>Musa.Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Musa.Core.PEParser.cpp">
+      <Filter>Musa.Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Musa.Core.Nothing.cpp">
+      <Filter>Musa.Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Musa.Core.SystemCall.Stubs.cpp">
+      <Filter>Musa.Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Musa.Core.SystemEnvironmentBlock.cpp">
+      <Filter>Musa.Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Musa.Core.Utility.cpp">
+      <Filter>Musa.Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Thunks\Ntdll.Heap.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Thunks\KernelBase.Debug.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Thunks\KernelBase.Error.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Thunks\Ntdll.Error.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Thunks\Ntdll.FiberLocalStorage.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Thunks\Ntdll.Pool.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Thunks\Ntdll.Utility.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Thunks\KernelBase.NLS.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Thunks\KernelBase.FiberLocalStorage.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Thunks\KernelBase.ThreadLocalStorage.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Musa.Core.SystemEnvironmentBlock.Process.cpp">
+      <Filter>Musa.Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Musa.Core.SystemEnvironmentBlock.Thread.cpp">
+      <Filter>Musa.Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Thunks\KernelBase.PerformanceCounter.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Thunks\Ntdll.PerformanceCounter.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Thunks\Ntdll.RealTime.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Thunks\KernelBase.RealTime.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Thunks\KernelBase.Heap.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Thunks\KernelBase.Handle.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Thunks\KernelBase.Utility.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Thunks\KernelBase.Process.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Thunks\KernelBase.Thread.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Thunks\KernelBase.Private.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Thunks\Ntdll.System.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Thunks\KernelBase.System.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Thunks\Ntdll.Debug.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Thunks\KernelBase.Synchronize.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Thunks\Ntdll.Synchronize.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Thunks\Ntdll.Thread.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

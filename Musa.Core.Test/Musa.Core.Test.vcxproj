@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{25269BC9-477C-4E15-A036-3E9F6B0D421E}</ProjectGuid>
+    <RootNamespace>Musa.Core.Test</RootNamespace>
+    <MileProjectType>ConsoleApplication</MileProjectType>
+    <MileProjectManifestFile>Musa.Core.Test.manifest</MileProjectManifestFile>
+    <MileProjectUseProjectProperties>true</MileProjectUseProjectProperties>
+    <MileProjectCompanyName>MeeSong</MileProjectCompanyName>
+    <MileProjectFileDescription>Musa.Core.Test</MileProjectFileDescription>
+    <MileProjectInternalName>Musa.Core.Test</MileProjectInternalName>
+    <MileProjectLegalCopyright>© MeeSong. All rights reserved.</MileProjectLegalCopyright>
+    <MileProjectOriginalFilename>Musa.Core.Test.exe</MileProjectOriginalFilename>
+    <MileProjectProductName>Musa.Core</MileProjectProductName>
+    <MileProjectVersion>1.0.0.0</MileProjectVersion>
+    <MileProjectVersionTag Condition="false">Alpha 1</MileProjectVersionTag>
+  </PropertyGroup>
+  <Import Project="..\Mile.Project.Windows\Mile.Project.Platform.x86.props" />
+  <Import Project="..\Mile.Project.Windows\Mile.Project.Platform.x64.props" />
+  <Import Project="..\Mile.Project.Windows\Mile.Project.Platform.ARM64.props" />
+  <Import Project="..\Mile.Project.Windows\Mile.Project.Cpp.Default.props" />
+  <Import Project="..\Mile.Project.Windows\Mile.Project.Cpp.props" />
+  <PropertyGroup Label="Globals">
+    <!--TODO: -->
+    <OutDir>$(MileProjectBinariesPath)$(Configuration)\$(Platform)\</OutDir>
+    <IntDir>$(MileProjectObjectsPath)$(Configuration)\$(MSBuildProjectName)\$(Platform)\</IntDir>
+    <GeneratedFilesDir>$(IntDir)Generated Files\</GeneratedFilesDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <Link>
+      <AdditionalLibraryDirectories>$(OutDirFullPath);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Musa.Core.StaticLibrary.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <Manifest Include="Musa.Core.Test.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Musa.Core.Test.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Musa.Veil">
+      <Version>1.0.0</Version>
+    </PackageReference>
+  </ItemGroup>
+  <Import Project="..\Mile.Project.Windows\Mile.Project.Cpp.targets" />
+</Project>

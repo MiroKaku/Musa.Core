@@ -1,23 +1,24 @@
-# [Mi Core](https://github.com/MiroKaku/micore)
+# [Musa.Core](https://github.com/MiroKaku/Musa.Core)
 
-[![Actions Status](https://github.com/MiroKaku/micore/workflows/build/badge.svg)](https://github.com/MiroKaku/micore/actions)
-[![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/MiroKaku/micore/blob/main/LICENSE)
+[![Actions Status](https://github.com/MiroKaku/Musa.Core/workflows/build/badge.svg)](https://github.com/MiroKaku/Musa.Core/actions)
+[![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/MiroKaku/Musa.Core/blob/main/LICENSE)
 ![Visual Studio](https://img.shields.io/badge/Visual%20Studio-2022-purple.svg)
 ![Windows](https://img.shields.io/badge/Windows-10+-orange.svg)
 ![Platform](https://img.shields.io/badge/Windows-X86%7CX64%7CARM64-%23FFBCD9)
 
-* [简体中文](https://github.com/MiroKaku/micore/blob/main/README.zh-CN.md)
+* [简体中文](https://github.com/MiroKaku/Musa.Core/blob/main/README.zh-CN.md)
 
 ## Introduction
 
 > **Warning**
 > 
-> MiCore is still in development stage ...
+> Musa.Core is still in development stage ...
 
-MiCore is a derivative of the underlying API implementation of MiUCRT (formerly [ucxxrt](https://github.com/MiroKaku/ucxxrt)).
+Musa.Core is a derivative of the underlying API implementation of Musa.Runtime (formerly [ucxxrt](https://github.com/MiroKaku/ucxxrt)).
 
-It is mainly the implementation of user-level functions in the kernel on the Windows platform.
-Recommended for use with [Veil](https://github.com/MiroKaku/Veil).
+Use ntdll/ntoskrnl to implement Kernel32, Advapi32 and other APIs. It includes user-mode and kernel-mode.
+
+Recommended for use with [Musa.Veil](https://github.com/MiroKaku/Veil).
 
 ## Thanks & References
 * Thanks: The scheme to export ZwRoutines is provided by @[xiaobfly](https://github.com/xiaobfly).
@@ -38,7 +39,7 @@ Recommended for use with [Veil](https://github.com/MiroKaku/Veil).
         do {
             DriverObject->DriverUnload = DriverUnload;
 
-            Status = MiCoreStartup(DriverObject, RegistryPath);
+            Status = MusaCoreStartup(DriverObject, RegistryPath);
             if (!NT_SUCCESS(Status)) {
                 break;
             }
