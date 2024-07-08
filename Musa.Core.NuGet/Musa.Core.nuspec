@@ -24,7 +24,7 @@ Musa.Core - Use ntdll/ntoskrnl to implement Kernel32, Advapi32 and other APIs.
     </dependencies>
   </metadata>
   <files>
-    <file src=".\Musa.Core.props" target="build\native" />
-    <file src="..\Publish\**" target="build\native" exclude="**\*.lastcodeanalysissucceeded;"/>
+    <file src=".\Musa.Core.props" target="build\native\" />
+    <file src="..\Publish\**" target="build\native\" exclude="**\*.lastcodeanalysissucceeded;"/>
   </files>
 </package>

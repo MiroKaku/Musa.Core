@@ -1,6 +1,7 @@
 # [Musa.Core](https://github.com/MiroKaku/Musa.Core)
 
 [![Actions Status](https://github.com/MiroKaku/Musa.Core/workflows/build/badge.svg)](https://github.com/MiroKaku/Musa.Core/actions)
+[![nuget](https://img.shields.io/nuget/v/Musa.Core)](https://www.nuget.org/packages/Musa.Core/)
 [![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/MiroKaku/Musa.Core/blob/main/LICENSE)
 ![Visual Studio](https://img.shields.io/badge/Visual%20Studio-2022-purple.svg)
 ![Windows](https://img.shields.io/badge/Windows-10+-orange.svg)
@@ -12,18 +13,43 @@
 
 > **Warning**
 > 
-> Musa.Core is still in development stage ...
+> Musa.Core is in beta testing...
 
-Musa.Core is a derivative of the underlying API implementation of Musa.Runtime (formerly [ucxxrt](https://github.com/MiroKaku/ucxxrt)).
+Musa.Core is a derivative of the underlying API implementation of [Musa.Runtime](https://github.com/MiroKaku/Musa.Runtime) (formerly [ucxxrt](https://github.com/MiroKaku/ucxxrt)).
 
 Use ntdll/ntoskrnl to implement Kernel32, Advapi32 and other APIs. It includes user-mode and kernel-mode.
 
 Recommended for use with [Musa.Veil](https://github.com/MiroKaku/Veil).
 
-## Thanks & References
-* Thanks: The scheme to export ZwRoutines is provided by @[xiaobfly](https://github.com/xiaobfly).
-* References: [systeminformer](https://github.com/winsiderss/systeminformer)/phnt
-* References: [Windows_OS_Internals_Curriculum_Resource_Kit-ACADEMIC](https://github.com/MeeSong/Windows_OS_Internals_Curriculum_Resource_Kit-ACADEMIC)
+## How to use
+
+Right click on the project, select "Manage NuGet Packages".
+Search for `Musa.Core`, choose the version that suits you, and then click "Install".
+
+Or
+
+Add the following code to your `.vcxproj` file:
+
+```XML
+  <ItemGroup>
+    <PackageReference Include="Musa.Veil">
+      <!-- Expected version -->
+      <Version>1.0.0</Version>
+    </PackageReference>
+  </ItemGroup>
+```
+
+### Header-only mode
+
+Add the following code to your `.vcxproj` file:
+
+```XML
+  <PropertyGroup>
+    <MusaCoreOnlyHeader>true</MusaCoreOnlyHeader>
+  </PropertyGroup>
+```
+
+This mode will not automatically import lib files.
 
 ## Feature
 
@@ -58,7 +84,7 @@ Recommended for use with [Musa.Veil](https://github.com/MiroKaku/Veil).
             TIME_FIELDS Time{};
             RtlTimeToTimeFields(&SystemTime, &Time);
 
-            MiLOG("Loading time is %04d/%02d/%02d %02d:%02d:%02d",
+            MusaLOG("Loading time is %04d/%02d/%02d %02d:%02d:%02d",
                 Time.Year, Time.Month, Time.Day,
                 Time.Hour, Time.Minute, Time.Second);
 
@@ -78,3 +104,8 @@ Recommended for use with [Musa.Veil](https://github.com/MiroKaku/Veil).
 
 ## Progress
 See [Project](https://github.com/users/MiroKaku/projects/1/views/1)
+
+## Thanks & References
+* Thanks: The scheme to export ZwRoutines is provided by @[xiaobfly](https://github.com/xiaobfly).
+* References: [systeminformer](https://github.com/winsiderss/systeminformer)/phnt
+* References: [Windows_OS_Internals_Curriculum_Resource_Kit-ACADEMIC](https://github.com/MeeSong/Windows_OS_Internals_Curriculum_Resource_Kit-ACADEMIC)

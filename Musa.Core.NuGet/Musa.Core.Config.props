@@ -20,16 +20,4 @@
     <LibraryPath>$(Musa_Core_Library);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
 
-  <ItemDefinitionGroup Condition="('$(IsKernelModeToolset)'=='') Or ('$(IsKernelModeToolset)'=='false')">
-    <Link>
-      <AdditionalDependencies>Musa.Core.StaticLibrary.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
-  </ItemDefinitionGroup>
-
-  <ItemDefinitionGroup Condition="'$(IsKernelModeToolset)'=='true'">
-    <Link>
-      <AdditionalDependencies>Musa.Core.StaticLibraryForDriver.lib;Cng.lib%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
-  </ItemDefinitionGroup>
-
 </Project>

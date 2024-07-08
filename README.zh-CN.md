@@ -1,6 +1,7 @@
 # [Musa.Core](https://github.com/MiroKaku/Musa.Core)
 
 [![Actions Status](https://github.com/MiroKaku/Musa.Core/workflows/build/badge.svg)](https://github.com/MiroKaku/Musa.Core/actions)
+[![nuget](https://img.shields.io/nuget/v/Musa.Core)](https://www.nuget.org/packages/Musa.Core/)
 [![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/MiroKaku/Musa.Core/blob/main/LICENSE)
 ![Visual Studio](https://img.shields.io/badge/Visual%20Studio-2022-purple.svg)
 ![Windows](https://img.shields.io/badge/Windows-10+-orange.svg)
@@ -12,18 +13,42 @@
 
 > **Warning**
 > 
-> Musa.Core 处于开发阶段中 ...
+> Musa.Core 在测试阶段中 ...
 
-Musa.Core 是 Musa.Runtime (原 [ucxxrt](https://github.com/MiroKaku/ucxxrt)) 的底层API实现的衍生物。
+Musa.Core 是 [Musa.Runtime](https://github.com/MiroKaku/Musa.Runtime) (原 [ucxxrt](https://github.com/MiroKaku/ucxxrt)) 的底层API实现的衍生物。
 
 主要是用 ntdll/ntoskrnl 实现 Kernel32、Advapi32 等API，它包括用户模式和内核模式两种。
 
 推荐与 [Musa.Veil](https://github.com/MiroKaku/Veil) 一起食用。
 
-## 感谢 & 参考
-* 感谢：Zw 例程获取方案由 @[xiaobfly](https://github.com/xiaobfly) 提供。
-* 参考：[systeminformer](https://github.com/winsiderss/systeminformer)/phnt
-* 参考：[Windows_OS_Internals_Curriculum_Resource_Kit-ACADEMIC](https://github.com/MeeSong/Windows_OS_Internals_Curriculum_Resource_Kit-ACADEMIC)
+## 使用方法
+
+右键单击该项目并选择“管理 NuGet 包”，然后搜索`Musa.Core`并选择适合你的版本，最后单击“安装”。
+
+或者
+
+在你的 `.vcxproj` 文件里面添加下面代码：
+
+```XML
+  <ItemGroup>
+    <PackageReference Include="Musa.Core">
+      <!-- 期望的版本 -->
+      <Version>1.0.0</Version>
+    </PackageReference>
+  </ItemGroup>
+```
+
+### 仅头文件模式
+
+在你的 `.vcxproj` 文件里面添加下面代码：
+
+```XML
+  <PropertyGroup>
+    <MusaCoreOnlyHeader>true</MusaCoreOnlyHeader>
+  </PropertyGroup>
+```
+
+这个模式不会自动引入lib文件。
 
 ## 特性
 
@@ -59,7 +84,7 @@ Musa.Core 是 Musa.Runtime (原 [ucxxrt](https://github.com/MiroKaku/ucxxrt)) �
             TIME_FIELDS Time{};
             RtlTimeToTimeFields(&SystemTime, &Time);
 
-            MiLOG("Loading time is %04d/%02d/%02d %02d:%02d:%02d",
+            MusaLOG("Loading time is %04d/%02d/%02d %02d:%02d:%02d",
                 Time.Year, Time.Month, Time.Day,
                 Time.Hour, Time.Minute, Time.Second);
 
@@ -79,3 +104,8 @@ Musa.Core 是 Musa.Runtime (原 [ucxxrt](https://github.com/MiroKaku/ucxxrt)) �
 
 ## 进度
 查看 [Project](https://github.com/users/MiroKaku/projects/1/views/1)
+
+## 感谢 & 参考
+* 感谢：Zw 例程获取方案由 @[xiaobfly](https://github.com/xiaobfly) 提供。
+* 参考：[systeminformer](https://github.com/winsiderss/systeminformer)/phnt
+* 参考：[Windows_OS_Internals_Curriculum_Resource_Kit-ACADEMIC](https://github.com/MeeSong/Windows_OS_Internals_Curriculum_Resource_Kit-ACADEMIC)

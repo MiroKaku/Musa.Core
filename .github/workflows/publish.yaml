@@ -17,7 +17,7 @@ jobs:
     runs-on: Windows-2022
 
     # Any commit that contains [build] will now trigger these jobs, everything else will be skipped.
-    if: "contains(github.event.head_commit.message, '[publish]')"
+    # if: "contains(github.event.head_commit.message, '[publish]')"
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
