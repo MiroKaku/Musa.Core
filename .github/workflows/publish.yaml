@@ -95,10 +95,3 @@ jobs:
           files: |
             Musa.Core.zip
             *.nupkg
-
-      - name: Upload an artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Musa.Core
-          path: Publish\
-          if-no-files-found: error

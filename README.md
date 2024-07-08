@@ -32,7 +32,7 @@ Add the following code to your `.vcxproj` file:
 
 ```XML
   <ItemGroup>
-    <PackageReference Include="Musa.Veil">
+    <PackageReference Include="Musa.Core">
       <!-- Expected version -->
       <Version>1.0.0</Version>
     </PackageReference>
