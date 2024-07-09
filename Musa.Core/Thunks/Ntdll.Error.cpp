@@ -45,14 +45,16 @@ namespace Musa
     }
     MUSA_IAT_SYMBOL(RtlGetLastNtStatus, 0);
 
-    VOID NTAPI MUSA_NAME(RtlSetLastNtStatus)(_In_ NTSTATUS Status)
+    VOID NTAPI MUSA_NAME(RtlSetLastNtStatus)(
+        _In_ NTSTATUS Status
+        )
     {
         const auto Teb = MUSA_NAME_PRIVATE(RtlGetCurrentTeb)();
         if (Teb) {
             Teb->LastStatusValue = Status;
         }
     }
-    MUSA_IAT_SYMBOL(RtlSetLastNtStatus, 0);
+    MUSA_IAT_SYMBOL(RtlSetLastNtStatus, 4);
 
     VOID NTAPI MUSA_NAME(RtlSetLastWin32ErrorAndNtStatusFromNtStatus)(
         _In_ NTSTATUS Status

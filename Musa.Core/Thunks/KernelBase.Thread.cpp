@@ -132,6 +132,11 @@ namespace Musa
         UNREFERENCED_PARAMETER(CreationFlags);
         UNREFERENCED_PARAMETER(AttributeList);
 
+        if (BooleanFlagOn(CreationFlags, CREATE_SUSPENDED)) {
+            BaseSetLastNTError(STATUS_NOT_SUPPORTED);
+            return nullptr;
+        }
+
         auto ObjectAttributes = OBJECT_ATTRIBUTES RTL_CONSTANT_OBJECT_ATTRIBUTES(
             static_cast<PUNICODE_STRING>(nullptr), OBJ_KERNEL_HANDLE);
 
@@ -379,7 +384,7 @@ namespace Musa
 
         return PreviousSuspendCount;
     }
-    MUSA_IAT_SYMBOL(SuspendThread, 0);
+    MUSA_IAT_SYMBOL(SuspendThread, 4);
 
     _IRQL_requires_max_(PASSIVE_LEVEL)
     DWORD WINAPI MUSA_NAME(ResumeThread)(
@@ -398,7 +403,7 @@ namespace Musa
 
         return PreviousSuspendCount;
     }
-    MUSA_IAT_SYMBOL(ResumeThread, 0);
+    MUSA_IAT_SYMBOL(ResumeThread, 4);
 
     _IRQL_requires_max_(PASSIVE_LEVEL)
     BOOL WINAPI MUSA_NAME(SetThreadToken)(
@@ -744,7 +749,7 @@ namespace Musa
 
         return TRUE;
     }
-    MUSA_IAT_SYMBOL(GetThreadInformation, 0);
+    MUSA_IAT_SYMBOL(GetThreadInformation, 16);
 
     _IRQL_requires_max_(PASSIVE_LEVEL)
     BOOL WINAPI MUSA_NAME(SetThreadInformation)(
@@ -817,7 +822,7 @@ namespace Musa
 
         return TRUE;
     }
-    MUSA_IAT_SYMBOL(SetThreadInformation, 0);
+    MUSA_IAT_SYMBOL(SetThreadInformation, 16);
 
     _IRQL_requires_max_(PASSIVE_LEVEL)
     HRESULT WINAPI MUSA_NAME(SetThreadDescription)(
@@ -836,7 +841,7 @@ namespace Musa
 
         return HRESULT_FROM_NT(Status);
     }
-    MUSA_IAT_SYMBOL(SetThreadDescription, 0);
+    MUSA_IAT_SYMBOL(SetThreadDescription, 8);
 
     _IRQL_requires_max_(PASSIVE_LEVEL)
     HRESULT WINAPI MUSA_NAME(GetThreadDescription)(
@@ -888,7 +893,7 @@ namespace Musa
 
         return HRESULT_FROM_NT(Status);
     }
-    MUSA_IAT_SYMBOL(GetThreadDescription, 0);
+    MUSA_IAT_SYMBOL(GetThreadDescription, 8);
 
 }
 EXTERN_C_END

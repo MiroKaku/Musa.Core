@@ -864,7 +864,7 @@ namespace Musa
 
         return STATUS_SUCCESS;
     }
-    MUSA_IAT_SYMBOL(RtlZeroHeap, 12);
+    MUSA_IAT_SYMBOL(RtlZeroHeap, 8);
 
     VOID NTAPI MUSA_NAME(RtlProtectHeap)(
         _In_ PVOID HeapHandle,

@@ -713,7 +713,7 @@ namespace Musa
 
         return TRUE;
     }
-    MUSA_IAT_SYMBOL(SetProcessInformation, 0);
+    MUSA_IAT_SYMBOL(SetProcessInformation, 16);
 
     _IRQL_requires_max_(PASSIVE_LEVEL)
     BOOL WINAPI MUSA_NAME(GetProcessInformation)(
@@ -854,7 +854,7 @@ namespace Musa
 
         return TRUE;
     }
-    MUSA_IAT_SYMBOL(GetProcessInformation, 0);
+    MUSA_IAT_SYMBOL(GetProcessInformation, 16);
 
 }
 EXTERN_C_END

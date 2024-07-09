@@ -68,6 +68,7 @@ namespace Musa
             return TRUE;
         }
     }
+    MUSA_IAT_SYMBOL(GetLogicalProcessorInformation, 8);
 
     _IRQL_requires_max_(PASSIVE_LEVEL)
     BOOL WINAPI MUSA_NAME(GetLogicalProcessorInformationEx)(
@@ -98,6 +99,7 @@ namespace Musa
             return TRUE;
         }
     }
+    MUSA_IAT_SYMBOL(GetLogicalProcessorInformationEx, 12);
 
 #if !defined _KERNEL_MODE
     static BOOL GetProcessorGroupInformation(
@@ -208,7 +210,7 @@ namespace Musa
         return Count;
     #endif
     }
-    MUSA_IAT_SYMBOL(GetActiveProcessorCount, 0);
+    MUSA_IAT_SYMBOL(GetActiveProcessorCount, 4);
 
     DWORD WINAPI MUSA_NAME(GetMaximumProcessorCount)(
         _In_ WORD GroupNumber
@@ -242,7 +244,7 @@ namespace Musa
         return Count;
     #endif
     }
-    MUSA_IAT_SYMBOL(GetMaximumProcessorCount, 0);
+    MUSA_IAT_SYMBOL(GetMaximumProcessorCount, 4);
 
     //
     // System Times
