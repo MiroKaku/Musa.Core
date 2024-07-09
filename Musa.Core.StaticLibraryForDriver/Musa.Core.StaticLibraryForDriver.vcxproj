@@ -33,6 +33,7 @@ xcopy /v /f /d /y "$(SolutionDir)\LICENSE" "$(SolutionDir)\Publish\"
 xcopy /v /f /d /y "$(SolutionDir)\README.md" "$(SolutionDir)\Publish\"
 xcopy /v /f /d /y "$(SolutionDir)\Musa.Core\Musa.Core.h" "$(SolutionDir)\Publish\include\"
 xcopy /v /f /d /y "$(SolutionDir)\Musa.Core.NuGet\Musa.Core.Config.props" "$(SolutionDir)\Publish\config\"
+xcopy /v /f /d /y "$(SolutionDir)\Musa.Core.NuGet\Musa.Core.Config.targets" "$(SolutionDir)\Publish\config\"
 xcopy /v /f /d /y "$(TargetDir)$(TargetName).lib" "$(SolutionDir)\Publish\lib\$(PlatformShortName)\$(Configuration)\"
 xcopy /v /f /d /y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)\Publish\lib\$(PlatformShortName)\$(Configuration)\"
 </Command>
