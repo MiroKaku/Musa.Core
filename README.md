@@ -28,13 +28,13 @@ Search for `Musa.Core`, choose the version that suits you, and then click "Insta
 
 Or
 
-Add the following code to your `.vcxproj` file:
+If your project template uses [Mile.Project.Windows](https://github.com/ProjectMile/Mile.Project.Windows), you can add the following code directly to your `.vcxproj` file:
 
 ```XML
   <ItemGroup>
     <PackageReference Include="Musa.Core">
       <!-- Expected version -->
-      <Version>1.0.0</Version>
+      <Version>0.1.0</Version>
     </PackageReference>
   </ItemGroup>
 ```
@@ -104,6 +104,12 @@ This mode will not automatically import lib files.
 
 ## Progress
 See [Project](https://github.com/users/MiroKaku/projects/1/views/1)
+
+## Acknowledgements
+
+Thanks to [JetBrains](https://www.jetbrains.com/?from=meesong) for providing free licenses such as [Resharper C++](https://www.jetbrains.com/resharper-cpp/?from=meesong) for my open-source projects.
+
+[<img src="https://resources.jetbrains.com/storage/products/company/brand/logos/ReSharperCPP_icon.png" alt="ReSharper C++ logo." width=200>](https://www.jetbrains.com/?from=meesong)
 
 ## Thanks & References
 * Thanks: The scheme to export ZwRoutines is provided by @[xiaobfly](https://github.com/xiaobfly).

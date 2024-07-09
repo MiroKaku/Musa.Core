@@ -27,13 +27,13 @@ Musa.Core 是 [Musa.Runtime](https://github.com/MiroKaku/Musa.Runtime) (原 [ucx
 
 或者
 
-在你的 `.vcxproj` 文件里面添加下面代码：
+如果你的项目模板用的是 [Mile.Project.Windows](https://github.com/ProjectMile/Mile.Project.Windows)，那么可以直接在你的 `.vcxproj` 文件里面添加下面代码：
 
 ```XML
   <ItemGroup>
     <PackageReference Include="Musa.Core">
       <!-- 期望的版本 -->
-      <Version>1.0.0</Version>
+      <Version>0.1.0</Version>
     </PackageReference>
   </ItemGroup>
 ```
@@ -104,6 +104,14 @@ Musa.Core 是 [Musa.Runtime](https://github.com/MiroKaku/Musa.Runtime) (原 [ucx
 
 ## 进度
 查看 [Project](https://github.com/users/MiroKaku/projects/1/views/1)
+
+## 鸣谢
+
+> [IntelliJ IDEA](https://zh.wikipedia.org/zh-hans/IntelliJ_IDEA) 是一个在各个方面都最大程度地提高开发人员的生产力的 IDE。
+
+特别感谢 [JetBrains](https://www.jetbrains.com/?from=meesong) 为开源项目提供免费的 [Resharper C++](https://www.jetbrains.com/resharper-cpp/?from=meesong) 等 IDE 的授权
+
+[<img src="https://resources.jetbrains.com/storage/products/company/brand/logos/ReSharperCPP_icon.png" alt="ReSharper C++ logo." width=200>](https://www.jetbrains.com/?from=meesong)
 
 ## 感谢 & 参考
 * 感谢：Zw 例程获取方案由 @[xiaobfly](https://github.com/xiaobfly) 提供。
