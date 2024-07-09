@@ -4,7 +4,7 @@
 
 // Logging
 #ifdef _DEBUG
-#define MusaLOG(fmt, ...) printf("[Musa][%s():%u] " fmt "\n", __FUNCTION__, __LINE__, ## __VA_ARGS__)
+#define MusaLOG(fmt, ...) printf("[Musa.Core][%s():%u] " fmt "\n", __FUNCTION__, __LINE__, ## __VA_ARGS__)
 #else
 #define MusaLOG(...)
 #endif
