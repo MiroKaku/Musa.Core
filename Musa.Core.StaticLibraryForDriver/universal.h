@@ -41,7 +41,7 @@ EXTERN_C_END
 // Logging
 #ifdef _DEBUG
 #define MusaLOG(fmt, ...) DbgPrintEx(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL, \
-    "[Musa][%s():%u]" fmt "\n", __FUNCTION__, __LINE__, ## __VA_ARGS__)
+    "[Musa.Core][%s():%u]" fmt "\n", __FUNCTION__, __LINE__, ## __VA_ARGS__)
 #else
 #define MusaLOG(...)
 #endif
