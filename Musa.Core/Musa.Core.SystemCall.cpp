@@ -93,7 +93,19 @@ namespace Musa
 
                 Status = ZwOpenDirectoryObject(&DirectoryHandle, DIRECTORY_QUERY, &ObjectAttributes);
                 if (!NT_SUCCESS(Status)) {
-                    break;
+                    if (Status != STATUS_OBJECT_NAME_NOT_FOUND) {
+                        break;
+                    }
+
+                    Status = RtlInitUnicodeStringEx(&KnownDllName, L"\\KnownDlls");
+                    if (!NT_SUCCESS(Status)) {
+                        break;
+                    }
+
+                    Status = ZwOpenDirectoryObject(&DirectoryHandle, DIRECTORY_QUERY, &ObjectAttributes);
+                    if (!NT_SUCCESS(Status)) {
+                        break;
+                    }
                 }
 
                 UNICODE_STRING SectionName{};
