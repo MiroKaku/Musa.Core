@@ -301,6 +301,14 @@ namespace Musa
     }
     MUSA_IAT_SYMBOL(RtlFlsGetValue, 8);
 
+
+#if defined _M_IX86
+    _VEIL_DEFINE_IAT_RAW_SYMBOL(RtlFlsGetValue2 ## @ ## 4, MUSA_NAME(RtlFlsGetValue))
+#else
+    _VEIL_DEFINE_IAT_SYMBOL(RtlFlsGetValue2, MUSA_NAME(RtlFlsGetValue));
+#endif
+
+
     _IRQL_requires_max_(DISPATCH_LEVEL)
     NTSTATUS NTAPI MUSA_NAME(RtlFlsSetValue)(
         _In_ ULONG FlsIndex,

@@ -69,6 +69,18 @@ namespace Musa
         return TRUE;
     }
     MUSA_IAT_SYMBOL(FlsFree, 4);
+    
+    _IRQL_requires_max_(DISPATCH_LEVEL)
+    NTSTATUS NTAPI MUSA_NAME(RtlFlsGetValue)(
+        _In_  ULONG  FlsIndex,
+        _Out_ PVOID* FlsData
+    );
+
+#if defined _M_IX86
+    _VEIL_DEFINE_IAT_RAW_SYMBOL(FlsGetValue2 ## @ ## 4, MUSA_NAME(RtlFlsGetValue))
+    #else
+    _VEIL_DEFINE_IAT_SYMBOL(FlsGetValue2, MUSA_NAME(RtlFlsGetValue));
+#endif
 
 }
 EXTERN_C_END
