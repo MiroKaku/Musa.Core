@@ -26,12 +26,6 @@
     <IntDir>$(MileProjectObjectsPath)$(Configuration)\$(MSBuildProjectName)\$(Platform)\</IntDir>
     <GeneratedFilesDir>$(IntDir)Generated Files\</GeneratedFilesDir>
   </PropertyGroup>
-  <ItemDefinitionGroup>
-    <Link>
-      <AdditionalLibraryDirectories>$(OutDirFullPath);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Musa.Core.StaticLibrary.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
-  </ItemDefinitionGroup>
   <ItemGroup>
     <Manifest Include="Musa.Core.Test.manifest" />
   </ItemGroup>
@@ -43,5 +37,10 @@
       <Version>1.0.0</Version>
     </PackageReference>
   </ItemGroup>
+  <PropertyGroup>
+    <MusaCoreOnlyHeader>false</MusaCoreOnlyHeader>
+  </PropertyGroup>
+  <Import Project="..\Publish\config\Musa.Core.Config.props" />
+  <Import Project="..\Publish\config\Musa.Core.Config.targets" />
   <Import Project="..\Mile.Project.Windows\Mile.Project.Cpp.targets" />
 </Project>

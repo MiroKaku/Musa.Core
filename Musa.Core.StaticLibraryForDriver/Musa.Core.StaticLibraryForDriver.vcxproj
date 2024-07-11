@@ -37,6 +37,7 @@ xcopy /v /f /d /y "$(SolutionDir)\Musa.Core.NuGet\Musa.Core.Config.props" "$(Sol
 xcopy /v /f /d /y "$(SolutionDir)\Musa.Core.NuGet\Musa.Core.Config.targets" "$(SolutionDir)\Publish\config\"
 xcopy /v /f /d /y "$(TargetDir)$(TargetName).lib" "$(SolutionDir)\Publish\lib\$(PlatformShortName)\$(Configuration)\"
 xcopy /v /f /d /y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)\Publish\lib\$(PlatformShortName)\$(Configuration)\"
+echo F | xcopy /v /f /d /y "$(IntDirFullPath)Musa.Core.SystemCall.Stubs.obj" "$(SolutionDir)\Publish\lib\$(PlatformShortName)\$(Configuration)\Musa.Core.SystemCallForDriver.Stubs.obj"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
