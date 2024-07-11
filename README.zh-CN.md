@@ -5,7 +5,7 @@
 [![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/MiroKaku/Musa.Core/blob/main/LICENSE)
 ![Visual Studio](https://img.shields.io/badge/Visual%20Studio-2022-purple.svg)
 ![Windows](https://img.shields.io/badge/Windows-10+-orange.svg)
-![Platform](https://img.shields.io/badge/Windows-X86%7CX64%7CARM64-%23FFBCD9)
+![Platform](https://img.shields.io/badge/Windows-X64%7CARM64-%23FFBCD9)
 
 * [English](https://github.com/MiroKaku/Musa.Core/blob/main/README.md)
 
