@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  
+  <ItemDefinitionGroup Condition="('$(MusaCoreOnlyHeader)'=='') Or ('$(MusaCoreOnlyHeader)'=='false')">
+
+    <Link Condition="('$(IsKernelModeToolset)'=='') Or ('$(IsKernelModeToolset)'=='false')">
+      <AdditionalDependencies>Musa.Core.SystemCall.Stubs.obj;Musa.Core.StaticLibrary.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+
+    <Link Condition="'$(IsKernelModeToolset)'=='true'">
+      <AdditionalOptions>/INTEGRITYCHECK %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>Musa.Core.SystemCallForDriver.Stubs.obj;Musa.Core.StaticLibraryForDriver.lib;Cng.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+
+  </ItemDefinitionGroup>
+
+</Project>
