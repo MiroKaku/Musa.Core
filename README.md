@@ -19,12 +19,12 @@ Musa.Core is a derivative of the underlying API implementation of [Musa.Runtime]
 
 Use ntdll/ntoskrnl to implement Kernel32, Advapi32 and other APIs. It includes user-mode and kernel-mode.
 
-Recommended for use with [Musa.Veil](https://github.com/MiroKaku/Veil).
-
 ## How to use
 
 Right click on the project, select "Manage NuGet Packages".
 Search for `Musa.Core`, choose the version that suits you, and then click "Install".
+
+> NuGet package depends on [Musa.Veil](https://github.com/MiroKaku/Musa.Veil), you can directly include `<Veil.h>`
 
 Or
 

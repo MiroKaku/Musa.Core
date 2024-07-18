@@ -19,11 +19,11 @@ Musa.Core 是 [Musa.Runtime](https://github.com/MiroKaku/Musa.Runtime) (原 [ucx
 
 主要是用 ntdll/ntoskrnl 实现 Kernel32、Advapi32 等API，它包括用户模式和内核模式两种。
 
-推荐与 [Musa.Veil](https://github.com/MiroKaku/Veil) 一起食用。
-
 ## 使用方法
 
 右键单击该项目并选择“管理 NuGet 包”，然后搜索`Musa.Core`并选择适合你的版本，最后单击“安装”。
+
+> NuGet 包依赖 [Musa.Veil](https://github.com/MiroKaku/Musa.Veil)，你可以直接包含 `<Veil.h>`
 
 或者
 
