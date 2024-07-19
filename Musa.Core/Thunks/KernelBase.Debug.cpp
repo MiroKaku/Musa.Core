@@ -25,7 +25,8 @@ namespace Musa
         _In_opt_ LPCSTR OutputString
     )
     {
-        DbgPrint("%hs", OutputString);
+        DbgPrintEx(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL,
+            "%hs", OutputString);
     }
     MUSA_IAT_SYMBOL(OutputDebugStringA, 4);
 
@@ -33,7 +34,8 @@ namespace Musa
         _In_opt_ LPCWSTR OutputString
     )
     {
-        DbgPrint("%ls", OutputString);
+        DbgPrintEx(DPFLTR_DEFAULT_ID, DPFLTR_ERROR_LEVEL,
+            "%ls", OutputString);
     }
     MUSA_IAT_SYMBOL(OutputDebugStringW, 4);
 
