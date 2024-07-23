@@ -115,8 +115,24 @@ namespace Musa
 
         return S_OK;
     }
+
     MUSA_IAT_SYMBOL(ConvertPerformanceCounterToAuxiliaryCounter, 16);
 
+    DWORD WINAPI MUSA_NAME(GetTickCount)(
+        VOID
+    )
+    {
+        return ZwGetTickCount();
+    }
+    MUSA_IAT_SYMBOL(GetTickCount, 16);
+
+    ULONGLONG WINAPI MUSA_NAME(GetTickCount64)(
+        VOID
+        )
+    {
+        return ZwGetTickCount64();
+    }
+    MUSA_IAT_SYMBOL(GetTickCount64, 16);
 
 }
 EXTERN_C_END

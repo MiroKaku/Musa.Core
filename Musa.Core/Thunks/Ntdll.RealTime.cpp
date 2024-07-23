@@ -132,6 +132,21 @@ namespace Musa
     }
     MUSA_IAT_SYMBOL(RtlConvertPerformanceCounterToAuxiliaryCounter, 16);
 
+    ULONG NTAPI MUSA_NAME(RtlGetTickCount)(
+        VOID
+    )
+    {
+        return ZwGetTickCount();
+    }
+    MUSA_IAT_SYMBOL(RtlGetTickCount, 0);
+
+    LARGE_INTEGER NTAPI MUSA_NAME(RtlGetTickCount64)(
+        VOID
+    )
+    {
+        return { .QuadPart = (LONGLONG)ZwGetTickCount64() };
+    }
+    MUSA_IAT_SYMBOL(RtlGetTickCount64, 0);
 
 }
 EXTERN_C_END

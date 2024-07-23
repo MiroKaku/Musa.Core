@@ -51,6 +51,7 @@ echo F | xcopy /v /f /d /y "$(IntDirFullPath)Musa.Core.SystemCall.Stubs.obj" "$(
     <ClInclude Include="..\Musa.Core\Musa.Core.SystemEnvironmentBlock.Thread.h" />
     <ClInclude Include="..\Musa.Core\Musa.Core.Utility.h" />
     <ClInclude Include="..\Musa.Core\Thunks\KernelBase.Handle.Private.h" />
+    <ClInclude Include="..\Musa.Core\Thunks\KernelBase.LibraryLoader.Private.h" />
     <ClInclude Include="..\Musa.Core\Thunks\KernelBase.NLS.Private.h" />
     <ClInclude Include="..\Musa.Core\Thunks\KernelBase.Private.h" />
     <ClInclude Include="..\Musa.Core\Thunks\KernelBase.Process.Private.h" />
@@ -60,6 +61,7 @@ echo F | xcopy /v /f /d /y "$(IntDirFullPath)Musa.Core.SystemCall.Stubs.obj" "$(
     <ClInclude Include="..\Musa.Core\Thunks\Ntdll.Debug.Private.h" />
     <ClInclude Include="..\Musa.Core\Thunks\Ntdll.FiberLocalStorage.Private.h" />
     <ClInclude Include="..\Musa.Core\Thunks\Ntdll.Heap.Private.h" />
+    <ClInclude Include="..\Musa.Core\Thunks\Ntdll.LibraryLoader.Private.h" />
     <ClInclude Include="..\Musa.Core\Thunks\Ntdll.RealTime.Private.h" />
     <ClInclude Include="..\Musa.Core\Thunks\Ntdll.Synchronize.Private.h" />
     <ClInclude Include="..\Musa.Core\Thunks\Ntdll.Thread.Private.h" />
@@ -82,6 +84,7 @@ echo F | xcopy /v /f /d /y "$(IntDirFullPath)Musa.Core.SystemCall.Stubs.obj" "$(
     <ClCompile Include="..\Musa.Core\Thunks\KernelBase.FiberLocalStorage.cpp" />
     <ClCompile Include="..\Musa.Core\Thunks\KernelBase.Handle.cpp" />
     <ClCompile Include="..\Musa.Core\Thunks\KernelBase.Heap.cpp" />
+    <ClCompile Include="..\Musa.Core\Thunks\KernelBase.LibraryLoader.cpp" />
     <ClCompile Include="..\Musa.Core\Thunks\KernelBase.NLS.cpp" />
     <ClCompile Include="..\Musa.Core\Thunks\KernelBase.PerformanceCounter.cpp" />
     <ClCompile Include="..\Musa.Core\Thunks\KernelBase.Private.cpp" />
@@ -96,6 +99,7 @@ echo F | xcopy /v /f /d /y "$(IntDirFullPath)Musa.Core.SystemCall.Stubs.obj" "$(
     <ClCompile Include="..\Musa.Core\Thunks\Ntdll.Error.cpp" />
     <ClCompile Include="..\Musa.Core\Thunks\Ntdll.FiberLocalStorage.cpp" />
     <ClCompile Include="..\Musa.Core\Thunks\Ntdll.Heap.cpp" />
+    <ClCompile Include="..\Musa.Core\Thunks\Ntdll.LibraryLoader.cpp" />
     <ClCompile Include="..\Musa.Core\Thunks\Ntdll.PerformanceCounter.cpp" />
     <ClCompile Include="..\Musa.Core\Thunks\Ntdll.Pool.cpp" />
     <ClCompile Include="..\Musa.Core\Thunks\Ntdll.RealTime.cpp" />
