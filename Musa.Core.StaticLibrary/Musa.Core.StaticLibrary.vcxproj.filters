@@ -73,6 +73,18 @@
     <ClInclude Include="..\Musa.Core\Thunks\Ntdll.Thread.Private.h">
       <Filter>Musa.Core\Thunks</Filter>
     </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\KernelBase.LibraryLoader.Private.h">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\Ntdll.LibraryLoader.Private.h">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\Ntdll.Image.Private.h">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\KernelBase.FileVersion.Private.h">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Musa.Core\Musa.Core.cpp">
@@ -178,6 +190,18 @@
       <Filter>Musa.Core\Thunks</Filter>
     </ClCompile>
     <ClCompile Include="..\Musa.Core\Thunks\Ntdll.Thread.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Thunks\KernelBase.LibraryLoader.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Thunks\Ntdll.Image.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Thunks\Ntdll.LibraryLoader.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Thunks\KernelBase.FileVersion.cpp">
       <Filter>Musa.Core\Thunks</Filter>
     </ClCompile>
   </ItemGroup>

@@ -12,8 +12,6 @@
 EXTERN_C_START
 namespace Musa
 {
-constexpr uint32_t LDR_DLL_MAPPED_AS_MASK = 0x00000003;
-
 #if defined(_KERNEL_MODE)
     _IRQL_requires_max_(APC_LEVEL)
     BOOL WINAPI MUSA_NAME(FreeLibrary)(
@@ -35,6 +33,8 @@ constexpr uint32_t LDR_DLL_MAPPED_AS_MASK = 0x00000003;
     MUSA_IAT_SYMBOL(FreeLibrary, 4);
 #endif
 
+#pragma warning(push)
+#pragma warning(disable: 6054) // warning C6054: String 'DllFullName' might not be zero-terminated.
     _IRQL_requires_max_(APC_LEVEL)
     _Success_(return != 0)
     _Ret_range_(1, Size)
@@ -50,7 +50,7 @@ constexpr uint32_t LDR_DLL_MAPPED_AS_MASK = 0x00000003;
         NTSTATUS Status;
 
         do {
-            if (reinterpret_cast<uintptr_t>(DllHandle) & LDR_DLL_MAPPED_AS_MASK) {
+            if (LDR_IS_RESOURCE(DllHandle)) {
                 Status = STATUS_DLL_NOT_FOUND;
                 break;
             }
@@ -86,6 +86,7 @@ constexpr uint32_t LDR_DLL_MAPPED_AS_MASK = 0x00000003;
         return Result;
     }
     MUSA_IAT_SYMBOL(GetModuleFileNameW, 12);
+#pragma warning(pop)
 
 #pragma warning(push)
 #pragma warning(disable: 6387)
@@ -98,10 +99,15 @@ constexpr uint32_t LDR_DLL_MAPPED_AS_MASK = 0x00000003;
     {
         PAGED_CODE();
 
+        if (ModuleName == nullptr) {
+            return static_cast<HMODULE>(RtlCurrentImageBase());
+        }
+
         HMODULE DllHandle = nullptr;
         if (GetModuleHandleExW(0, ModuleName, &DllHandle)) {
             return DllHandle;
         }
+
         return nullptr;
     }
     MUSA_IAT_SYMBOL(GetModuleHandleW, 4);
@@ -213,7 +219,7 @@ constexpr uint32_t LDR_DLL_MAPPED_AS_MASK = 0x00000003;
             PVOID BaseAddress = nullptr;
 
             if (Module) {
-                if (!(reinterpret_cast<uintptr_t>(Module) & LDR_DLL_MAPPED_AS_MASK)) {
+                if (!LDR_IS_RESOURCE(Module)) {
                     BaseAddress = Module;
                 }
             }

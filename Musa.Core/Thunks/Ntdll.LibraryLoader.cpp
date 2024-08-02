@@ -1,4 +1,3 @@
-#ifdef _KERNEL_MODE
 
 #include "Musa.Core\Musa.Core.PEParser.h"
 #include "Ntdll.LibraryLoader.Private.h"
@@ -15,13 +14,15 @@
 #pragma alloc_text(PAGE, MUSA_NAME(LdrGetProcedureAddressEx))
 #pragma alloc_text(PAGE, MUSA_NAME(LdrGetProcedureAddressForCaller))
 #pragma alloc_text(PAGE, MUSA_NAME(LdrGetKnownDllSectionHandle))
+#pragma alloc_text(PAGE, MUSA_NAME(LdrLoadDataFile))
+#pragma alloc_text(PAGE, MUSA_NAME(LdrUnloadDataFile))
 #endif
 
+#ifdef _KERNEL_MODE
 
 EXTERN_C_START
 namespace Musa
 {
-
     _IRQL_requires_max_(APC_LEVEL)
     NTSTATUS NTAPI MUSA_NAME(LdrUnloadDll)(
         _In_ PVOID DllHandle
@@ -467,6 +468,86 @@ namespace Musa
         return Status;
     }
     MUSA_IAT_SYMBOL(LdrGetKnownDllSectionHandle, 12);
+
+    _IRQL_requires_max_(PASSIVE_LEVEL)
+    NTSTATUS NTAPI MUSA_NAME(LdrLoadDataFile)(
+        _In_  PCWSTR DllName,
+        _Out_ PVOID* DllHandle
+    )
+    {
+        PAGED_CODE();
+
+        NTSTATUS Status;
+
+        HANDLE   FileHandle    = nullptr;
+        PVOID    SectionObject = nullptr;
+
+        do {
+            *DllHandle = nullptr;
+
+            UNICODE_STRING DllName_U{};
+            Status = RtlInitUnicodeStringEx(&DllName_U, DllName);
+            if (!NT_SUCCESS(Status)) {
+                break;
+            }
+
+            IO_STATUS_BLOCK   IoStatusBlock{};
+            OBJECT_ATTRIBUTES ObjectAttributes = RTL_CONSTANT_OBJECT_ATTRIBUTES(
+                &DllName_U, OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE);
+
+            Status = ZwOpenFile(
+                &FileHandle,
+                FILE_READ_DATA | SYNCHRONIZE,
+                &ObjectAttributes,
+                &IoStatusBlock,
+                FILE_SHARE_READ | FILE_SHARE_DELETE,
+                FILE_NON_DIRECTORY_FILE);
+            if (!NT_SUCCESS(Status)) {
+                break;
+            }
+
+            LARGE_INTEGER MaximumSize{};
+            Status = MmCreateSection(&SectionObject, SECTION_MAP_READ, nullptr,
+                &MaximumSize, PAGE_READONLY, SEC_IMAGE_NO_EXECUTE, FileHandle, nullptr);
+            if (!NT_SUCCESS(Status)) {
+                break;
+            }
+
+            PVOID  ViewAddress = nullptr;
+            SIZE_T ViewSize    = 0;
+            Status = MmMapViewInSystemSpace(SectionObject, &ViewAddress, &ViewSize);
+            if (!NT_SUCCESS(Status)) {
+                break;
+            }
+
+            *DllHandle = LDR_MAPPEDVIEW_TO_DATAFILE(ViewAddress);
+
+        } while (FALSE);
+
+        if (SectionObject) {
+            ObDereferenceObject(SectionObject);
+        }
+        if (FileHandle) {
+            (void)ZwClose(FileHandle);
+        }
+
+        return Status;
+    }
+    MUSA_IAT_SYMBOL(LdrLoadDataFile, 8);
+
+    _IRQL_requires_max_(APC_LEVEL)
+    NTSTATUS NTAPI MUSA_NAME(LdrUnloadDataFile)(
+        _In_ PVOID DllHandle
+    )
+    {
+        PAGED_CODE();
+
+        if (LDR_IS_DATAFILE(DllHandle)) {
+            return MmUnmapViewInSystemSpace(LDR_DATAFILE_TO_MAPPEDVIEW(DllHandle));
+        }
+        return STATUS_DLL_NOT_FOUND;
+    }
+    MUSA_IAT_SYMBOL(LdrUnloadDataFile, 4);
 
 }
 EXTERN_C_END

@@ -5,7 +5,6 @@
 
 EXTERN_C_START
 
-
 _IRQL_requires_max_(APC_LEVEL)
 NTSTATUS NTAPI MUSA_NAME(LdrUnloadDll)(
     _In_ PVOID DllHandle
@@ -85,6 +84,17 @@ NTSTATUS NTAPI MUSA_NAME(LdrGetKnownDllSectionHandle)(
     _In_ PCWSTR   DllName,
     _In_ BOOLEAN  KnownDlls32,
     _Out_ PHANDLE Section
+    );
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+NTSTATUS NTAPI MUSA_NAME(LdrLoadDataFile)(
+    _In_  PCWSTR DllName,
+    _Out_ PVOID* DllHandle
+    );
+
+_IRQL_requires_max_(APC_LEVEL)
+NTSTATUS NTAPI MUSA_NAME(LdrUnloadDataFile)(
+    _In_ PVOID DllHandle
     );
 
 
