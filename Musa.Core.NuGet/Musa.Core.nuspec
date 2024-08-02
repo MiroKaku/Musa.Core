@@ -20,7 +20,7 @@ Musa.Core - Use ntdll/ntoskrnl to implement Kernel32, Advapi32 and other APIs.
     <projectUrl>https://github.com/MiroKaku/Musa.Core</projectUrl>
     <repository type="git" url="https://github.com/MiroKaku/Musa.Core.git" branch="main" commit="$commit$" />
     <dependencies>
-      <dependency id="Musa.Veil" version="1.2.3" />
+      <dependency id="Musa.Veil" version="1.2.4" />
     </dependencies>
   </metadata>
   <files>
