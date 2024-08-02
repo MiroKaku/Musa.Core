@@ -51,7 +51,7 @@ namespace Musa
     {
         PAGED_CODE();
 
-        KeEnterGuardedRegion();
+        KeEnterCriticalRegion();
         ExAcquirePushLockExclusiveEx(reinterpret_cast<PEX_PUSH_LOCK>(SRWLock), EX_DEFAULT_PUSH_LOCK_FLAGS);
     }
     MUSA_IAT_SYMBOL(RtlAcquireSRWLockExclusive, 4);
@@ -64,7 +64,7 @@ namespace Musa
     {
         PAGED_CODE();
 
-        KeEnterGuardedRegion();
+        KeEnterCriticalRegion();
         ExAcquirePushLockSharedEx(reinterpret_cast<PEX_PUSH_LOCK>(SRWLock), EX_DEFAULT_PUSH_LOCK_FLAGS);
     }
     MUSA_IAT_SYMBOL(RtlAcquireSRWLockShared, 4);
@@ -78,7 +78,7 @@ namespace Musa
         PAGED_CODE();
 
         ExReleasePushLockExclusiveEx(reinterpret_cast<PEX_PUSH_LOCK>(SRWLock), EX_DEFAULT_PUSH_LOCK_FLAGS);
-        KeLeaveGuardedRegion();
+        KeLeaveCriticalRegion();
     }
     MUSA_IAT_SYMBOL(RtlReleaseSRWLockExclusive, 4);
 
@@ -91,7 +91,7 @@ namespace Musa
         PAGED_CODE();
 
         ExReleasePushLockSharedEx(reinterpret_cast<PEX_PUSH_LOCK>(SRWLock), EX_DEFAULT_PUSH_LOCK_FLAGS);
-        KeLeaveGuardedRegion();
+        KeLeaveCriticalRegion();
     }
     MUSA_IAT_SYMBOL(RtlReleaseSRWLockShared, 4);
 
@@ -103,12 +103,12 @@ namespace Musa
     {
         PAGED_CODE();
 
-        KeEnterGuardedRegion();
+        KeEnterCriticalRegion();
         if (ExTryAcquirePushLockExclusiveEx(reinterpret_cast<PEX_PUSH_LOCK>(SRWLock), EX_DEFAULT_PUSH_LOCK_FLAGS)) {
             return TRUE;
         }
 
-        KeLeaveGuardedRegion();
+        KeLeaveCriticalRegion();
         return FALSE;
     }
     MUSA_IAT_SYMBOL(RtlTryAcquireSRWLockExclusive, 4);
@@ -121,12 +121,12 @@ namespace Musa
     {
         PAGED_CODE();
 
-        KeEnterGuardedRegion();
+        KeEnterCriticalRegion();
         if (ExTryAcquirePushLockSharedEx(reinterpret_cast<PEX_PUSH_LOCK>(SRWLock), EX_DEFAULT_PUSH_LOCK_FLAGS)) {
             return TRUE;
         }
 
-        KeLeaveGuardedRegion();
+        KeLeaveCriticalRegion();
         return FALSE;
     }
     MUSA_IAT_SYMBOL(RtlTryAcquireSRWLockShared, 4);
@@ -221,7 +221,7 @@ namespace Musa
     {
         PAGED_CODE();
 
-        KeEnterGuardedRegion();
+        KeEnterCriticalRegion();
         return ExAcquireResourceExclusiveLite(static_cast<PERESOURCE>(CriticalSection->LockSemaphore), TRUE)
             ? STATUS_SUCCESS
             : STATUS_UNSUCCESSFUL;
@@ -237,7 +237,7 @@ namespace Musa
         PAGED_CODE();
 
         ExReleaseResourceLite(static_cast<PERESOURCE>(CriticalSection->LockSemaphore));
-        KeLeaveGuardedRegion();
+        KeLeaveCriticalRegion();
 
         return STATUS_SUCCESS;
     }
@@ -251,12 +251,12 @@ namespace Musa
     {
         PAGED_CODE();
 
-        KeEnterGuardedRegion();
+        KeEnterCriticalRegion();
         if (ExTryToAcquireResourceExclusiveLite(static_cast<PERESOURCE>(CriticalSection->LockSemaphore))) {
             return TRUE;
         }
 
-        KeLeaveGuardedRegion();
+        KeLeaveCriticalRegion();
         return FALSE;
     }
     MUSA_IAT_SYMBOL(RtlTryEnterCriticalSection, 4);
