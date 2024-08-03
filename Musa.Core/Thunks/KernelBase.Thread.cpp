@@ -88,12 +88,14 @@ namespace Musa
     MUSA_IAT_SYMBOL(CreateRemoteThread, 28);
 
 #if defined _KERNEL_MODE
+    extern PDRIVER_OBJECT MusaCoreDriverObject;
+
     VEIL_DECLARE_STRUCT(MUSA_USER_THREAD_PARAMETER)
     {
-        LPTHREAD_START_ROUTINE StartAddress;
-        LPVOID Parameter;
-
-        KSEMAPHORE Signal;
+        LPTHREAD_START_ROUTINE  StartAddress;
+        LPVOID                  Parameter;
+        KSEMAPHORE              Signal;
+        PDRIVER_OBJECT          Object;
     };
 
     static void MUSA_NAME_PRIVATE(ThreadInitThunk)(
@@ -104,14 +106,21 @@ namespace Musa
         if (ThreadParameter == nullptr) {
             return;
         }
-
         const auto StartAddress = ThreadParameter->StartAddress;
         const auto Parameter = ThreadParameter->Parameter;
+        const auto Object = ThreadParameter->Object;
 
         KeReleaseSemaphore(&ThreadParameter->Signal,
             IO_NO_INCREMENT, 1, FALSE);
 
-        StartAddress(Parameter);
+        __try {
+            StartAddress(Parameter);
+        }
+        __finally{
+            if (Object) {
+                ObDereferenceObjectWithTag(Object, MUSA_TAG);
+            }
+        }
     }
 
     _IRQL_requires_max_(PASSIVE_LEVEL)
@@ -152,12 +161,24 @@ namespace Musa
         MUSA_USER_THREAD_PARAMETER ThreadParameter;
         ThreadParameter.StartAddress = StartAddress;
         ThreadParameter.Parameter    = Parameter;
+        ThreadParameter.Object       = MusaCoreDriverObject;
         KeInitializeSemaphore(&ThreadParameter.Signal, 0, 1);
+
+        if (ThreadParameter.Object) {
+            if (!ObReferenceObjectSafeWithTag(ThreadParameter.Object, MUSA_TAG)) {
+                BaseSetLastNTError(STATUS_THREAD_IS_TERMINATING);
+                return nullptr;
+            }
+        }
 
         HANDLE ThreadHandle = nullptr;
         const auto Status = PsCreateSystemThread(&ThreadHandle, THREAD_ALL_ACCESS, &ObjectAttributes, Process,
             &ClientId, MUSA_NAME_PRIVATE(ThreadInitThunk), &ThreadParameter);
         if (!NT_SUCCESS(Status)) {
+            if (ThreadParameter.Object) {
+                ObDereferenceObjectWithTag(ThreadParameter.Object, MUSA_TAG);
+            }
+
             BaseSetLastNTError(Status);
             return nullptr;
         }
