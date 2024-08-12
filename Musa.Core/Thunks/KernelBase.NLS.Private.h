@@ -1,9 +1,10 @@
 #pragma once
-#ifdef _KERNEL_MODE
 
 
 EXTERN_C_START
 
+
+#ifdef _KERNEL_MODE
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
 _Success_(return != 0)
@@ -31,8 +32,8 @@ int WINAPI MUSA_NAME(WideCharToMultiByte)(
     _Out_opt_ LPBOOL UsedDefaultChar
     );
 
+#endif
 
 EXTERN_C_END
 
 
-#endif
