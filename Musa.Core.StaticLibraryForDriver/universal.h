@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #pragma warning(disable: 6101 28101 28167)
 
 // Config Macro
@@ -37,6 +37,8 @@ EXTERN_C_END
 #else
 #define MUSA_IAT_SYMBOL(name, stack) _VEIL_DEFINE_IAT_SYMBOL(name, MUSA_NAME(name))
 #endif
+
+#define MUSA_ALTERNATE_NAME(name) _VEIL_DECLARE_ALTERNATE_NAME(name, MUSA_NAME(name))
 
 // Logging
 #ifdef _DEBUG
