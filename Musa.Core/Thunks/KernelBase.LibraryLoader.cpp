@@ -1,4 +1,4 @@
-#include "KernelBase.Private.h"
+﻿#include "KernelBase.Private.h"
 #include "KernelBase.LibraryLoader.Private.h"
 
 #ifdef ALLOC_PRAGMA
@@ -65,7 +65,7 @@ namespace Musa
             }
 
             if (DllHandle == nullptr) {
-                DllHandle = static_cast<HMODULE>(RtlCurrentImageBase());
+                DllHandle = reinterpret_cast<HMODULE>(RtlCurrentImageBase());
             }
 
             UNICODE_STRING DllFullName_U{};
@@ -100,7 +100,7 @@ namespace Musa
         PAGED_CODE();
 
         if (ModuleName == nullptr) {
-            return static_cast<HMODULE>(RtlCurrentImageBase());
+            return reinterpret_cast<HMODULE>(RtlCurrentImageBase());
         }
 
         HMODULE DllHandle = nullptr;
@@ -151,7 +151,7 @@ namespace Musa
             }
 
             if (ModuleName == nullptr) {
-                *DllHandle = static_cast<HMODULE>(RtlCurrentImageBase());
+                *DllHandle = reinterpret_cast<HMODULE>(RtlCurrentImageBase());
                 break;
             }
 

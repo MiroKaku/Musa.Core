@@ -5,4 +5,7 @@
       <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory);$(MSBuildProjectDirectory);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <PackageReference Include="Musa.Veil" Version="1.2.6" />
+  </ItemGroup>
 </Project>

@@ -34,11 +34,6 @@
   <ItemGroup>
     <ClCompile Include="Musa.Core.TestForDriver.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Musa.Veil">
-      <Version>1.2.5</Version>
-    </PackageReference>
-  </ItemGroup>
   <PropertyGroup>
     <MusaCoreOnlyHeader>false</MusaCoreOnlyHeader>
   </PropertyGroup>

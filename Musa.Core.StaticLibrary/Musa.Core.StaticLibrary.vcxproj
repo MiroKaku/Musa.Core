@@ -110,10 +110,5 @@ xcopy /v /f /d /y "$(IntDirFullPath)Musa.Core.SystemCall.Stubs.obj" "$(SolutionD
     <ClCompile Include="..\Musa.Core\Thunks\Ntdll.Thread.cpp" />
     <ClCompile Include="..\Musa.Core\Thunks\Ntdll.Utility.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Musa.Veil">
-      <Version>1.2.5</Version>
-    </PackageReference>
-  </ItemGroup>
   <Import Project="..\Mile.Project.Windows\Mile.Project.Cpp.targets" />
 </Project>
