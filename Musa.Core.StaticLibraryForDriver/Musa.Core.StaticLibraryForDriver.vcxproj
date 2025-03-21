@@ -2,23 +2,23 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Globals">
     <ProjectGuid>{15951923-1854-4CAE-ADCA-E3897AEE39A0}</ProjectGuid>
-    <RootNamespace>Musa.Core.StaticLibraryForDriver</RootNamespace>
+    <ProjectName>Musa.Core.StaticLibraryForDriver</ProjectName>
+    <RootNamespace>Musa</RootNamespace>
     <MileProjectType>StaticLibrary</MileProjectType>
     <MileProjectUseKernelMode>true</MileProjectUseKernelMode>
     <MileProjectUseWindowsDriverKit>true</MileProjectUseWindowsDriverKit>
   </PropertyGroup>
-  <Import Project="..\Mile.Project.Windows\Mile.Project.Platform.x86.props" />
-  <Import Project="..\Mile.Project.Windows\Mile.Project.Platform.x64.props" />
-  <Import Project="..\Mile.Project.Windows\Mile.Project.Platform.ARM64.props" />
-  <Import Project="..\Mile.Project.Windows\Mile.Project.Cpp.Default.props" />
-  <Import Project="..\Mile.Project.Windows\Mile.Project.Cpp.props" />
-  <PropertyGroup Label="Globals">
-    <!--TODO: -->
+  <Import Sdk="Mile.Project.Configurations" Project="Mile.Project.Platform.x86.props" />
+  <Import Sdk="Mile.Project.Configurations" Project="Mile.Project.Platform.x64.props" />
+  <Import Sdk="Mile.Project.Configurations" Project="Mile.Project.Platform.ARM64.props" />
+  <Import Sdk="Mile.Project.Configurations" Project="Mile.Project.Cpp.Default.props" />
+  <Import Sdk="Mile.Project.Configurations" Project="Mile.Project.Cpp.props" />
+  <PropertyGroup Label="Configuration">
     <OutDir>$(MileProjectBinariesPath)$(Configuration)\$(Platform)\</OutDir>
     <IntDir>$(MileProjectObjectsPath)$(Configuration)\$(MSBuildProjectName)\$(Platform)\</IntDir>
     <GeneratedFilesDir>$(IntDir)Generated Files\</GeneratedFilesDir>
   </PropertyGroup>
-  <PropertyGroup>
+  <PropertyGroup Label="Configuration">
     <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <ItemDefinitionGroup>
@@ -28,6 +28,8 @@
       <ForcedIncludeFiles>%(PrecompiledHeaderFile);%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup>
     <PostBuildEvent>
       <Command>@echo off
 xcopy /v /f /d /y "$(SolutionDir)\LICENSE" "$(SolutionDir)\Publish\"
@@ -37,8 +39,7 @@ xcopy /v /f /d /y "$(SolutionDir)\Musa.Core.NuGet\Musa.Core.Config.props" "$(Sol
 xcopy /v /f /d /y "$(SolutionDir)\Musa.Core.NuGet\Musa.Core.Config.targets" "$(SolutionDir)\Publish\config\"
 xcopy /v /f /d /y "$(TargetDir)$(TargetName).lib" "$(SolutionDir)\Publish\lib\$(PlatformShortName)\$(Configuration)\"
 xcopy /v /f /d /y "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)\Publish\lib\$(PlatformShortName)\$(Configuration)\"
-echo F | xcopy /v /f /d /y "$(IntDirFullPath)Musa.Core.SystemCall.Stubs.obj" "$(SolutionDir)\Publish\lib\$(PlatformShortName)\$(Configuration)\Musa.Core.SystemCallForDriver.Stubs.obj"
-</Command>
+echo F | xcopy /v /f /d /y "$(IntDirFullPath)Musa.Core.SystemCall.Stubs.obj" "$(SolutionDir)\Publish\lib\$(PlatformShortName)\$(Configuration)\Musa.Core.SystemCallForDriver.Stubs.obj"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -112,5 +113,5 @@ echo F | xcopy /v /f /d /y "$(IntDirFullPath)Musa.Core.SystemCall.Stubs.obj" "$(
     <ClCompile Include="..\Musa.Core\Thunks\Ntdll.Thread.cpp" />
     <ClCompile Include="..\Musa.Core\Thunks\Ntdll.Utility.cpp" />
   </ItemGroup>
-  <Import Project="..\Mile.Project.Windows\Mile.Project.Cpp.targets" />
+  <Import Sdk="Mile.Project.Configurations" Project="Mile.Project.Cpp.targets" />
 </Project>

@@ -1,4 +1,4 @@
-#include "KernelBase.Private.h"
+﻿#include "KernelBase.Private.h"
 #include "KernelBase.Process.Private.h"
 #include "Musa.Core/Musa.Core.SystemEnvironmentBlock.Private.h"
 
@@ -415,7 +415,7 @@ namespace Musa
             return 0;
         }
 
-        return static_cast<DWORD>(BasicInformation.UniqueProcessId);
+        return HandleToULong((HANDLE)BasicInformation.UniqueProcessId);
     }
     MUSA_IAT_SYMBOL(GetProcessId, 4);
 
