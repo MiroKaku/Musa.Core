@@ -8,7 +8,7 @@ rd /s /q Output
 
 rem Initialize Visual Studio environment
 if "%VSINSTALLDIR%"=="" (
-    call "Mile.Project.Windows\InitializeVisualStudioEnvironment.cmd"
+    call "InitializeVisualStudioEnvironment.cmd"
 )
 
 rem Build all targets
