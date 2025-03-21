@@ -1,4 +1,4 @@
-#include "KernelBase.Private.h"
+﻿#include "KernelBase.Private.h"
 #include "KernelBase.Thread.Private.h"
 
 
@@ -95,7 +95,6 @@ namespace Musa
         LPTHREAD_START_ROUTINE  StartAddress;
         LPVOID                  Parameter;
         KSEMAPHORE              Signal;
-        PDRIVER_OBJECT          Object;
     };
 
     static void MUSA_NAME_PRIVATE(ThreadInitThunk)(
@@ -108,19 +107,11 @@ namespace Musa
         }
         const auto StartAddress = ThreadParameter->StartAddress;
         const auto Parameter = ThreadParameter->Parameter;
-        const auto Object = ThreadParameter->Object;
 
         KeReleaseSemaphore(&ThreadParameter->Signal,
             IO_NO_INCREMENT, 1, FALSE);
 
-        __try {
-            StartAddress(Parameter);
-        }
-        __finally{
-            if (Object) {
-                ObDereferenceObjectWithTag(Object, MUSA_TAG);
-            }
-        }
+        return (void)StartAddress(Parameter);
     }
 
     _IRQL_requires_max_(PASSIVE_LEVEL)
@@ -158,33 +149,37 @@ namespace Musa
         }
 
         CLIENT_ID ClientId{};
-        MUSA_USER_THREAD_PARAMETER ThreadParameter;
-        ThreadParameter.StartAddress = StartAddress;
-        ThreadParameter.Parameter    = Parameter;
-        ThreadParameter.Object       = MusaCoreDriverObject;
-        KeInitializeSemaphore(&ThreadParameter.Signal, 0, 1);
+        HANDLE    ThreadHandle = nullptr;
+        PVOID     OwnerObject  = MusaCoreDriverObject;
 
-        if (ThreadParameter.Object) {
-            if (!ObReferenceObjectSafeWithTag(ThreadParameter.Object, MUSA_TAG)) {
+        if (OwnerObject) {
+            if (!ObReferenceObjectSafeWithTag(OwnerObject, MUSA_TAG)) {
                 BaseSetLastNTError(STATUS_THREAD_IS_TERMINATING);
                 return nullptr;
             }
         }
 
-        HANDLE ThreadHandle = nullptr;
-        const auto Status = PsCreateSystemThread(&ThreadHandle, THREAD_ALL_ACCESS, &ObjectAttributes, Process,
-            &ClientId, MUSA_NAME_PRIVATE(ThreadInitThunk), &ThreadParameter);
-        if (!NT_SUCCESS(Status)) {
-            if (ThreadParameter.Object) {
-                ObDereferenceObjectWithTag(ThreadParameter.Object, MUSA_TAG);
+        __try {
+            MUSA_USER_THREAD_PARAMETER ThreadParameter;
+            ThreadParameter.StartAddress = StartAddress;
+            ThreadParameter.Parameter    = Parameter;
+            KeInitializeSemaphore(&ThreadParameter.Signal, 0, 1);
+
+            const auto Status = PsCreateSystemThread(&ThreadHandle, THREAD_ALL_ACCESS, &ObjectAttributes, Process,
+                &ClientId, MUSA_NAME_PRIVATE(ThreadInitThunk), &ThreadParameter);
+            if (!NT_SUCCESS(Status)) {
+                BaseSetLastNTError(Status);
+                return nullptr;
             }
 
-            BaseSetLastNTError(Status);
-            return nullptr;
+            (void)KeWaitForSingleObject(&ThreadParameter.Signal,
+                Executive, KernelMode, FALSE, nullptr);
         }
-
-        (void)KeWaitForSingleObject(&ThreadParameter.Signal,
-            Executive, KernelMode, FALSE, nullptr);
+        __finally {
+            if (OwnerObject) {
+                ObDereferenceObjectWithTag(OwnerObject, MUSA_TAG);
+            }
+        }
 
         if (ThreadId) {
             *ThreadId = HandleToULong(ClientId.UniqueThread);
