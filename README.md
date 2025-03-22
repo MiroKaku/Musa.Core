@@ -1,6 +1,6 @@
 # [Musa.Core](https://github.com/MiroKaku/Musa.Core)
 
-[![Actions Status](https://github.com/MiroKaku/Musa.Core/workflows/build/badge.svg)](https://github.com/MiroKaku/Musa.Core/actions)
+[![Actions Status](https://github.com/MiroKaku/Musa.Core/workflows/CI/badge.svg)](https://github.com/MiroKaku/Musa.Core/actions)
 [![Downloads](https://img.shields.io/nuget/dt/Musa.Core?logo=NuGet&logoColor=blue)](https://www.nuget.org/packages/Musa.Core/)
 [![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/MiroKaku/Musa.Core/blob/main/LICENSE)
 ![Visual Studio](https://img.shields.io/badge/Visual%20Studio-2022-purple.svg)
