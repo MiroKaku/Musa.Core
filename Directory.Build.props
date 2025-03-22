@@ -22,6 +22,6 @@ See: https://learn.microsoft.com/visualstudio/msbuild/customize-your-build
   </ItemDefinitionGroup>
 
   <PropertyGroup>
-    <ForceImportAfterCppProps>$(MSBuildThisFileDirectory)\Directory.Packages.Cpp.props</ForceImportAfterCppProps>
+    <ForceImportBeforeCppProps>$(MSBuildThisFileDirectory)\Directory.Packages.Cpp.props</ForceImportBeforeCppProps>
   </PropertyGroup>
 </Project>
