@@ -114,13 +114,13 @@ VOID MUSA_NAME_PRIVATE(ThreadNotifyCallbackForTeb)(
 
     if (LockIrql <= APC_LEVEL) {
         RtlProcessFlsData(FlsData,
-            RTLP_FLS_DATA_CLEANUP_RUN_CALLBACKS | RTLP_FLS_DATA_CLEANUP_DEALLOCATE);
+            RTL_FLS_DATA_CLEANUP_PER_SLOT | RTL_FLS_DATA_CLEANUP_DEALLOCATE);
     }
     else {
         (void)Utils::RunTaskOnLowIrql(MusaCoreDriverObject, [](PVOID FlsData)
         {
             RtlProcessFlsData(FlsData,
-                RTLP_FLS_DATA_CLEANUP_RUN_CALLBACKS | RTLP_FLS_DATA_CLEANUP_DEALLOCATE);
+                RTL_FLS_DATA_CLEANUP_PER_SLOT | RTL_FLS_DATA_CLEANUP_DEALLOCATE);
             return STATUS_SUCCESS;
         }, FlsData);
     }

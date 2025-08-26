@@ -8,12 +8,12 @@ namespace Musa::Core
     // Fiber Local storage
     //
 
-    constexpr auto RTL_FLS_MAXIMUM_AVAILABLE = 256 - (sizeof(LIST_ENTRY) / sizeof(PVOID));
+    constexpr auto RTLP_FLS_MAXIMUM_AVAILABLE = 256 - (sizeof(LIST_ENTRY) / sizeof(PVOID));
 
     VEIL_DECLARE_STRUCT(RTL_FLS_DATA)
     {
         LIST_ENTRY  Entry;
-        PVOID       Slots[RTL_FLS_MAXIMUM_AVAILABLE];
+        PVOID       Slots[RTLP_FLS_MAXIMUM_AVAILABLE];
     };
 
     VEIL_DECLARE_STRUCT(RTL_FLS_CONTEXT)
@@ -22,7 +22,7 @@ namespace Musa::Core
         PFLS_CALLBACK_FUNCTION* FlsCallback;
         LIST_ENTRY              FlsListHead;
         RTL_BITMAP              FlsBitmap;
-        ULONG                   FlsBitmapBits[ROUND_TO_SIZE(RTL_FLS_MAXIMUM_AVAILABLE, sizeof(PVOID)) / RTL_BITS_OF(ULONG)];
+        ULONG                   FlsBitmapBits[ROUND_TO_SIZE(RTLP_FLS_MAXIMUM_AVAILABLE, sizeof(PVOID)) / RTL_BITS_OF(ULONG)];
         ULONG                   FlsHighIndex;
     };
 }

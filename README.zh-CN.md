@@ -32,8 +32,8 @@ Musa.Core 是 [Musa.Runtime](https://github.com/MiroKaku/Musa.Runtime) (原 [ucx
 ```XML
   <ItemGroup>
     <PackageReference Include="Musa.Core">
-      <!-- 期望的版本 -->
-      <Version>0.1.0</Version>
+      <!-- 可选: 期望的版本 -->
+      <Version>0.4.1</Version>
     </PackageReference>
   </ItemGroup>
 ```

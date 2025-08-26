@@ -26,7 +26,7 @@ VOID NTAPI MUSA_NAME_PRIVATE(FlsCreate)()
     RtlFlsContext.Lock = 0;
     InitializeListHead(&RtlFlsContext.FlsListHead);
     RtlInitializeBitMap(&RtlFlsContext.FlsBitmap,
-        RtlFlsContext.FlsBitmapBits, RTL_FLS_MAXIMUM_AVAILABLE);
+        RtlFlsContext.FlsBitmapBits, RTLP_FLS_MAXIMUM_AVAILABLE);
 }
 
 _IRQL_requires_max_(APC_LEVEL)
@@ -52,7 +52,7 @@ VOID NTAPI MUSA_NAME_PRIVATE(FlsCleanup)()
         }
 
         RtlProcessFlsData(CONTAINING_RECORD(Entry, RTL_FLS_DATA, Entry),
-            RTLP_FLS_DATA_CLEANUP_RUN_CALLBACKS | RTLP_FLS_DATA_CLEANUP_DEALLOCATE);
+            RTL_FLS_DATA_CLEANUP_PER_SLOT | RTL_FLS_DATA_CLEANUP_DEALLOCATE);
     } while (true);
 
     const auto FlsCallback = static_cast<PFLS_CALLBACK_FUNCTION*>(InterlockedCompareExchangePointer(
@@ -75,7 +75,7 @@ VOID NTAPI MUSA_NAME_PRIVATE(FlsDataCleanup)(
         return;
     }
 
-    if (Flags & RTLP_FLS_DATA_CLEANUP_RUN_CALLBACKS) {
+    if (Flags & RTL_FLS_DATA_CLEANUP_PER_SLOT) {
         const size_t HighIndex = InterlockedCompareExchange(
             reinterpret_cast<LONG volatile*>(&RtlFlsContext.FlsHighIndex), 0, 0);
 
@@ -102,7 +102,7 @@ VOID NTAPI MUSA_NAME_PRIVATE(FlsDataCleanup)(
         }
     }
 
-    if (Flags & RTLP_FLS_DATA_CLEANUP_DEALLOCATE) {
+    if (Flags & RTL_FLS_DATA_CLEANUP_DEALLOCATE) {
         RtlFreeHeap(RtlProcessHeap(), 0, FlsData);
     }
 }

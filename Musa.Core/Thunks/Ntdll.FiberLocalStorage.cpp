@@ -106,7 +106,7 @@ NTSTATUS NTAPI MUSA_NAME(RtlFlsFree)(
     _In_ ULONG FlsIndex
 )
 {
-    if (FlsIndex >= RTL_FLS_MAXIMUM_AVAILABLE) {
+    if (FlsIndex >= RTLP_FLS_MAXIMUM_AVAILABLE) {
         return STATUS_INVALID_PARAMETER;
     }
 
@@ -173,7 +173,7 @@ NTSTATUS NTAPI MUSA_NAME(RtlFlsGetValue)(
 {
     *FlsData = nullptr;
 
-    if (FlsIndex >= RTL_FLS_MAXIMUM_AVAILABLE) {
+    if (FlsIndex >= RTLP_FLS_MAXIMUM_AVAILABLE) {
         return STATUS_INVALID_PARAMETER;
     }
 
@@ -220,7 +220,7 @@ NTSTATUS NTAPI MUSA_NAME(RtlFlsSetValue)(
     _In_ PVOID FlsData
 )
 {
-    if (FlsIndex >= RTL_FLS_MAXIMUM_AVAILABLE) {
+    if (FlsIndex >= RTLP_FLS_MAXIMUM_AVAILABLE) {
         return STATUS_INVALID_PARAMETER;
     }
 
