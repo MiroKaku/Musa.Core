@@ -23,6 +23,10 @@ PIMAGE_SECTION_HEADER NTAPI MUSA_NAME(RtlImageRvaToSection)(
 {
     UNREFERENCED_PARAMETER(BaseOfImage);
 
+    if (NtHeaders == nullptr) {
+        return nullptr;
+    }
+
     auto NtSection = IMAGE_FIRST_SECTION(NtHeaders);
     for (auto Idx = 0; Idx < NtHeaders->FileHeader.NumberOfSections; Idx++) {
         if (Rva >= NtSection->VirtualAddress &&
@@ -45,6 +49,10 @@ PVOID NTAPI MUSA_NAME(RtlImageRvaToVa)(
     _Inout_opt_ PIMAGE_SECTION_HEADER* LastRvaSection
 )
 {
+    if (NtHeaders == nullptr || BaseOfImage == nullptr) {
+        return nullptr;
+    }
+
     PIMAGE_SECTION_HEADER NtSection = nullptr;
 
     if (LastRvaSection != nullptr) {
@@ -123,6 +131,7 @@ NTSTATUS NTAPI MUSA_NAME(RtlMapResourceId)(
             *To = (ULONG_PTR)From;
         }
     } __except (EXCEPTION_EXECUTE_HANDLER) {
+        Status = GetExceptionCode();
         *To = (ULONG_PTR)-1;
     }
 
