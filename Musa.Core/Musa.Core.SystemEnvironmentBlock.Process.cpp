@@ -134,13 +134,15 @@ NTSTATUS MUSA_API MUSA_NAME_PRIVATE(ProcessEnvironmentBlockTeardown)()
     NTSTATUS Status = STATUS_SUCCESS;
 
     do {
-        const auto Peb = static_cast<PKPEB>(InterlockedExchangePointer(
-            reinterpret_cast<PVOID volatile*>(&MusaCoreProcessEnvironmentBlock), nullptr));
+        const auto Peb = static_cast<PKPEB>(MusaCoreProcessEnvironmentBlock);
         if (Peb == nullptr) {
             break;
         }
 
         ExWaitForRundownProtectionRelease(&Peb->RundownProtect);
+
+        InterlockedExchangePointer(
+            reinterpret_cast<PVOID volatile*>(&MusaCoreProcessEnvironmentBlock), nullptr);
 
         MUSA_NAME_PRIVATE(FlsCleanup)();
         for (auto Idx = static_cast<int>(Peb->MaximumNumberOfHeaps - 1); Idx >= 0; --Idx) {
