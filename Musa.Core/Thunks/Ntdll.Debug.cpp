@@ -45,7 +45,11 @@ NTSTATUS NTAPI MUSA_NAME(RtlFindAndFormatMessage)(
         __try {
             PWSTR       MessageFormat;
             ULONG       MaximumWidth  = 0ul;
-            const PVOID BaseDllHandle = MusaCoreLiteNtdllBase;
+            const PVOID BaseDllHandle = MusaCoreLiteGetNtdllBase();
+            if (BaseDllHandle == nullptr) {
+                Status = STATUS_DLL_NOT_FOUND;
+                break;
+            }
 
             MaximumWidth = Flags & FORMAT_MESSAGE_MAX_WIDTH_MASK;
             if (MaximumWidth == FORMAT_MESSAGE_MAX_WIDTH_MASK) {
