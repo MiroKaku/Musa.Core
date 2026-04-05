@@ -227,8 +227,11 @@ PVOID MUSA_API MUSA_NAME_PRIVATE(RtlGetCurrentTeb)()
 
     if (!MusaCoreUseThreadNotifyCallback) {
         if (Expired) {
-            ExNotifyCallback(MusaCoreThreadNotifyCallbackObject,
-                Block.ThreadId, nullptr /* false */);
+            const auto CallbackObject = MusaCoreThreadNotifyCallbackObject;
+            if (CallbackObject) {
+                ExNotifyCallback(CallbackObject,
+                    Block.ThreadId, nullptr /* false */);
+            }
         }
     }
 

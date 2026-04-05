@@ -23,10 +23,11 @@ static void NTAPI ThreadNotifyCallback(
 )
 {
     UNREFERENCED_PARAMETER(ProcessId);
-    if (MusaCoreThreadNotifyCallbackObject == nullptr) {
+    const auto CallbackObject = MusaCoreThreadNotifyCallbackObject;
+    if (CallbackObject == nullptr) {
         return;
     }
-    ExNotifyCallback(MusaCoreThreadNotifyCallbackObject, ThreadId, reinterpret_cast<PVOID>(Create));
+    ExNotifyCallback(CallbackObject, ThreadId, reinterpret_cast<PVOID>(Create));
 }
 
 _Must_inspect_result_
@@ -97,6 +98,9 @@ NTSTATUS MUSA_API MUSA_NAME_PRIVATE(EnvironmentBlockTeardown)()
             }
         }
 
+        const auto CallbackObject = static_cast<PCALLBACK_OBJECT>(InterlockedExchangePointer(
+            reinterpret_cast<PVOID volatile*>(&MusaCoreThreadNotifyCallbackObject), nullptr));
+
         if (MusaCoreHeap) {
             MusaCoreHeap = RtlDestroyHeap(MusaCoreHeap);
         }
@@ -106,9 +110,8 @@ NTSTATUS MUSA_API MUSA_NAME_PRIVATE(EnvironmentBlockTeardown)()
             break;
         }
 
-        if (MusaCoreThreadNotifyCallbackObject) {
-            ObDereferenceObject(MusaCoreThreadNotifyCallbackObject);
-            MusaCoreThreadNotifyCallbackObject = nullptr;
+        if (CallbackObject) {
+            ObDereferenceObject(CallbackObject);
         }
     } while (false);
 
