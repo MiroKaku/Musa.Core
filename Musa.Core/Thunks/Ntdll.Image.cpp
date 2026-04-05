@@ -73,6 +73,9 @@ MUSA_IAT_SYMBOL(RtlImageRvaToVa, 16);
 // Resource
 //
 
+#define LDR_RESOURCE_ID_NAME_MASK   ((~(ULONG_PTR)0) << 16) /* lower 16bits clear */
+#define LDR_RESOURCE_ID_NAME_MINVAL (( (ULONG_PTR)1) << 16) /* 17th bit set */
+
 _IRQL_requires_max_(PASSIVE_LEVEL)
 NTSTATUS NTAPI MUSA_NAME(RtlMapResourceId)(
     _Out_ ULONG_PTR* To,
@@ -153,25 +156,25 @@ NTSTATUS NTAPI MUSA_NAME(RtlFindResource)(
 {
     PAGED_CODE();
 
-    NTSTATUS          Status;
-    LDR_RESOURCE_INFO IdPath{};
+    NTSTATUS  Status;
+    ULONG_PTR IdPath[3]{};
 
     do {
         __try {
-            Status = RtlMapResourceId(&IdPath.Type, Type);
+            Status = RtlMapResourceId(&IdPath[0], Type);
             if (!NT_SUCCESS(Status)) {
                 break;
             }
 
-            Status = RtlMapResourceId(&IdPath.Name, Name);
+            Status = RtlMapResourceId(&IdPath[1], Name);
             if (!NT_SUCCESS(Status)) {
                 break;
             }
 
-            IdPath.Language = Language;
+            IdPath[2] = Language;
 
-            Status = LdrFindResource_U(LDR_DATAFILE_TO_MAPPEDVIEW(DllHandle), &IdPath,
-                LDR_RESOURCE_LEVEL_DATA, reinterpret_cast<PIMAGE_RESOURCE_DATA_ENTRY*>(ResBase));
+            Status = LdrFindResource_U(LDR_DATAFILE_TO_MAPPEDVIEW(DllHandle), IdPath,
+                _countof(IdPath), reinterpret_cast<PIMAGE_RESOURCE_DATA_ENTRY*>(ResBase));
             if (!NT_SUCCESS(Status)) {
                 break;
             }
@@ -180,8 +183,8 @@ NTSTATUS NTAPI MUSA_NAME(RtlFindResource)(
         }
     } while (FALSE);
 
-    RtlUnmapResourceId(IdPath.Type);
-    RtlUnmapResourceId(IdPath.Name);
+    RtlUnmapResourceId(IdPath[0]);
+    RtlUnmapResourceId(IdPath[1]);
 
     return Status;
 }
