@@ -30,17 +30,25 @@ NTSTATUS MUSA_API MUSA_NAME_PRIVATE(ProcessEnvironmentBlockSetup)(
     PAGED_CODE();
 
     NTSTATUS Status;
+    PKPEB    Peb = nullptr;
+    bool     TebInitialized  = false;
+    bool     LockInitialized = false;
 
     do {
-        const auto Peb = static_cast<PKPEB>(ExAllocatePoolZero(NonPagedPool, PAGE_SIZE, MUSA_TAG));
+        Peb = static_cast<PKPEB>(ExAllocatePoolZero(NonPagedPool, PAGE_SIZE, MUSA_TAG));
         if (Peb == nullptr) {
             Status = STATUS_INSUFFICIENT_RESOURCES;
             break;
         }
-        InterlockedExchangePointer(reinterpret_cast<PVOID volatile*>(&MusaCoreProcessEnvironmentBlock), Peb);
 
         Peb->ProcessHeaps         = static_cast<PVOID*>(Add2Ptr(Peb, sizeof(KPEB)));
         Peb->MaximumNumberOfHeaps = (PAGE_SIZE - sizeof(KPEB)) / sizeof(PVOID);
+
+        Status = ExInitializeResourceLite(&Peb->Lock);
+        if (!NT_SUCCESS(Status)) {
+            break;
+        }
+        LockInitialized = true;
 
         ExInitializeRundownProtection(&Peb->RundownProtect);
 
@@ -71,10 +79,16 @@ NTSTATUS MUSA_API MUSA_NAME_PRIVATE(ProcessEnvironmentBlockSetup)(
             }
         }
 
+        // Publish only after basic fields are initialized, before TEB setup
+        // which needs to access the PEB via RtlGetCurrentPeb()
+        InterlockedExchangePointer(reinterpret_cast<PVOID volatile*>(&MusaCoreProcessEnvironmentBlock), Peb);
+
         Status = MUSA_NAME_PRIVATE(ThreadEnvironmentBlockSetup)(DriverObject, RegistryPath);
         if (!NT_SUCCESS(Status)) {
+            InterlockedExchangePointer(reinterpret_cast<PVOID volatile*>(&MusaCoreProcessEnvironmentBlock), nullptr);
             break;
         }
+        TebInitialized = true;
 
         Peb->DefaultHeap = RtlCreateHeap(HEAP_GROWABLE, nullptr,
             0, 0, nullptr, nullptr);
@@ -85,6 +99,28 @@ NTSTATUS MUSA_API MUSA_NAME_PRIVATE(ProcessEnvironmentBlockSetup)(
 
         MUSA_NAME_PRIVATE(FlsCreate)();
     } while (false);
+
+    if (!NT_SUCCESS(Status) && Peb) {
+        if (Peb->DefaultHeap) {
+            RtlDestroyHeap(Peb->DefaultHeap);
+        }
+
+        if (TebInitialized) {
+            (void)MUSA_NAME_PRIVATE(ThreadEnvironmentBlockTeardown)();
+        }
+
+        InterlockedExchangePointer(reinterpret_cast<PVOID volatile*>(&MusaCoreProcessEnvironmentBlock), nullptr);
+
+        RtlFreeUnicodeString(&Peb->ImageBaseName);
+        RtlFreeUnicodeString(&Peb->ImagePathName);
+        RtlFreeUnicodeString(&Peb->RegistryPath);
+
+        if (LockInitialized) {
+            ExDeleteResourceLite(&Peb->Lock);
+        }
+
+        ExFreePoolWithTag(Peb, MUSA_TAG);
+    }
 
     return Status;
 }
@@ -99,8 +135,7 @@ NTSTATUS MUSA_API MUSA_NAME_PRIVATE(ProcessEnvironmentBlockTeardown)()
 
     do {
         const auto Peb = static_cast<PKPEB>(InterlockedExchangePointer(
-            reinterpret_cast<PVOID volatile*>(&MusaCoreProcessEnvironmentBlock),
-            MusaCoreProcessEnvironmentBlock));
+            reinterpret_cast<PVOID volatile*>(&MusaCoreProcessEnvironmentBlock), nullptr));
         if (Peb == nullptr) {
             break;
         }
@@ -119,14 +154,13 @@ NTSTATUS MUSA_API MUSA_NAME_PRIVATE(ProcessEnvironmentBlockTeardown)()
             break;
         }
 
+        ExDeleteResourceLite(&Peb->Lock);
+
         RtlFreeUnicodeString(&Peb->RegistryPath);
         RtlFreeUnicodeString(&Peb->ImagePathName);
         RtlFreeUnicodeString(&Peb->ImageBaseName);
 
         ExFreePoolWithTag(Peb, MUSA_TAG);
-
-        InterlockedExchangePointer(
-            reinterpret_cast<PVOID volatile*>(&MusaCoreProcessEnvironmentBlock), nullptr);
     } while (false);
 
     return Status;
