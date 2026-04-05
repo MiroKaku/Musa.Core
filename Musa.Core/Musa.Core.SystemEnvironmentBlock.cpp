@@ -23,7 +23,10 @@ static void NTAPI ThreadNotifyCallback(
 )
 {
     UNREFERENCED_PARAMETER(ProcessId);
-    return ExNotifyCallback(MusaCoreThreadNotifyCallbackObject, ThreadId, reinterpret_cast<PVOID>(Create));
+    if (MusaCoreThreadNotifyCallbackObject == nullptr) {
+        return;
+    }
+    ExNotifyCallback(MusaCoreThreadNotifyCallbackObject, ThreadId, reinterpret_cast<PVOID>(Create));
 }
 
 _Must_inspect_result_
