@@ -522,11 +522,11 @@ DWORD WINAPI MUSA_NAME(WaitForSingleObjectEx)(
 
     const auto Status = ZwWaitForSingleObject(Handle, static_cast<BOOLEAN>(Alertable), Timeout);
     if (NT_SUCCESS(Status)) {
-        return TRUE;
+        return static_cast<DWORD>(Status);
     }
 
     BaseSetLastNTError(Status);
-    return FALSE;
+    return WAIT_FAILED;
 }
 
 MUSA_IAT_SYMBOL(WaitForSingleObjectEx, 12);
@@ -569,11 +569,11 @@ DWORD WINAPI MUSA_NAME(WaitForMultipleObjectsEx)(
         WaitAll ? WAIT_TYPE::WaitAll : WaitAny,
         static_cast<BOOLEAN>(Alertable), Timeout);
     if (NT_SUCCESS(Status)) {
-        return TRUE;
+        return static_cast<DWORD>(Status);
     }
 
     BaseSetLastNTError(Status);
-    return FALSE;
+    return WAIT_FAILED;
 }
 
 MUSA_IAT_SYMBOL(WaitForMultipleObjectsEx, 20);
