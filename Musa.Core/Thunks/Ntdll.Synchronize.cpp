@@ -276,6 +276,17 @@ LOGICAL NTAPI MUSA_NAME(RtlIsCriticalSectionLocked)(
 
 MUSA_IAT_SYMBOL(RtlIsCriticalSectionLocked, 4);
 
+_IRQL_requires_max_(DISPATCH_LEVEL)
+ULONG NTAPI MUSA_NAME(RtlSetCriticalSectionSpinCount)(
+    _Inout_ PRTL_CRITICAL_SECTION CriticalSection,
+    _In_ ULONG SpinCount
+)
+{
+    return (ULONG)InterlockedExchange((volatile long*)&CriticalSection->SpinCount, (long)SpinCount);
+}
+
+MUSA_IAT_SYMBOL(RtlSetCriticalSectionSpinCount, 8);
+
 //
 // Condition variable
 //

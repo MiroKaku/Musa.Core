@@ -1,4 +1,12 @@
-﻿EXTERN_C_START
+﻿#include "KernelBase.Private.h"
+#include "Internal/KernelBase.Utility.h"
+
+#ifdef ALLOC_PRAGMA
+#pragma alloc_text(PAGE, MUSA_NAME(EncodeRemotePointer))
+#pragma alloc_text(PAGE, MUSA_NAME(DecodeRemotePointer))
+#endif
+
+EXTERN_C_START
 
 _Ret_maybenull_
 PVOID WINAPI MUSA_NAME(EncodePointer)(
@@ -40,24 +48,28 @@ PVOID WINAPI MUSA_NAME(DecodeSystemPointer)(
 
 MUSA_IAT_SYMBOL(DecodeSystemPointer, 4);
 
-//HRESULT WINAPI MUSA_NAME(EncodeRemotePointer)(
-//    _In_ HANDLE ProcessHandle,
-//    _In_opt_ PVOID Ptr,
-//    _Out_ PVOID* EncodedPtr
-//    )
-//{
-//    return HRESULT_FROM_NT(RtlEncodeRemotePointer(ProcessHandle, Ptr, EncodedPtr));
-//}
-//MUSA_IAT_SYMBOL(EncodeRemotePointer, 12);
+_IRQL_requires_max_(PASSIVE_LEVEL)
+HRESULT WINAPI MUSA_NAME(EncodeRemotePointer)(
+    _In_ HANDLE ProcessHandle,
+    _In_opt_ PVOID Ptr,
+    _Out_ PVOID* EncodedPtr
+)
+{
+    return HRESULT_FROM_NT(RtlEncodeRemotePointer(ProcessHandle, Ptr, EncodedPtr));
+}
 
-//HRESULT WINAPI MUSA_NAME(DecodeRemotePointer)(
-//    _In_ HANDLE ProcessHandle,
-//    _In_opt_ PVOID Ptr,
-//    _Out_ PVOID* DecodedPtr
-//    )
-//{
-//    return HRESULT_FROM_NT(RtlDecodeRemotePointer(ProcessHandle, Ptr, DecodedPtr));
-//}
-//MUSA_IAT_SYMBOL(DecodeRemotePointer, 12);
+MUSA_IAT_SYMBOL(EncodeRemotePointer, 12);
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+HRESULT WINAPI MUSA_NAME(DecodeRemotePointer)(
+    _In_ HANDLE ProcessHandle,
+    _In_opt_ PVOID Ptr,
+    _Out_ PVOID* DecodedPtr
+)
+{
+    return HRESULT_FROM_NT(RtlDecodeRemotePointer(ProcessHandle, Ptr, DecodedPtr));
+}
+
+MUSA_IAT_SYMBOL(DecodeRemotePointer, 12);
 
 EXTERN_C_END

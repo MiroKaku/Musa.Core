@@ -1,5 +1,11 @@
-﻿#include "Musa.Core/Musa.Utilities.h"
+﻿#include "Internal/Ntdll.Utility.h"
+#include "Musa.Core/Musa.Utilities.h"
 #include <bcrypt.h>
+
+#ifdef ALLOC_PRAGMA
+#pragma alloc_text(PAGE, MUSA_NAME(RtlEncodeRemotePointer))
+#pragma alloc_text(PAGE, MUSA_NAME(RtlDecodeRemotePointer))
+#endif
 
 using namespace Musa;
 using namespace Musa::Utils;
@@ -36,6 +42,50 @@ PVOID NTAPI MUSA_NAME(RtlDecodeSystemPointer)(_In_ PVOID Ptr)
 }
 
 MUSA_IAT_SYMBOL(RtlDecodeSystemPointer, 4);
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+NTSTATUS NTAPI MUSA_NAME(RtlEncodeRemotePointer)(
+    _In_ HANDLE ProcessHandle,
+    _In_opt_ PVOID Ptr,
+    _Out_ PVOID* EncodedPtr
+)
+{
+    PAGED_CODE();
+
+    ULONG    Cookie = 0;
+    NTSTATUS Status = ZwQueryInformationProcess(ProcessHandle, ProcessCookie,
+        &Cookie, sizeof(Cookie), nullptr);
+    if (!NT_SUCCESS(Status)) {
+        return Status;
+    }
+
+    *EncodedPtr = FastEncodePointer(Ptr, Cookie);
+    return STATUS_SUCCESS;
+}
+
+MUSA_IAT_SYMBOL(RtlEncodeRemotePointer, 12);
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+NTSTATUS NTAPI MUSA_NAME(RtlDecodeRemotePointer)(
+    _In_ HANDLE ProcessHandle,
+    _In_opt_ PVOID Ptr,
+    _Out_ PVOID* DecodedPtr
+)
+{
+    PAGED_CODE();
+
+    ULONG    Cookie = 0;
+    NTSTATUS Status = ZwQueryInformationProcess(ProcessHandle, ProcessCookie,
+        &Cookie, sizeof(Cookie), nullptr);
+    if (!NT_SUCCESS(Status)) {
+        return Status;
+    }
+
+    *DecodedPtr = FastDecodePointer(Ptr, Cookie);
+    return STATUS_SUCCESS;
+}
+
+MUSA_IAT_SYMBOL(RtlDecodeRemotePointer, 12);
 
 BOOLEAN NTAPI MUSA_NAME(RtlGenRandom)(
     _Out_writes_bytes_(RandomBufferLength) PVOID RandomBuffer, _In_ ULONG RandomBufferLength

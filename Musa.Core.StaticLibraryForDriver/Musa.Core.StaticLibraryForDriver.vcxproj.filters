@@ -11,6 +11,9 @@
     <Filter Include="Musa.Utilities">
       <UniqueIdentifier>{c32d39de-e3a3-46d9-a22c-3a37e35f72ab}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Musa.Core\Thunks\Internal">
+      <UniqueIdentifier>{571c1e9e-4c7b-4ee5-b7fb-facc061ace55}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="universal.h" />
@@ -37,6 +40,54 @@
     </ClInclude>
     <ClInclude Include="$(SourcesDirectory)Musa.Core.SystemEnvironmentBlock.Fls.h">
       <Filter>Musa.Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\Internal\KernelBase.FileVersion.h">
+      <Filter>Musa.Core\Thunks\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\Internal\KernelBase.Handle.h">
+      <Filter>Musa.Core\Thunks\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\Internal\KernelBase.LibraryLoader.h">
+      <Filter>Musa.Core\Thunks\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\Internal\KernelBase.NLS.h">
+      <Filter>Musa.Core\Thunks\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\Internal\KernelBase.Process.h">
+      <Filter>Musa.Core\Thunks\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\Internal\KernelBase.Synchronize.h">
+      <Filter>Musa.Core\Thunks\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\Internal\KernelBase.System.h">
+      <Filter>Musa.Core\Thunks\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\Internal\KernelBase.Thread.h">
+      <Filter>Musa.Core\Thunks\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\Internal\Ntdll.FiberLocalStorage.h">
+      <Filter>Musa.Core\Thunks\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\Internal\Ntdll.Heap.h">
+      <Filter>Musa.Core\Thunks\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\Internal\Ntdll.Image.h">
+      <Filter>Musa.Core\Thunks\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\Internal\Ntdll.LibraryLoader.h">
+      <Filter>Musa.Core\Thunks\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\Internal\Ntdll.Synchronize.h">
+      <Filter>Musa.Core\Thunks\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\Internal\Ntdll.Thread.h">
+      <Filter>Musa.Core\Thunks\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\Internal\KernelBase.Utility.h">
+      <Filter>Musa.Core\Thunks\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Musa.Core\Thunks\Internal\Ntdll.Utility.h">
+      <Filter>Musa.Core\Thunks\Internal</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -150,6 +201,9 @@
     </ClCompile>
     <ClCompile Include="$(SourcesDirectory)Musa.Core.SystemEnvironmentBlock.Fls.cpp">
       <Filter>Musa.Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Musa.Core\Thunks\Internal\KernelBase.NLS.Table.cpp">
+      <Filter>Musa.Core\Thunks\Internal</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

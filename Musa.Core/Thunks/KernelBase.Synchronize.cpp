@@ -40,7 +40,6 @@
 #pragma alloc_text(PAGE, MUSA_NAME(EnterCriticalSection))
 #pragma alloc_text(PAGE, MUSA_NAME(LeaveCriticalSection))
 #pragma alloc_text(PAGE, MUSA_NAME(TryEnterCriticalSection))
-//#pragma alloc_text(PAGE, MUSA_NAME(SetCriticalSectionSpinCount))
 
 #pragma alloc_text(PAGE, MUSA_NAME(WakeConditionVariable))
 #pragma alloc_text(PAGE, MUSA_NAME(WakeAllConditionVariable))
@@ -852,16 +851,16 @@ BOOL WINAPI MUSA_NAME(TryEnterCriticalSection)(
 
 MUSA_IAT_SYMBOL(TryEnterCriticalSection, 4);
 
-//_IRQL_requires_max_(APC_LEVEL)
-//DWORD WINAPI MUSA_NAME(SetCriticalSectionSpinCount)(
-//    _Inout_ LPCRITICAL_SECTION CriticalSection,
-//    _In_ DWORD SpinCount
-//    )
-//{
-//    PAGED_CODE();
-//    return RtlSetCriticalSectionSpinCount(CriticalSection, SpinCount);
-//}
-//MUSA_IAT_SYMBOL(SetCriticalSectionSpinCount, 8);
+_IRQL_requires_max_(DISPATCH_LEVEL)
+DWORD WINAPI MUSA_NAME(SetCriticalSectionSpinCount)(
+    _Inout_ LPCRITICAL_SECTION CriticalSection,
+    _In_ DWORD SpinCount
+)
+{
+    return RtlSetCriticalSectionSpinCount(CriticalSection, SpinCount);
+}
+
+MUSA_IAT_SYMBOL(SetCriticalSectionSpinCount, 8);
 
 //
 // Condition variable
