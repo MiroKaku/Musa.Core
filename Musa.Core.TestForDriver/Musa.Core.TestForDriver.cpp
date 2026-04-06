@@ -32,6 +32,8 @@ EXTERN_C DRIVER_UNLOAD     DriverUnload;
 
 namespace Main
 {
+    static UNICODE_STRING SavedRegistryPath{};
+
     static void RunTests()
     {
         ULONG TestsRun    = 0;
@@ -410,6 +412,35 @@ namespace Main
         UNREFERENCED_PARAMETER(DriverObject);
 
         (void)MusaCoreShutdown();
+
+        if (SavedRegistryPath.Buffer) {
+            ExFreePool(SavedRegistryPath.Buffer);
+            SavedRegistryPath = {};
+        }
+    }
+
+    static VOID NTAPI BootDriverReinitialize(
+        _In_ PDRIVER_OBJECT  DriverObject,
+        _In_opt_ PVOID       Context,
+        _In_ ULONG           Count
+    )
+    {
+        UNREFERENCED_PARAMETER(Context);
+
+        NTSTATUS Status = MusaCoreStartup(DriverObject, &SavedRegistryPath, true);
+        if (Status == STATUS_RETRY) {
+            MusaLOG("MusaCore still not ready (attempt %lu), re-registering", Count);
+            IoRegisterBootDriverReinitialization(DriverObject, BootDriverReinitialize, nullptr);
+            return;
+        }
+
+        if (!NT_SUCCESS(Status)) {
+            MusaLOG("MusaCore reinitialization failed: 0x%08lX", Status);
+            return;
+        }
+
+        MusaLOG("MusaCore reinitialization succeeded (attempt %lu)", Count);
+        RunTests();
     }
 
     EXTERN_C NTSTATUS DriverEntry(
@@ -425,6 +456,24 @@ namespace Main
             DriverObject->DriverUnload = Main::DriverUnload;
 
             Status = MusaCoreStartup(DriverObject, RegistryPath, true);
+            if (Status == STATUS_RETRY) {
+                MusaLOG("MusaCore deferred (boot-start), registering reinitialization");
+
+                SavedRegistryPath.Length        = RegistryPath->Length;
+                SavedRegistryPath.MaximumLength = RegistryPath->Length + sizeof(WCHAR);
+                SavedRegistryPath.Buffer        = static_cast<PWCH>(
+                    ExAllocatePoolZero(PagedPool, SavedRegistryPath.MaximumLength, 'asuM'));
+                if (SavedRegistryPath.Buffer == nullptr) {
+                    MusaLOG("Failed to allocate SavedRegistryPath");
+                    Status = STATUS_INSUFFICIENT_RESOURCES;
+                    break;
+                }
+                RtlCopyMemory(SavedRegistryPath.Buffer, RegistryPath->Buffer, RegistryPath->Length);
+
+                IoRegisterBootDriverReinitialization(DriverObject, BootDriverReinitialize, nullptr);
+                Status = STATUS_SUCCESS;
+                break;
+            }
             if (!NT_SUCCESS(Status)) {
                 MusaLOG("MusaCoreStartup failed: 0x%08X", Status);
                 break;
