@@ -2,7 +2,7 @@
 #include "Musa.Core.SystemEnvironmentBlock.Process.h"
 
 #ifdef ALLOC_PRAGMA
-#pragma alloc_text(INIT, MUSA_NAME_PRIVATE(EnvironmentBlockSetup))
+#pragma alloc_text(PAGE, MUSA_NAME_PRIVATE(EnvironmentBlockSetup))
 #pragma alloc_text(PAGE, MUSA_NAME_PRIVATE(EnvironmentBlockTeardown))
 #endif
 

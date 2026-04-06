@@ -4,7 +4,7 @@
 #include "Musa.Core.SystemEnvironmentBlock.Thread.h"
 
 #ifdef ALLOC_PRAGMA
-#pragma alloc_text(INIT, MUSA_NAME_PRIVATE(ThreadEnvironmentBlockSetup))
+#pragma alloc_text(PAGE, MUSA_NAME_PRIVATE(ThreadEnvironmentBlockSetup))
 #pragma alloc_text(PAGE, MUSA_NAME_PRIVATE(ThreadEnvironmentBlockTeardown))
 #endif
 

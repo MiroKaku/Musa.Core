@@ -2,7 +2,7 @@
 #include "Musa.Core.SystemEnvironmentBlock.h"
 
 #ifdef ALLOC_PRAGMA
-#pragma alloc_text(INIT, MusaCoreStartup)
+#pragma alloc_text(PAGE, MusaCoreStartup)
 #pragma alloc_text(PAGE, MusaCoreShutdown)
 #endif
 

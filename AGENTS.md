@@ -54,8 +54,7 @@ User-mode calls ntdll. Kernel-mode calls ntoskrnl or reimplements with PEB/TEB a
 - Calling convention: `__stdcall` (`MUSA_API` macro)
 
 ### Section Placement (kernel-mode)
-- `#pragma alloc_text(INIT, ...)` for one-time init functions
-- `#pragma alloc_text(PAGE, ...)` for pageable functions
+- `#pragma alloc_text(PAGE, ...)` for startup/init and pageable functions (all startup functions moved from INIT to PAGE to support boot-start driver reinitialization)
 - Every thunk file uses this for kernel builds
 
 ### Debug Logging

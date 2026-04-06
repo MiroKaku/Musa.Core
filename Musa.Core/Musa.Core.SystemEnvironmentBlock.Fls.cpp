@@ -1,7 +1,7 @@
 ﻿#include "Musa.Core.SystemEnvironmentBlock.Fls.h"
 
 #ifdef ALLOC_PRAGMA
-#pragma alloc_text(INIT, MUSA_NAME_PRIVATE(FlsCreate))
+#pragma alloc_text(PAGE, MUSA_NAME_PRIVATE(FlsCreate))
 #pragma alloc_text(PAGE, MUSA_NAME_PRIVATE(FlsCleanup))
 #pragma alloc_text(PAGE, MUSA_NAME_PRIVATE(FlsDataCleanup))
 #endif

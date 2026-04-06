@@ -3,7 +3,7 @@
 #include "Musa.Core.SystemEnvironmentBlock.Process.h"
 
 #ifdef ALLOC_PRAGMA
-#pragma alloc_text(INIT, MUSA_NAME_PRIVATE(ProcessEnvironmentBlockSetup))
+#pragma alloc_text(PAGE, MUSA_NAME_PRIVATE(ProcessEnvironmentBlockSetup))
 #pragma alloc_text(PAGE, MUSA_NAME_PRIVATE(ProcessEnvironmentBlockTeardown))
 #pragma alloc_text(PAGE, MUSA_NAME_PRIVATE(RtlAcquirePebLockExclusive))
 #pragma alloc_text(PAGE, MUSA_NAME_PRIVATE(RtlReleasePebLockExclusive))

@@ -56,6 +56,6 @@ Header-only in `Musa.Utilities.PEParser.h`. Template-based enumeration:
 ## EDITING GUIDELINES
 
 - `Musa.Core.def`: one `_Mi_Zw*` symbol per line, maintain alphabetical order within groups
-- `Musa.Core.cpp`: init functions use `#pragma alloc_text(INIT, ...)` in kernel mode
+- `Musa.Core.cpp`: init functions use `#pragma alloc_text(PAGE, ...)` in kernel mode (moved from INIT to PAGE to support boot-start driver reinitialization)
 - `SystemEnvironmentBlock`: all allocations MUST use pool tag `'-iM-'`, free on teardown
 - PE parser: header-only, no .cpp — keep it that way
