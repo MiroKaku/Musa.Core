@@ -1,4 +1,5 @@
-﻿#include "KernelBase.Private.h"
+﻿#include "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h"
+#include "KernelBase.Private.h"
 #include "Internal/KernelBase.Handle.h"
 
 #ifdef ALLOC_PRAGMA
@@ -7,9 +8,106 @@
 #pragma alloc_text(PAGE, MUSA_NAME(CompareObjectHandles))
 #pragma alloc_text(PAGE, MUSA_NAME(GetHandleInformation))
 #pragma alloc_text(PAGE, MUSA_NAME(SetHandleInformation))
+#pragma alloc_text(PAGE, MUSA_NAME(GetStdHandle))
+#pragma alloc_text(PAGE, MUSA_NAME(SetStdHandle))
 #endif
 
 EXTERN_C_START
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+HANDLE WINAPI MUSA_NAME(GetStdHandle)(
+    _In_ DWORD StdHandle
+)
+{
+    PAGED_CODE();
+
+#ifdef _KERNEL_MODE
+    const auto Peb = static_cast<Musa::Core::KPEB*>(MUSA_NAME_PRIVATE(RtlGetCurrentPeb)());
+    if (Peb == nullptr) {
+        BaseSetLastNTError(STATUS_UNSUCCESSFUL);
+        return INVALID_HANDLE_VALUE;
+    }
+
+    switch (StdHandle) {
+        case STD_INPUT_HANDLE:
+            return Peb->StandardInput;
+        case STD_OUTPUT_HANDLE:
+            return Peb->StandardOutput;
+        case STD_ERROR_HANDLE:
+            return Peb->StandardError;
+        default:
+            BaseSetLastNTError(STATUS_INVALID_PARAMETER);
+            return INVALID_HANDLE_VALUE;
+    }
+#else
+    const auto ProcessParameters = NtCurrentPeb()->ProcessParameters;
+
+    switch (StdHandle) {
+        case STD_INPUT_HANDLE:
+            return ProcessParameters->StandardInput;
+        case STD_OUTPUT_HANDLE:
+            return ProcessParameters->StandardOutput;
+        case STD_ERROR_HANDLE:
+            return ProcessParameters->StandardError;
+        default:
+            BaseSetLastNTError(STATUS_INVALID_PARAMETER);
+            return INVALID_HANDLE_VALUE;
+    }
+#endif
+}
+
+MUSA_IAT_SYMBOL(GetStdHandle, 4);
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(SetStdHandle)(
+    _In_ DWORD  StdHandle,
+    _In_ HANDLE Handle
+)
+{
+    PAGED_CODE();
+
+#ifdef _KERNEL_MODE
+    const auto Peb = static_cast<Musa::Core::KPEB*>(MUSA_NAME_PRIVATE(RtlGetCurrentPeb)());
+    if (Peb == nullptr) {
+        BaseSetLastNTError(STATUS_UNSUCCESSFUL);
+        return FALSE;
+    }
+
+    switch (StdHandle) {
+        case STD_INPUT_HANDLE:
+            Peb->StandardInput = Handle;
+            return TRUE;
+        case STD_OUTPUT_HANDLE:
+            Peb->StandardOutput = Handle;
+            return TRUE;
+        case STD_ERROR_HANDLE:
+            Peb->StandardError = Handle;
+            return TRUE;
+        default:
+            BaseSetLastNTError(STATUS_INVALID_PARAMETER);
+            return FALSE;
+    }
+#else
+    const auto ProcessParameters = NtCurrentPeb()->ProcessParameters;
+
+    switch (StdHandle) {
+        case STD_INPUT_HANDLE:
+            ProcessParameters->StandardInput = Handle;
+            return TRUE;
+        case STD_OUTPUT_HANDLE:
+            ProcessParameters->StandardOutput = Handle;
+            return TRUE;
+        case STD_ERROR_HANDLE:
+            ProcessParameters->StandardError = Handle;
+            return TRUE;
+        default:
+            BaseSetLastNTError(STATUS_INVALID_PARAMETER);
+            return FALSE;
+    }
+#endif
+}
+
+MUSA_IAT_SYMBOL(SetStdHandle, 8);
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
 BOOL WINAPI MUSA_NAME(CloseHandle)(
@@ -44,13 +142,15 @@ BOOL WINAPI MUSA_NAME(DuplicateHandle)(
 {
     PAGED_CODE();
 
-    // TODO: Console
     switch (HandleToULong(SourceHandle)) {
         case STD_INPUT_HANDLE:
         case STD_OUTPUT_HANDLE:
         case STD_ERROR_HANDLE:
-            BaseSetLastNTError(STATUS_NOT_IMPLEMENTED);
-            return FALSE;
+            SourceHandle = GetStdHandle(HandleToULong(SourceHandle));
+            if (SourceHandle == INVALID_HANDLE_VALUE) {
+                return FALSE;
+            }
+            break;
         default:
             break;
     }
@@ -110,13 +210,15 @@ BOOL WINAPI MUSA_NAME(GetHandleInformation)(
 
     *Flags = 0;
 
-    // TODO: Console
     switch (HandleToULong(Handle)) {
         case STD_INPUT_HANDLE:
         case STD_OUTPUT_HANDLE:
         case STD_ERROR_HANDLE:
-            BaseSetLastNTError(STATUS_NOT_IMPLEMENTED);
-            return FALSE;
+            Handle = GetStdHandle(HandleToULong(Handle));
+            if (Handle == INVALID_HANDLE_VALUE) {
+                return FALSE;
+            }
+            break;
         default:
             break;
     }
@@ -151,13 +253,15 @@ BOOL WINAPI MUSA_NAME(SetHandleInformation)(
 {
     PAGED_CODE();
 
-    // TODO: Console
     switch (HandleToULong(Handle)) {
         case STD_INPUT_HANDLE:
         case STD_OUTPUT_HANDLE:
         case STD_ERROR_HANDLE:
-            BaseSetLastNTError(STATUS_NOT_IMPLEMENTED);
-            return FALSE;
+            Handle = GetStdHandle(HandleToULong(Handle));
+            if (Handle == INVALID_HANDLE_VALUE) {
+                return FALSE;
+            }
+            break;
         default:
             break;
     }

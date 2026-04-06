@@ -3,6 +3,17 @@
 EXTERN_C_START
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
+HANDLE WINAPI MUSA_NAME(GetStdHandle)(
+    _In_ DWORD StdHandle
+    );
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(SetStdHandle)(
+    _In_ DWORD  StdHandle,
+    _In_ HANDLE Handle
+    );
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
 BOOL WINAPI MUSA_NAME(CloseHandle)(
     _In_ _Post_ptr_invalid_ HANDLE Handle
     );

@@ -1,4 +1,5 @@
-﻿#include "KernelBase.Private.h"
+﻿#include "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h"
+#include "KernelBase.Private.h"
 #include "Internal/KernelBase.Process.h"
 
 #ifdef ALLOC_PRAGMA
@@ -187,9 +188,12 @@ VOID WINAPI MUSA_NAME(GetStartupInfoW)(
     *StartupInfo = {sizeof(*StartupInfo)};
 
     if (StartupInfo->dwFlags & (STARTF_USESTDHANDLES | STARTF_USEHOTKEY | STARTF_HASSHELLDATA)) {
-        StartupInfo->hStdInput  = nullptr; /*ProcessParameters->StandardInput;*/
-        StartupInfo->hStdOutput = nullptr; /*ProcessParameters->StandardOutput;*/
-        StartupInfo->hStdError  = nullptr; /*ProcessParameters->StandardError;*/
+        const auto Peb = static_cast<Musa::Core::KPEB*>(MUSA_NAME_PRIVATE(RtlGetCurrentPeb)());
+        if (Peb) {
+            StartupInfo->hStdInput  = Peb->StandardInput;
+            StartupInfo->hStdOutput = Peb->StandardOutput;
+            StartupInfo->hStdError  = Peb->StandardError;
+        }
     }
     #else
     const auto ProcessParameters = NtCurrentPeb()->ProcessParameters;

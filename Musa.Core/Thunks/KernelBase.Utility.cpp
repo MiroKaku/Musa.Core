@@ -55,6 +55,8 @@ HRESULT WINAPI MUSA_NAME(EncodeRemotePointer)(
     _Out_ PVOID* EncodedPtr
 )
 {
+    PAGED_CODE();
+
     return HRESULT_FROM_NT(RtlEncodeRemotePointer(ProcessHandle, Ptr, EncodedPtr));
 }
 
@@ -67,6 +69,8 @@ HRESULT WINAPI MUSA_NAME(DecodeRemotePointer)(
     _Out_ PVOID* DecodedPtr
 )
 {
+    PAGED_CODE();
+
     return HRESULT_FROM_NT(RtlDecodeRemotePointer(ProcessHandle, Ptr, DecodedPtr));
 }
 

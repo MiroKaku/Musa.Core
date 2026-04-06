@@ -97,10 +97,52 @@ NTSTATUS MUSA_API MUSA_NAME_PRIVATE(ProcessEnvironmentBlockSetup)(
             break;
         }
 
+        // Open \Device\Null as default standard handles
+        {
+            UNICODE_STRING    NullDeviceName = RTL_CONSTANT_STRING(L"\\Device\\Null");
+            OBJECT_ATTRIBUTES ObjectAttributes = RTL_CONSTANT_OBJECT_ATTRIBUTES(
+                &NullDeviceName, OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE);
+            IO_STATUS_BLOCK   IoStatusBlock{};
+
+            HANDLE NullHandles[3]{};
+            for (ULONG Idx = 0; Idx < 3; ++Idx) {
+                Status = ZwCreateFile(&NullHandles[Idx], FILE_GENERIC_READ | FILE_GENERIC_WRITE,
+                    &ObjectAttributes, &IoStatusBlock, nullptr, FILE_ATTRIBUTE_NORMAL,
+                    FILE_SHARE_READ | FILE_SHARE_WRITE, FILE_OPEN, 0, nullptr, 0);
+                if (!NT_SUCCESS(Status)) {
+                    for (ULONG J = 0; J < Idx; ++J) {
+                        ZwClose(NullHandles[J]);
+                    }
+                    break;
+                }
+            }
+            if (!NT_SUCCESS(Status)) {
+                break;
+            }
+
+            Peb->DefaultStandardInput  = NullHandles[0];
+            Peb->DefaultStandardOutput = NullHandles[1];
+            Peb->DefaultStandardError  = NullHandles[2];
+
+            Peb->StandardInput  = NullHandles[0];
+            Peb->StandardOutput = NullHandles[1];
+            Peb->StandardError  = NullHandles[2];
+        }
+
         MUSA_NAME_PRIVATE(FlsCreate)();
     } while (false);
 
     if (!NT_SUCCESS(Status) && Peb) {
+        if (Peb->DefaultStandardInput) {
+            ZwClose(Peb->DefaultStandardInput);
+        }
+        if (Peb->DefaultStandardOutput) {
+            ZwClose(Peb->DefaultStandardOutput);
+        }
+        if (Peb->DefaultStandardError) {
+            ZwClose(Peb->DefaultStandardError);
+        }
+
         if (Peb->DefaultHeap) {
             RtlDestroyHeap(Peb->DefaultHeap);
         }
@@ -144,9 +186,20 @@ NTSTATUS MUSA_API MUSA_NAME_PRIVATE(ProcessEnvironmentBlockTeardown)()
         InterlockedExchangePointer(
             reinterpret_cast<PVOID volatile*>(&MusaCoreProcessEnvironmentBlock), nullptr);
 
+        if (Peb->DefaultStandardInput) {
+            ZwClose(Peb->DefaultStandardInput);
+        }
+        if (Peb->DefaultStandardOutput) {
+            ZwClose(Peb->DefaultStandardOutput);
+        }
+        if (Peb->DefaultStandardError) {
+            ZwClose(Peb->DefaultStandardError);
+        }
+
         MUSA_NAME_PRIVATE(FlsCleanup)();
         for (auto Idx = static_cast<int>(Peb->MaximumNumberOfHeaps - 1); Idx >= 0; --Idx) {
             if (Peb->ProcessHeaps[Idx]) {
+                #pragma warning(suppress: 6001)
                 RtlDestroyHeap(Peb->ProcessHeaps[Idx]);
             }
         }

@@ -21,9 +21,17 @@ namespace Musa::Core
         ULONG           NumberOfHeaps;
         ULONG           MaximumNumberOfHeaps;
         PVOID           DefaultHeap;
-        PVOID* ProcessHeaps;
+        PVOID*          ProcessHeaps;
 
         ULONG           HardErrorMode;
+
+        HANDLE          StandardInput;
+        HANDLE          StandardOutput;
+        HANDLE          StandardError;
+
+        HANDLE          DefaultStandardInput;
+        HANDLE          DefaultStandardOutput;
+        HANDLE          DefaultStandardError;
 
         PVOID           WaitOnAddressHashTable[128];
 
