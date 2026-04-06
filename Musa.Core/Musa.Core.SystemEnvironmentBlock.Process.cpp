@@ -183,9 +183,6 @@ NTSTATUS MUSA_API MUSA_NAME_PRIVATE(ProcessEnvironmentBlockTeardown)()
 
         ExWaitForRundownProtectionRelease(&Peb->RundownProtect);
 
-        InterlockedExchangePointer(
-            reinterpret_cast<PVOID volatile*>(&MusaCoreProcessEnvironmentBlock), nullptr);
-
         if (Peb->DefaultStandardInput) {
             ZwClose(Peb->DefaultStandardInput);
         }
@@ -208,6 +205,13 @@ NTSTATUS MUSA_API MUSA_NAME_PRIVATE(ProcessEnvironmentBlockTeardown)()
         if (!NT_SUCCESS(Status)) {
             break;
         }
+
+        // Clear global pointer only after all PEB consumers are done.
+        // RtlDestroyHeap → RtlRemoveHeap → RtlAcquirePebLockExclusive
+        // reads MusaCoreProcessEnvironmentBlock, so it must remain valid
+        // until all heaps are destroyed and the lock is no longer needed.
+        InterlockedExchangePointer(
+            reinterpret_cast<PVOID volatile*>(&MusaCoreProcessEnvironmentBlock), nullptr);
 
         ExDeleteResourceLite(&Peb->Lock);
 
