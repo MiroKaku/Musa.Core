@@ -1,4 +1,4 @@
-﻿#include "Musa.Core.SystemEnvironmentBlock.h"
+#include "Musa.Core.SystemEnvironmentBlock.h"
 #include "Musa.Core.SystemEnvironmentBlock.Process.h"
 
 #ifdef ALLOC_PRAGMA
@@ -40,6 +40,7 @@ NTSTATUS MUSA_API MUSA_NAME_PRIVATE(EnvironmentBlockSetup)(
     PAGED_CODE();
 
     NTSTATUS Status;
+    bool     ThreadNotifyRegistered = false;
 
     do {
         ExInitializeDriverRuntime(DrvRtPoolNxOptIn);
@@ -70,15 +71,35 @@ NTSTATUS MUSA_API MUSA_NAME_PRIVATE(EnvironmentBlockSetup)(
 
         if (MusaCoreUseThreadNotifyCallback) {
             if (DriverObject) {
-                // Must be linked with the /IntegrityCheck flag
                 Status = PsSetCreateThreadNotifyRoutineEx(PsCreateThreadNotifySubsystems, &ThreadNotifyCallback);
                 if (!NT_SUCCESS(Status)) {
                     MusaLOG("Failed to set thread notify callback: 0x%X", Status);
                     break;
                 }
+                ThreadNotifyRegistered = true;
             }
         }
     } while (false);
+
+    if (!NT_SUCCESS(Status)) {
+        if (ThreadNotifyRegistered) {
+            (void)PsRemoveCreateThreadNotifyRoutine(ThreadNotifyCallback);
+        }
+
+        if (MusaCoreHeap) {
+            MusaCoreHeap = RtlDestroyHeap(MusaCoreHeap);
+        }
+
+        if (MusaCoreProcessEnvironmentBlock) {
+            (void)MUSA_NAME_PRIVATE(ProcessEnvironmentBlockTeardown)();
+        }
+
+        const auto CallbackObject = static_cast<PCALLBACK_OBJECT>(InterlockedExchangePointer(
+            reinterpret_cast<PVOID volatile*>(&MusaCoreThreadNotifyCallbackObject), nullptr));
+        if (CallbackObject) {
+            ObDereferenceObject(CallbackObject);
+        }
+    }
 
     return Status;
 }
