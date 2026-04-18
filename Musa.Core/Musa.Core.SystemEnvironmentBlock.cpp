@@ -140,35 +140,4 @@ NTSTATUS MUSA_API MUSA_NAME_PRIVATE(EnvironmentBlockTeardown)()
 }
 #endif // defined(_KERNEL_MODE)
 
-#if !defined(_KERNEL_MODE)
-
-_Must_inspect_result_
-    _IRQL_requires_max_(APC_LEVEL)
-    NTSTATUS MUSA_API MUSA_NAME_PRIVATE(EnvironmentBlockSetup)()
-{
-    NTSTATUS Status = STATUS_SUCCESS;
-
-    do {
-        MusaCoreHeap = RtlCreateHeap(HEAP_GROWABLE, nullptr, 0, 0, nullptr, nullptr);
-        if (MusaCoreHeap == nullptr) {
-            Status = STATUS_INSUFFICIENT_RESOURCES;
-            break;
-        }
-    } while (false);
-
-    return Status;
-}
-
-_Must_inspect_result_
-    _IRQL_requires_max_(APC_LEVEL)
-    NTSTATUS MUSA_API MUSA_NAME_PRIVATE(EnvironmentBlockTeardown)()
-{
-    if (MusaCoreHeap) {
-        MusaCoreHeap = RtlDestroyHeap(MusaCoreHeap);
-    }
-    return STATUS_SUCCESS;
-}
-
-#endif // !defined(_KERNEL_MODE)
-
 EXTERN_C_END

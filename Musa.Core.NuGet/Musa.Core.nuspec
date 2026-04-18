@@ -8,11 +8,9 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type="expression">MIT</license>
     <readme>build\native\README.md</readme>
-    <description>Musa.Core - 用 ntdll/ntoskrnl 实现 Kernel32、Advapi32 等API。
-   * 它包括用户模式和内核模式两种。
+    <description>Musa.Core - 用 ntoskrnl 实现 Kernel32、Advapi32 等API（内核态）。
 
-Musa.Core - Use ntdll/ntoskrnl to implement Kernel32, Advapi32 and other APIs.
-   * It includes user-mode and kernel-mode.
+Musa.Core - Use ntoskrnl to implement Kernel32, Advapi32 and other APIs (kernel-mode).
     </description>
     <releaseNotes>$releaseNotes$</releaseNotes>
     <copyright>Copyright© MeeSong</copyright>
