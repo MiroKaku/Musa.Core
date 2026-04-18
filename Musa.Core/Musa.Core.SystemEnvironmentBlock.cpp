@@ -10,7 +10,6 @@ EXTERN_C_START
 
 PVOID MusaCoreHeap = nullptr;
 
-#if defined(_KERNEL_MODE)
 extern bool MusaCoreUseThreadNotifyCallback;
 
 PDRIVER_OBJECT   MusaCoreDriverObject = nullptr;
@@ -138,6 +137,5 @@ NTSTATUS MUSA_API MUSA_NAME_PRIVATE(EnvironmentBlockTeardown)()
 
     return Status;
 }
-#endif // defined(_KERNEL_MODE)
 
 EXTERN_C_END
