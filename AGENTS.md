@@ -2,8 +2,8 @@
 
 ## OVERVIEW
 
-Win32 API reimplementation (Kernel32, Advapi32) on top of ntdll/ntoskrnl.
-Dual-target: user-mode static library AND kernel-mode driver.
+Win32 API reimplementation (Kernel32, Advapi32) on top of ntoskrnl.
+Kernel-mode driver only.
 Author: MiroKaku/MeeSong. Beta. MIT license.
 
 ## STRUCTURE
@@ -12,9 +12,7 @@ Author: MiroKaku/MeeSong. Beta. MIT license.
 Musa.Core/                  Core source — headers, init, PE parser, thunks
   Thunks/                   Win32 API shim implementations (31 .cpp files)
   Thunks/Internal/          Private headers for thunk internals (15 .h files)
-Musa.Core.StaticLibrary/    User-mode build variant (defines universal.h)
-Musa.Core.StaticLibraryForDriver/  Kernel-mode variant (_KERNEL_MODE=1)
-Musa.Core.Test/             User-mode test (console app, manual verification)
+Musa.Core.StaticLibraryForDriver/  Kernel-mode static library
 Musa.Core.TestForDriver/    Kernel-mode test (KMDF driver, DriverEntry)
 Musa.Core.NuGet/            NuGet packaging (.nuspec, .props, .targets)
 Publish/Config/             Published NuGet config consumed by dependents
@@ -41,11 +39,7 @@ Publish/Config/             Published NuGet config consumed by dependents
 - Private symbols: `MUSA_NAME_PRIVATE(name)` → `_Musa_Private_name`
 - IAT exports: `MUSA_IAT_SYMBOL(name, stack)` — x86 uses decorated `_name@stack`
 - Thunk files: `{DLL}.{Category}.cpp` (e.g., `KernelBase.Process.cpp`)
-- Pool tags: `'asuM'` (user-mode), `'-iM-'` (kernel-mode)
-
-### Dual-Mode Pattern
-All thunks compile for BOTH user-mode and kernel-mode via `#ifdef _KERNEL_MODE`.
-User-mode calls ntdll. Kernel-mode calls ntoskrnl or reimplements with PEB/TEB access.
+- Pool tags: `'-iM-'` (kernel-mode)
 
 ### Code Style (.editorconfig enforced)
 - C/C++: UTF-8 BOM, CRLF, 4-space indent, doxygen `/** */` comments
@@ -71,7 +65,6 @@ User-mode calls ntdll. Kernel-mode calls ntoskrnl or reimplements with PEB/TEB a
 | System environment block | `Musa.Core/Musa.Core.SystemEnvironmentBlock.{h,cpp}` |
 | Build configuration | `Directory.Build.props`, `Directory.Packages.Cpp.props` |
 | NuGet package layout | `Musa.Core.NuGet/Musa.Core.nuspec` |
-| User-mode macros | `Musa.Core.StaticLibrary/universal.h` |
 | Kernel-mode macros | `Musa.Core.StaticLibraryForDriver/universal.h` |
 
 ## ANTI-PATTERNS

@@ -17,7 +17,7 @@
 
 Musa.Core 是 [Musa.Runtime](https://github.com/MiroKaku/Musa.Runtime) (原 [ucxxrt](https://github.com/MiroKaku/ucxxrt)) 的底层API实现的衍生物。
 
-主要是用 ntdll/ntoskrnl 实现 Kernel32、Advapi32 等API，它包括用户模式和内核模式两种。
+主要是用 ntoskrnl 实现 Kernel32、Advapi32 等API（内核态）。
 
 ## 使用方法
 
