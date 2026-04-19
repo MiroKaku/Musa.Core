@@ -98,13 +98,28 @@ int WINAPI MUSA_NAME(MultiByteToWideChar)(
                 }
             }
 
-            Status = RtlUTF8ToUnicodeN(nullptr, 0,
-                &BytesInUnicodeString, MultiByteStr, CountOfMultiByte);
-            if (!Status) {
+            const auto ByteCount = (CountOfMultiByte == -1)
+                ? static_cast<int>(strlen(MultiByteStr) + 1)
+                : CountOfMultiByte;
+
+            // RtlUTF8ToUnicodeN doesn't support null output buffer for size query.
+            const auto MaxBytes = static_cast<ULONG>((ByteCount + 1) * sizeof(wchar_t));
+            auto TempBuffer = static_cast<PWCHAR>(LocalAlloc(LPTR, MaxBytes));
+            if (TempBuffer == nullptr) {
+                Status = STATUS_INSUFFICIENT_RESOURCES;
                 break;
             }
 
-            ReturnLength = static_cast<int>(BytesInUnicodeString / sizeof(wchar_t));
+            Status = RtlUTF8ToUnicodeN(TempBuffer, MaxBytes,
+                &BytesInUnicodeString, MultiByteStr, ByteCount);
+
+            ReturnLength = NT_SUCCESS(Status) ? static_cast<int>(BytesInUnicodeString / sizeof(wchar_t)) : 0;
+
+            LocalFree(TempBuffer);
+
+            if (!NT_SUCCESS(Status)) {
+                break;
+            }
 
             if (WideCharStr == nullptr || CountOfWideChar == 0) {
                 break;
@@ -116,8 +131,8 @@ int WINAPI MUSA_NAME(MultiByteToWideChar)(
             }
 
             Status = RtlUTF8ToUnicodeN(WideCharStr, static_cast<ULONG>(CountOfWideChar * sizeof(wchar_t)),
-                &BytesInUnicodeString, MultiByteStr, CountOfMultiByte);
-            if (!Status) {
+                &BytesInUnicodeString, MultiByteStr, ByteCount);
+            if (!NT_SUCCESS(Status)) {
                 ReturnLength = 0;
                 break;
             }
@@ -233,21 +248,24 @@ int WINAPI MUSA_NAME(WideCharToMultiByte)(
                 break;
             }
 
+            const auto CharCount = (CountOfWideChar == -1)
+                ? static_cast<int>(wcslen(WideCharStr) + 1)
+                : CountOfWideChar;
+
             // RtlUnicodeToUTF8N doesn't support null output buffer for size query.
-            // Use worst-case allocation (3 bytes per wchar + null).
-            const auto MaxBytes = static_cast<ULONG>(CountOfWideChar * 3 + 1);
-            auto TempBuffer = static_cast<PCHAR>(ExAllocatePoolZero(PagedPool, MaxBytes, MUSA_TAG));
+            const auto MaxBytes = static_cast<ULONG>(CharCount * 3 + 1);
+            auto TempBuffer = static_cast<PCHAR>(LocalAlloc(LPTR, MaxBytes));
             if (TempBuffer == nullptr) {
                 Status = STATUS_INSUFFICIENT_RESOURCES;
                 break;
             }
 
             Status = RtlUnicodeToUTF8N(TempBuffer, MaxBytes,
-                &BytesInMultiByteString, WideCharStr, CountOfWideChar * sizeof(wchar_t));
+                &BytesInMultiByteString, WideCharStr, CharCount * sizeof(wchar_t));
 
             ReturnLength = NT_SUCCESS(Status) ? static_cast<int>(BytesInMultiByteString) : 0;
 
-            ExFreePoolWithTag(TempBuffer, MUSA_TAG);
+            LocalFree(TempBuffer);
 
             if (!NT_SUCCESS(Status)) {
                 break;
@@ -263,8 +281,8 @@ int WINAPI MUSA_NAME(WideCharToMultiByte)(
             }
 
             Status = RtlUnicodeToUTF8N(MultiByteStr, CountOfMultiByte,
-                &BytesInMultiByteString, WideCharStr, CountOfWideChar * sizeof(wchar_t));
-            if (!Status) {
+                &BytesInMultiByteString, WideCharStr, CharCount * sizeof(wchar_t));
+            if (!NT_SUCCESS(Status)) {
                 ReturnLength = 0;
                 break;
             }

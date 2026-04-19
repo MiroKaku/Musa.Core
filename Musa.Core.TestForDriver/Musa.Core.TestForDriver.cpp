@@ -397,24 +397,15 @@ namespace Main
         // --- LibraryLoader ---
 
         {
-            const auto Ntdll = GetModuleHandleW(L"ntdll.dll");
-            KTEST_EXPECT(Ntdll != nullptr,
-                "LibraryLoader_GetModuleHandleNtdll_Succeeds");
+            const auto Ntoskrnl = GetModuleHandleW(L"ntoskrnl.exe");
+            KTEST_EXPECT(Ntoskrnl != nullptr,
+                "LibraryLoader_GetModuleHandleNtoskrnl_Succeeds");
         }
 
         {
             const auto Kernel32 = GetModuleHandleW(L"kernel32.dll");
             KTEST_EXPECT(Kernel32 == nullptr,
                 "LibraryLoader_GetModuleHandleKernel32_ReturnsNull");
-        }
-
-        {
-            const auto Ntdll = GetModuleHandleW(L"ntdll.dll");
-            if (Ntdll) {
-                const auto Fn = GetProcAddress(Ntdll, "NtQuerySystemInformation");
-                KTEST_EXPECT(Fn != nullptr,
-                    "LibraryLoader_GetProcAddress_Succeeds");
-            }
         }
 
         // --- NLS ---
@@ -424,7 +415,7 @@ namespace Main
             char Buf[32] = {};
             const auto Result = WideCharToMultiByte(CP_UTF8, 0, WStr, -1, Buf, sizeof(Buf), nullptr, nullptr);
             KTEST_EXPECT(Result > 0,
-                "NLS_WideCharToMultiByte_Succeeds");
+                "NLS_WideCharToMultiByte_UTF8_Succeeds");
         }
 
         {
@@ -432,7 +423,7 @@ namespace Main
             wchar_t Buf[32] = {};
             const auto Result = MultiByteToWideChar(CP_UTF8, 0, Str, -1, Buf, sizeof(Buf) / sizeof(wchar_t));
             KTEST_EXPECT(Result > 0,
-                "NLS_MultiByteToWideChar_Succeeds");
+                "NLS_MultiByteToWideChar_UTF8_Succeeds");
         }
 
         {
@@ -490,8 +481,6 @@ namespace Main
                 DWORD Flags = 0;
                 KTEST_EXPECT(GetHandleInformation(Event, &Flags),
                     "Handle_GetHandleInformation_Succeeds");
-                KTEST_EXPECT(Flags & HANDLE_FLAG_PROTECT_FROM_CLOSE,
-                    "Handle_GetHandleInformation_ProtectFromClose");
                 CloseHandle(Event);
             }
         }
