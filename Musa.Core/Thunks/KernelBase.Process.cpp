@@ -175,15 +175,15 @@ VOID WINAPI MUSA_NAME(GetStartupInfoW)(
     _Out_ LPSTARTUPINFOW StartupInfo
 )
 {
-    *StartupInfo = {sizeof(*StartupInfo)};
+    RtlZeroMemory(StartupInfo, sizeof(*StartupInfo));
+    StartupInfo->cb = sizeof(*StartupInfo);
 
-    if (StartupInfo->dwFlags & (STARTF_USESTDHANDLES | STARTF_USEHOTKEY | STARTF_HASSHELLDATA)) {
-        const auto Peb = static_cast<Musa::Core::KPEB*>(MUSA_NAME_PRIVATE(RtlGetCurrentPeb)());
-        if (Peb) {
-            StartupInfo->hStdInput  = Peb->StandardInput;
-            StartupInfo->hStdOutput = Peb->StandardOutput;
-            StartupInfo->hStdError  = Peb->StandardError;
-        }
+    const auto Peb = static_cast<Musa::Core::KPEB*>(MUSA_NAME_PRIVATE(RtlGetCurrentPeb)());
+    if (Peb) {
+        StartupInfo->hStdInput  = Peb->StandardInput;
+        StartupInfo->hStdOutput = Peb->StandardOutput;
+        StartupInfo->hStdError  = Peb->StandardError;
+        StartupInfo->dwFlags    = STARTF_USESTDHANDLES;
     }
 }
 
