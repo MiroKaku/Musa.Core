@@ -157,7 +157,6 @@ BOOL WINAPI MUSA_NAME(GetProcessInformation)(
                 break;
             }
             case ProcessAppMemoryInfo: {
-                // TODO:
                 Status = STATUS_NOT_IMPLEMENTED;
                 break;
             }
