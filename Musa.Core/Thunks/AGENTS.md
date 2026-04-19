@@ -1,10 +1,10 @@
 # AGENTS.md — Musa.Core/Thunks
 
-> Parent: `../AGENTS.md` — core headers, init, PE parser. Root: `../../AGENTS.md` — naming, dual-mode, build.
+> Parent: `../AGENTS.md` — core headers, init, PE parser. Root: `../../AGENTS.md` — naming, build.
 
 ## ROLE
 
-Win32 API shim implementations. Reimplements Win32 APIs via ntdll (user-mode) or ntoskrnl (kernel-mode).
+Win32 API shim implementations. Reimplements Win32 APIs via ntoskrnl.
 
 ## FILE NAMING
 
@@ -33,11 +33,7 @@ Every thunk follows this exact structure:
 
 DWORD MUSA_API MUSA_NAME(FunctionName)(params...)
 {
-#ifdef _KERNEL_MODE
     // kernel implementation using Nt*/Rtl* APIs
-#else
-    // user-mode: forward to ntdll via Veil.h declarations
-#endif
 }
 
 MUSA_IAT_SYMBOL(FunctionName, stack_size)
@@ -47,8 +43,7 @@ MUSA_IAT_SYMBOL(FunctionName, stack_size)
 1. `MUSA_NAME(Fn)` wraps the function name → `_Musa_Fn`
 2. `MUSA_API` = `__stdcall` calling convention
 3. `#pragma alloc_text` — kernel builds REQUIRE section placement
-4. `#ifdef _KERNEL_MODE` — EVERY thunk has dual-mode paths
-5. `MUSA_IAT_SYMBOL(Fn, N)` at bottom — registers for IAT hooking. N = stack bytes (x86 only, 0 for x64/ARM64)
+4. `MUSA_IAT_SYMBOL(Fn, N)` at bottom — registers for IAT hooking. N = stack bytes (x86 only, 0 for x64/ARM64)
 
 ## Internal/ SUBDIRECTORY
 
@@ -66,19 +61,18 @@ NOT public — never include from outside `Thunks/`.
 1. Find or create `{DLL}.{Category}.cpp` matching the API's origin DLL
 2. Follow the THUNK IMPLEMENTATION PATTERN above exactly
 3. Update `.vcxproj` if a new .cpp file was created
-4. Test in BOTH `Musa.Core.Test` (user-mode) and `Musa.Core.TestForDriver` (kernel-mode)
+4. Test in `Musa.Core.TestForDriver` (kernel-mode)
 
 ## COMMON PATTERNS
 
 ### Status conversion
 `BaseSetLastNTError(Status)` converts NTSTATUS → Win32 last-error. Return `NT_SUCCESS(Status)`.
 
-### Heap (kernel-mode)
-Kernel: `RtlCreateHeap`/`RtlAllocateHeap` with custom pool. Pool tag: `'asuM'` (user), `'-iM-'` (kernel).
+### Heap
+`RtlCreateHeap`/`RtlAllocateHeap` with custom pool. Pool tag: `'-iM-'`.
 
-### Module enumeration (kernel-mode)
+### Module enumeration
 `GetModuleHandle`/`GetProcAddress`: walk PEB loader data manually.
-User-mode: forward to `LdrGetDllHandle`/`LdrGetProcedureAddress`.
 
 ## KNOWN INCOMPLETE
 

@@ -1,4 +1,4 @@
-﻿#include "KernelBase.Private.h"
+#include "KernelBase.Private.h"
 
 EXTERN_C_START
 
@@ -50,8 +50,6 @@ VOID WINAPI MUSA_NAME(OutputDebugStringW)(
 }
 
 MUSA_IAT_SYMBOL(OutputDebugStringW, 4);
-
-#if defined(_KERNEL_MODE)
 
 #pragma warning(push)
 #pragma warning(disable: 6054 6387)
@@ -218,7 +216,5 @@ BOOL WINAPI MUSA_NAME(FormatMessageW)(
 
 MUSA_IAT_SYMBOL(FormatMessageW, 28);
 #pragma warning(pop)
-
-#endif // defined(_KERNEL_MODE)
 
 EXTERN_C_END

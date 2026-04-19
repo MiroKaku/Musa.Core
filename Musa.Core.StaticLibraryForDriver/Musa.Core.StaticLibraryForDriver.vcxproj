@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Globals">
     <ProjectGuid>{15951923-1854-4CAE-ADCA-E3897AEE39A0}</ProjectGuid>
@@ -50,22 +50,22 @@
     <ClInclude Include="$(SourcesDirectory)Musa.Utilities.h" />
     <ClInclude Include="$(SourcesDirectory)Musa.Utilities.PEParser.h" />
     <ClInclude Include="$(SourcesDirectory)Thunks\KernelBase.Private.h" />
-    <ClInclude Include="..\Musa.Core\Thunks\Internal\KernelBase.FileVersion.h" />
-    <ClInclude Include="..\Musa.Core\Thunks\Internal\KernelBase.Handle.h" />
-    <ClInclude Include="..\Musa.Core\Thunks\Internal\KernelBase.LibraryLoader.h" />
-    <ClInclude Include="..\Musa.Core\Thunks\Internal\KernelBase.NLS.h" />
-    <ClInclude Include="..\Musa.Core\Thunks\Internal\KernelBase.Process.h" />
-    <ClInclude Include="..\Musa.Core\Thunks\Internal\KernelBase.Synchronize.h" />
-    <ClInclude Include="..\Musa.Core\Thunks\Internal\KernelBase.System.h" />
-    <ClInclude Include="..\Musa.Core\Thunks\Internal\KernelBase.Thread.h" />
-    <ClInclude Include="..\Musa.Core\Thunks\Internal\KernelBase.Utility.h" />
-    <ClInclude Include="..\Musa.Core\Thunks\Internal\Ntdll.FiberLocalStorage.h" />
-    <ClInclude Include="..\Musa.Core\Thunks\Internal\Ntdll.Heap.h" />
-    <ClInclude Include="..\Musa.Core\Thunks\Internal\Ntdll.Image.h" />
-    <ClInclude Include="..\Musa.Core\Thunks\Internal\Ntdll.LibraryLoader.h" />
-    <ClInclude Include="..\Musa.Core\Thunks\Internal\Ntdll.Synchronize.h" />
-    <ClInclude Include="..\Musa.Core\Thunks\Internal\Ntdll.Thread.h" />
-    <ClInclude Include="..\Musa.Core\Thunks\Internal\Ntdll.Utility.h" />
+    <ClInclude Include="$(SourcesDirectory)Thunks\Internal\KernelBase.FileVersion.h" />
+    <ClInclude Include="$(SourcesDirectory)Thunks\Internal\KernelBase.Handle.h" />
+    <ClInclude Include="$(SourcesDirectory)Thunks\Internal\KernelBase.LibraryLoader.h" />
+    <ClInclude Include="$(SourcesDirectory)Thunks\Internal\KernelBase.NLS.h" />
+    <ClInclude Include="$(SourcesDirectory)Thunks\Internal\KernelBase.Process.h" />
+    <ClInclude Include="$(SourcesDirectory)Thunks\Internal\KernelBase.Synchronize.h" />
+    <ClInclude Include="$(SourcesDirectory)Thunks\Internal\KernelBase.System.h" />
+    <ClInclude Include="$(SourcesDirectory)Thunks\Internal\KernelBase.Thread.h" />
+    <ClInclude Include="$(SourcesDirectory)Thunks\Internal\KernelBase.Utility.h" />
+    <ClInclude Include="$(SourcesDirectory)Thunks\Internal\Ntdll.FiberLocalStorage.h" />
+    <ClInclude Include="$(SourcesDirectory)Thunks\Internal\Ntdll.Heap.h" />
+    <ClInclude Include="$(SourcesDirectory)Thunks\Internal\Ntdll.Image.h" />
+    <ClInclude Include="$(SourcesDirectory)Thunks\Internal\Ntdll.LibraryLoader.h" />
+    <ClInclude Include="$(SourcesDirectory)Thunks\Internal\Ntdll.Synchronize.h" />
+    <ClInclude Include="$(SourcesDirectory)Thunks\Internal\Ntdll.Thread.h" />
+    <ClInclude Include="$(SourcesDirectory)Thunks\Internal\Ntdll.Utility.h" />
     <ClInclude Include="universal.h" />
   </ItemGroup>
   <ItemGroup>
@@ -89,26 +89,39 @@
     <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.PerformanceCounter.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.Private.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.Process.cpp" />
+    <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.Process.Information.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.RealTime.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.Synchronize.cpp" />
+    <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.Synchronize.Event.cpp" />
+    <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.Synchronize.Mutex.cpp" />
+    <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.Synchronize.Semaphore.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.System.cpp" />
+    <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.System.Processor.cpp" />
+    <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.System.Times.cpp" />
+    <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.Thread.Create.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.Thread.cpp" />
+    <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.Thread.ProcAttr.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.ThreadLocalStorage.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.Utility.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.Debug.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.Error.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.FiberLocalStorage.cpp" />
+    <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.Heap.Core.cpp" />
+    <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.Heap.Lock.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.Heap.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.Image.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.LibraryLoader.cpp" />
+    <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.LibraryLoader.ProcAddr.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.PerformanceCounter.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.Pool.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.RealTime.cpp" />
-    <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.Synchronize.cpp" />
+    <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.Synchronize.CriticalSection.cpp" />
+    <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.Synchronize.ConditionVariable.cpp" />
+    <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.Synchronize.SRWLock.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.System.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.Thread.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.Utility.cpp" />
-    <ClCompile Include="..\Musa.Core\Thunks\Internal\KernelBase.NLS.Table.cpp" />
+    <ClCompile Include="$(SourcesDirectory)Thunks\Internal\KernelBase.NLS.Table.cpp" />
   </ItemGroup>
   <PropertyGroup>
     <MusaCoreOnlyHeader>true</MusaCoreOnlyHeader>

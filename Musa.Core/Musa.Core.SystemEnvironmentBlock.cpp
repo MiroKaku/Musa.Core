@@ -1,4 +1,4 @@
-﻿#include "Musa.Core.SystemEnvironmentBlock.h"
+#include "Musa.Core.SystemEnvironmentBlock.h"
 #include "Musa.Core.SystemEnvironmentBlock.Process.h"
 
 #ifdef ALLOC_PRAGMA
@@ -10,7 +10,6 @@ EXTERN_C_START
 
 PVOID MusaCoreHeap = nullptr;
 
-#if defined(_KERNEL_MODE)
 extern bool MusaCoreUseThreadNotifyCallback;
 
 PDRIVER_OBJECT   MusaCoreDriverObject = nullptr;
@@ -40,6 +39,7 @@ NTSTATUS MUSA_API MUSA_NAME_PRIVATE(EnvironmentBlockSetup)(
     PAGED_CODE();
 
     NTSTATUS Status;
+    bool     ThreadNotifyRegistered = false;
 
     do {
         ExInitializeDriverRuntime(DrvRtPoolNxOptIn);
@@ -70,15 +70,31 @@ NTSTATUS MUSA_API MUSA_NAME_PRIVATE(EnvironmentBlockSetup)(
 
         if (MusaCoreUseThreadNotifyCallback) {
             if (DriverObject) {
-                // Must be linked with the /IntegrityCheck flag
                 Status = PsSetCreateThreadNotifyRoutineEx(PsCreateThreadNotifySubsystems, &ThreadNotifyCallback);
                 if (!NT_SUCCESS(Status)) {
                     MusaLOG("Failed to set thread notify callback: 0x%X", Status);
                     break;
                 }
+                ThreadNotifyRegistered = true;
             }
         }
     } while (false);
+
+    if (!NT_SUCCESS(Status)) {
+        if (ThreadNotifyRegistered) {
+            (void)PsRemoveCreateThreadNotifyRoutine(ThreadNotifyCallback);
+        }
+
+        if (MusaCoreHeap) {
+            MusaCoreHeap = RtlDestroyHeap(MusaCoreHeap);
+        }
+
+        const auto CallbackObject = static_cast<PCALLBACK_OBJECT>(InterlockedExchangePointer(
+            reinterpret_cast<PVOID volatile*>(&MusaCoreThreadNotifyCallbackObject), nullptr));
+        if (CallbackObject) {
+            ObDereferenceObject(CallbackObject);
+        }
+    }
 
     return Status;
 }
@@ -117,37 +133,5 @@ NTSTATUS MUSA_API MUSA_NAME_PRIVATE(EnvironmentBlockTeardown)()
 
     return Status;
 }
-#endif // defined(_KERNEL_MODE)
-
-#if !defined(_KERNEL_MODE)
-
-_Must_inspect_result_
-    _IRQL_requires_max_(APC_LEVEL)
-    NTSTATUS MUSA_API MUSA_NAME_PRIVATE(EnvironmentBlockSetup)()
-{
-    NTSTATUS Status = STATUS_SUCCESS;
-
-    do {
-        MusaCoreHeap = RtlCreateHeap(HEAP_GROWABLE, nullptr, 0, 0, nullptr, nullptr);
-        if (MusaCoreHeap == nullptr) {
-            Status = STATUS_INSUFFICIENT_RESOURCES;
-            break;
-        }
-    } while (false);
-
-    return Status;
-}
-
-_Must_inspect_result_
-    _IRQL_requires_max_(APC_LEVEL)
-    NTSTATUS MUSA_API MUSA_NAME_PRIVATE(EnvironmentBlockTeardown)()
-{
-    if (MusaCoreHeap) {
-        MusaCoreHeap = RtlDestroyHeap(MusaCoreHeap);
-    }
-    return STATUS_SUCCESS;
-}
-
-#endif // !defined(_KERNEL_MODE)
 
 EXTERN_C_END

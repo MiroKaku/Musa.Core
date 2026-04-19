@@ -1,6 +1,4 @@
-﻿#include "Musa.Utilities.h"
-
-#if defined(_KERNEL_MODE)
+#include "Musa.Utilities.h"
 
 namespace Musa::Utils
 {
@@ -100,5 +98,3 @@ namespace Musa::Utils
         return Status;
     }
 }
-
-#endif // defined(_KERNEL_MODE)

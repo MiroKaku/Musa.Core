@@ -1,4 +1,4 @@
-﻿#include "Musa.Core.h"
+#include "Musa.Core.h"
 #include "Musa.Core.SystemEnvironmentBlock.h"
 
 #ifdef ALLOC_PRAGMA
@@ -8,7 +8,6 @@
 
 EXTERN_C_START
 
-#if defined(_KERNEL_MODE)
 bool MusaCoreUseThreadNotifyCallback = false;
 
 NTSTATUS MUSA_API MusaCoreStartup(
@@ -47,36 +46,6 @@ NTSTATUS MUSA_API MusaCoreStartup(
 
     return Status;
 }
-#endif // defined(_KERNEL_MODE)
-
-#if !defined(_KERNEL_MODE)
-NTSTATUS MUSA_API MusaCoreStartup()
-{
-    NTSTATUS Status;
-
-    do {
-        Status = MusaCoreLiteStartup();
-        if (!NT_SUCCESS(Status)) {
-            MusaLOG("MusaCoreLiteStartup failed: 0x%X", Status);
-            break;
-        }
-
-        Status = MUSA_NAME_PRIVATE(EnvironmentBlockSetup)();
-        if (!NT_SUCCESS(Status)) {
-            MusaLOG("SetupEnvironmentBlock failed: 0x%X", Status);
-            break;
-        }
-
-        MusaLOG("MusaCore initialized successfully");
-    } while (false);
-
-    if (!NT_SUCCESS(Status)) {
-        (void)MusaCoreShutdown();
-    }
-
-    return Status;
-}
-#endif // !defined(_KERNEL_MODE)
 
 
 NTSTATUS MUSA_API MusaCoreShutdown()

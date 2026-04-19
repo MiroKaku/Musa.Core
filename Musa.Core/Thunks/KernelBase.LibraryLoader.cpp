@@ -1,4 +1,4 @@
-﻿#include "KernelBase.Private.h"
+#include "KernelBase.Private.h"
 #include "Internal/KernelBase.LibraryLoader.h"
 
 #ifdef ALLOC_PRAGMA
@@ -11,7 +11,6 @@
 
 EXTERN_C_START
 
-#if defined(_KERNEL_MODE)
 _IRQL_requires_max_(APC_LEVEL)
 BOOL WINAPI MUSA_NAME(FreeLibrary)(
     _In_ HMODULE DllHandle
@@ -31,7 +30,6 @@ BOOL WINAPI MUSA_NAME(FreeLibrary)(
 }
 
 MUSA_IAT_SYMBOL(FreeLibrary, 4);
-#endif // defined(_KERNEL_MODE)
 
 #pragma warning(push)
 #pragma warning(disable: 6054) // warning C6054: String 'DllFullName' might not be zero-terminated.

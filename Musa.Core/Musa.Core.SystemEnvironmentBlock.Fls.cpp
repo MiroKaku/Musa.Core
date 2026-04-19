@@ -1,4 +1,4 @@
-﻿#include "Musa.Core.SystemEnvironmentBlock.Fls.h"
+#include "Musa.Core.SystemEnvironmentBlock.Fls.h"
 
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text(PAGE, MUSA_NAME_PRIVATE(FlsCreate))
@@ -7,8 +7,6 @@
 #endif
 
 EXTERN_C_START
-
-#if defined(_KERNEL_MODE)
 
 using namespace Musa;
 using namespace Musa::Core;
@@ -106,7 +104,5 @@ VOID NTAPI MUSA_NAME_PRIVATE(FlsDataCleanup)(
         RtlFreeHeap(RtlProcessHeap(), 0, FlsData);
     }
 }
-
-#endif // defined(_KERNEL_MODE)
 
 EXTERN_C_END

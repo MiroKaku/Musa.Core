@@ -1,6 +1,4 @@
-﻿EXTERN_C_START
-
-#if defined(_KERNEL_MODE)
+EXTERN_C_START
 
 NTSTATUS NTAPI MUSA_NAME(RtlCreateMemoryBlockLookaside)(
     _Out_ PVOID*     MemoryBlockLookaside,
@@ -148,7 +146,5 @@ NTSTATUS NTAPI MUSA_NAME(RtlUnlockMemoryBlockLookaside)(
 }
 
 MUSA_IAT_SYMBOL(RtlUnlockMemoryBlockLookaside, 4);
-
-#endif // defined(_KERNEL_MODE)
 
 EXTERN_C_END

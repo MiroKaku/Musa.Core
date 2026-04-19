@@ -1,4 +1,4 @@
-﻿//
+//
 // National Language Support
 //
 
@@ -13,8 +13,6 @@
 #include "Internal/KernelBase.NLS.Table.cpp"
 
 EXTERN_C_START
-
-#if defined(_KERNEL_MODE)
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
 _Success_(return != 0)
@@ -100,13 +98,28 @@ int WINAPI MUSA_NAME(MultiByteToWideChar)(
                 }
             }
 
-            Status = RtlUTF8ToUnicodeN(nullptr, 0,
-                &BytesInUnicodeString, MultiByteStr, CountOfMultiByte);
-            if (!Status) {
+            const auto ByteCount = (CountOfMultiByte == -1)
+                ? static_cast<int>(strlen(MultiByteStr) + 1)
+                : CountOfMultiByte;
+
+            // RtlUTF8ToUnicodeN doesn't support null output buffer for size query.
+            const auto MaxBytes = static_cast<ULONG>((ByteCount + 1) * sizeof(wchar_t));
+            auto TempBuffer = static_cast<PWCHAR>(LocalAlloc(LPTR, MaxBytes));
+            if (TempBuffer == nullptr) {
+                Status = STATUS_INSUFFICIENT_RESOURCES;
                 break;
             }
 
-            ReturnLength = static_cast<int>(BytesInUnicodeString / sizeof(wchar_t));
+            Status = RtlUTF8ToUnicodeN(TempBuffer, MaxBytes,
+                &BytesInUnicodeString, MultiByteStr, ByteCount);
+
+            ReturnLength = NT_SUCCESS(Status) ? static_cast<int>(BytesInUnicodeString / sizeof(wchar_t)) : 0;
+
+            LocalFree(TempBuffer);
+
+            if (!NT_SUCCESS(Status)) {
+                break;
+            }
 
             if (WideCharStr == nullptr || CountOfWideChar == 0) {
                 break;
@@ -118,8 +131,8 @@ int WINAPI MUSA_NAME(MultiByteToWideChar)(
             }
 
             Status = RtlUTF8ToUnicodeN(WideCharStr, static_cast<ULONG>(CountOfWideChar * sizeof(wchar_t)),
-                &BytesInUnicodeString, MultiByteStr, CountOfMultiByte);
-            if (!Status) {
+                &BytesInUnicodeString, MultiByteStr, ByteCount);
+            if (!NT_SUCCESS(Status)) {
                 ReturnLength = 0;
                 break;
             }
@@ -235,13 +248,28 @@ int WINAPI MUSA_NAME(WideCharToMultiByte)(
                 break;
             }
 
-            Status = RtlUnicodeToUTF8N(nullptr, 0,
-                &BytesInMultiByteString, WideCharStr, CountOfWideChar * sizeof(wchar_t));
-            if (!Status) {
+            const auto CharCount = (CountOfWideChar == -1)
+                ? static_cast<int>(wcslen(WideCharStr) + 1)
+                : CountOfWideChar;
+
+            // RtlUnicodeToUTF8N doesn't support null output buffer for size query.
+            const auto MaxBytes = static_cast<ULONG>(CharCount * 3 + 1);
+            auto TempBuffer = static_cast<PCHAR>(LocalAlloc(LPTR, MaxBytes));
+            if (TempBuffer == nullptr) {
+                Status = STATUS_INSUFFICIENT_RESOURCES;
                 break;
             }
 
-            ReturnLength = static_cast<int>(BytesInMultiByteString);
+            Status = RtlUnicodeToUTF8N(TempBuffer, MaxBytes,
+                &BytesInMultiByteString, WideCharStr, CharCount * sizeof(wchar_t));
+
+            ReturnLength = NT_SUCCESS(Status) ? static_cast<int>(BytesInMultiByteString) : 0;
+
+            LocalFree(TempBuffer);
+
+            if (!NT_SUCCESS(Status)) {
+                break;
+            }
 
             if (MultiByteStr == nullptr || CountOfMultiByte == 0) {
                 break;
@@ -253,8 +281,8 @@ int WINAPI MUSA_NAME(WideCharToMultiByte)(
             }
 
             Status = RtlUnicodeToUTF8N(MultiByteStr, CountOfMultiByte,
-                &BytesInMultiByteString, WideCharStr, CountOfWideChar * sizeof(wchar_t));
-            if (!Status) {
+                &BytesInMultiByteString, WideCharStr, CharCount * sizeof(wchar_t));
+            if (!NT_SUCCESS(Status)) {
                 ReturnLength = 0;
                 break;
             }
@@ -372,7 +400,5 @@ BOOL WINAPI MUSA_NAME(GetCPInfoExW)(
 }
 
 MUSA_IAT_SYMBOL(GetCPInfoExW, 12);
-
-#endif // defined(_KERNEL_MODE)
 
 EXTERN_C_END

@@ -1,4 +1,4 @@
-﻿#include "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h"
+#include "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h"
 #include "KernelBase.Private.h"
 #include "Internal/KernelBase.Handle.h"
 
@@ -21,7 +21,6 @@ HANDLE WINAPI MUSA_NAME(GetStdHandle)(
 {
     PAGED_CODE();
 
-#ifdef _KERNEL_MODE
     const auto Peb = static_cast<Musa::Core::KPEB*>(MUSA_NAME_PRIVATE(RtlGetCurrentPeb)());
     if (Peb == nullptr) {
         BaseSetLastNTError(STATUS_UNSUCCESSFUL);
@@ -39,21 +38,6 @@ HANDLE WINAPI MUSA_NAME(GetStdHandle)(
             BaseSetLastNTError(STATUS_INVALID_PARAMETER);
             return INVALID_HANDLE_VALUE;
     }
-#else
-    const auto ProcessParameters = NtCurrentPeb()->ProcessParameters;
-
-    switch (StdHandle) {
-        case STD_INPUT_HANDLE:
-            return ProcessParameters->StandardInput;
-        case STD_OUTPUT_HANDLE:
-            return ProcessParameters->StandardOutput;
-        case STD_ERROR_HANDLE:
-            return ProcessParameters->StandardError;
-        default:
-            BaseSetLastNTError(STATUS_INVALID_PARAMETER);
-            return INVALID_HANDLE_VALUE;
-    }
-#endif
 }
 
 MUSA_IAT_SYMBOL(GetStdHandle, 4);
@@ -66,7 +50,6 @@ BOOL WINAPI MUSA_NAME(SetStdHandle)(
 {
     PAGED_CODE();
 
-#ifdef _KERNEL_MODE
     const auto Peb = static_cast<Musa::Core::KPEB*>(MUSA_NAME_PRIVATE(RtlGetCurrentPeb)());
     if (Peb == nullptr) {
         BaseSetLastNTError(STATUS_UNSUCCESSFUL);
@@ -87,24 +70,6 @@ BOOL WINAPI MUSA_NAME(SetStdHandle)(
             BaseSetLastNTError(STATUS_INVALID_PARAMETER);
             return FALSE;
     }
-#else
-    const auto ProcessParameters = NtCurrentPeb()->ProcessParameters;
-
-    switch (StdHandle) {
-        case STD_INPUT_HANDLE:
-            ProcessParameters->StandardInput = Handle;
-            return TRUE;
-        case STD_OUTPUT_HANDLE:
-            ProcessParameters->StandardOutput = Handle;
-            return TRUE;
-        case STD_ERROR_HANDLE:
-            ProcessParameters->StandardError = Handle;
-            return TRUE;
-        default:
-            BaseSetLastNTError(STATUS_INVALID_PARAMETER);
-            return FALSE;
-    }
-#endif
 }
 
 MUSA_IAT_SYMBOL(SetStdHandle, 8);
@@ -160,11 +125,9 @@ BOOL WINAPI MUSA_NAME(DuplicateHandle)(
     if (InheritHandle) {
         HandleAttributes |= OBJ_INHERIT;
     }
-    #ifdef _KERNEL_MODE
     else if (ObIsKernelHandle(SourceHandle)) {
         HandleAttributes |= OBJ_KERNEL_HANDLE;
     }
-    #endif
 
     const auto Status = ZwDuplicateObject(
         SourceProcessHandle, SourceHandle,

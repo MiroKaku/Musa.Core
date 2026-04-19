@@ -1,11 +1,7 @@
-﻿#include "KernelBase.Private.h"
+#include "KernelBase.Private.h"
 #include "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h"
 
-#if defined(_KERNEL_MODE)
 using namespace Musa::Core;
-#else
-#include <intrin.h>
-#endif
 
 EXTERN_C_START
 
@@ -92,27 +88,7 @@ MUSA_IAT_SYMBOL(SetLastError, 4);
 
 UINT WINAPI MUSA_NAME(GetErrorMode)()
 {
-    #if !defined _KERNEL_MODE
-    UINT Mode = 0;
-
-    const auto Status = ZwQueryInformationProcess(ZwCurrentProcess(),
-        ProcessDefaultHardErrorMode, &Mode, sizeof(Mode),
-        nullptr);
-    if (!NT_SUCCESS(Status)) {
-        BaseSetLastNTError(Status);
-        return 0;
-    }
-
-    if (BooleanFlagOn(Mode, SEM_FAILCRITICALERRORS)) {
-        ClearFlag(Mode, SEM_FAILCRITICALERRORS);
-    }
-    else {
-        SetFlag(Mode, SEM_FAILCRITICALERRORS);
-    }
-    return Mode;
-    #else
     return ((PKPEB)MUSA_NAME_PRIVATE(RtlGetCurrentPeb)())->HardErrorMode;
-    #endif
 }
 
 MUSA_IAT_SYMBOL(GetErrorMode, 0);
@@ -121,27 +97,8 @@ UINT WINAPI MUSA_NAME(SetErrorMode)(
     _In_ UINT Mode
 )
 {
-    #if !defined _KERNEL_MODE
-    const auto PreviousMode = GetErrorMode();
-
-    if (BooleanFlagOn(Mode, SEM_FAILCRITICALERRORS)) {
-        ClearFlag(Mode, SEM_FAILCRITICALERRORS);
-    }
-    else {
-        SetFlag(Mode, SEM_FAILCRITICALERRORS);
-    }
-
-    const auto Status = NtSetInformationProcess(NtCurrentProcess(),
-        ProcessDefaultHardErrorMode, &Mode, sizeof(Mode));
-    if (!NT_SUCCESS(Status)) {
-        BaseSetLastNTError(Status);
-    }
-
-    return(PreviousMode);
-    #else
     return InterlockedExchange(
         reinterpret_cast<long volatile*>(&((PKPEB)MUSA_NAME_PRIVATE(RtlGetCurrentPeb)())->HardErrorMode), (LONG)Mode);
-    #endif
 }
 
 MUSA_IAT_SYMBOL(SetErrorMode, 4);

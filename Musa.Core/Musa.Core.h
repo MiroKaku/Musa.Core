@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #ifndef _MUSA_CORE_
 #define _MUSA_CORE_
 
@@ -18,15 +18,11 @@
 
 EXTERN_C_START
 
-#ifdef _KERNEL_MODE
 NTSTATUS MUSA_API MusaCoreStartup(
     _In_ PDRIVER_OBJECT  DriverObject,
     _In_ PUNICODE_STRING RegistryPath,
     _In_ BOOL TLSWithThreadNotifyCallback
 );
-#else
-NTSTATUS MUSA_API MusaCoreStartup();
-#endif
 
 NTSTATUS MUSA_API MusaCoreShutdown();
 

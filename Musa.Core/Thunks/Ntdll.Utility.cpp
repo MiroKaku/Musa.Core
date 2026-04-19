@@ -1,4 +1,4 @@
-﻿#include "Internal/Ntdll.Utility.h"
+#include "Internal/Ntdll.Utility.h"
 #include "Musa.Core/Musa.Utilities.h"
 #include <bcrypt.h>
 
@@ -11,8 +11,6 @@ using namespace Musa;
 using namespace Musa::Utils;
 
 EXTERN_C_START
-
-#if defined(_KERNEL_MODE)
 #pragma comment(lib, "Cng.lib")
 
 PVOID NTAPI MUSA_NAME(RtlEncodePointer)(_In_ PVOID Ptr)
@@ -102,7 +100,5 @@ BOOLEAN NTAPI MUSA_NAME(RtlGenRandom)(
 }
 
 MUSA_IAT_SYMBOL(RtlGenRandom, 8);
-
-#endif // defined(_KERNEL_MODE)
 
 EXTERN_C_END
