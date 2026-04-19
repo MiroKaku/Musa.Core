@@ -47,7 +47,7 @@ MUSA_IAT_SYMBOL(FunctionName, stack_size)
 
 ## Internal/ SUBDIRECTORY
 
-15 private headers (`{DLL}.{Category}.h`) providing shared helpers for thunks.
+17 private headers + 1 .cpp (`{DLL}.{Category}.h`) providing shared helpers for thunks.
 Examples: `KernelBase.Fiber.h`, `KernelBase.Locale.h`, `KernelBase.Heap.h`, `Ntdll.Image.h`.
 NOT public — never include from outside `Thunks/`.
 
@@ -55,6 +55,9 @@ NOT public — never include from outside `Thunks/`.
 - `LDR_RESOURCE_ID_NAME_MASK` — mask clearing lower 16 bits (identifies name-type resource IDs)
 - `LDR_RESOURCE_ID_NAME_MINVAL` — minimum value for name-type resource IDs (17th bit set)
 - `RtlFindResource` uses `ULONG_PTR[3]` array (Type, Name, Language) instead of `LDR_RESOURCE_INFO` struct, with `_countof(IdPath)` as the level parameter to `LdrFindResource_U`
+
+### KernelBase.NLS.Table.cpp
+Locale/NLS table lookup implementation — shared by `KernelBase.NLS.cpp` thunks.
 
 ## ADDING A NEW THUNK
 
@@ -73,6 +76,12 @@ NOT public — never include from outside `Thunks/`.
 
 ### Module enumeration
 `GetModuleHandle`/`GetProcAddress`: walk PEB loader data manually.
+
+### Thunk file splitting
+Large categories split into sub-files: `KernelBase.Synchronize.cpp` includes `Synchronize.Event.cpp`, `Synchronize.Mutex.cpp`, `Synchronize.Semaphore.cpp`. Similarly `KernelBase.Thread.cpp` splits into `Thread.Create.cpp`, `Thread.ProcAttr.cpp`.
+
+### #pragma warning suppressions
+7 instances across 6 thunk files — all for ReSharper/SAL false positives (6387, 28023, 6385, 6001, 4996, 28751). Not real bugs.
 
 ## KNOWN INCOMPLETE
 

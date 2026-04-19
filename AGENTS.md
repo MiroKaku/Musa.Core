@@ -11,11 +11,15 @@ Author: MiroKaku/MeeSong. Beta. MIT license.
 ```
 Musa.Core/                  Core source — headers, init, PE parser, thunks
   Thunks/                   Win32 API shim implementations (31 .cpp files)
-  Thunks/Internal/          Private headers for thunk internals (15 .h files)
-Musa.Core.StaticLibraryForDriver/  Kernel-mode static library
-Musa.Core.TestForDriver/    Kernel-mode test (KMDF driver, DriverEntry)
+  Thunks/Internal/          Private headers for thunk internals (17 .h/.cpp files)
+Musa.Core.StaticLibraryForDriver/  Kernel-mode static library (universal.h + vcxproj)
+Musa.Core.TestForDriver/    Kernel-mode test (KMDF driver, DriverEntry, boot-start reinit)
 Musa.Core.NuGet/            NuGet packaging (.nuspec, .props, .targets)
-Publish/Config/             Published NuGet config consumed by dependents
+Publish/                    Staged output consumed by dependents + NuGet
+  Include/                  Published headers (copy of Musa.Core.h)
+  Library/{Config}/{Platform}/  Built .lib files
+  Config/                   .props/.targets injected into consuming projects
+Output/                     Build artifacts (Binaries/, Objects/, .binlog)
 ```
 
 ## KEY DEPENDENCIES
@@ -31,6 +35,9 @@ Publish/Config/             Published NuGet config consumed by dependents
 - CI: GitHub Actions `windows-latest`, triggers on push to `main` + `v*` tags
 - NuGet publish: tag push `v*` → pack → `dotnet nuget push` to nuget.org
 - Kernel driver: MUST link with `/INTEGRITYCHECK`
+- Solution: `.slnx` format (VS2022 17.10+ XML solution, not traditional `.sln`)
+- WDK: CI auto-installs matching WDK via `winget` if kernel headers missing
+- PCH: `universal.h` forced-include via empty `Musa.Core.Nothing.cpp`
 
 ## CONVENTIONS
 
@@ -52,14 +59,14 @@ Publish/Config/             Published NuGet config consumed by dependents
 - Every thunk file uses this for kernel builds
 
 ### Debug Logging
-- `MusaLOG(fmt, ...)` → `DbgPrintEx` (kernel) / `printf` (user-mode)
+- `MusaLOG(fmt, ...)` → `DbgPrintEx` (DEBUG builds), no-op in Release
 
 ## WHERE TO LOOK
 
 | Task | Location |
 |---|---|
 | Add new Win32 API shim | `Musa.Core/Thunks/` — match existing `{DLL}.{Category}.cpp` pattern |
-| Modify init/startup | `Musa.Core/Musa.Core.cpp` (DllMain/DriverEntry) |
+| Modify init/startup | `Musa.Core/Musa.Core.cpp` (MusaCoreStartup/MusaCoreShutdown) |
 | Change exported symbols | `Musa.Core/Musa.Core.def` (~490 ZwRoutine exports) |
 | PE parsing utilities | `Musa.Core/Musa.Utilities.PEParser.h` |
 | System environment block | `Musa.Core/Musa.Core.SystemEnvironmentBlock.{h,cpp}` |
@@ -83,6 +90,10 @@ Publish/Config/             Published NuGet config consumed by dependents
 - `RtlFindAndFormatMessage`: now uses `MusaCoreLiteGetNtdllBase()` with null check; returns `STATUS_DLL_NOT_FOUND` if ntdll base unavailable
 - `ThreadNotifyCallback`: added null guard for `MusaCoreThreadNotifyCallbackObject` before `ExNotifyCallback`
 - Several `#pragma warning(suppress: ...)` for ReSharper false positives
+- `RtlWalkHeap`: stub returning `STATUS_NOT_IMPLEMENTED`
+- `LocalAlloc`/`LocalReAlloc`: `LMEM_MOVEABLE` flag not supported
+- `Ntdll.LibraryLoader.ProcAddr.cpp`: callback field assignment is TODO placeholder
+- `Ntdll.LibraryLoader.cpp`: module unload logic incomplete (TODO: if LdrEntry->LoadCount == 1 then Unload)
 
 ## CHILD AGENTS
 

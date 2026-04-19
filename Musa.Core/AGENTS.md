@@ -1,6 +1,6 @@
 # AGENTS.md — Musa.Core (core source)
 
-> Parent: `../AGENTS.md` covers project overview, build, naming, dual-mode pattern.
+> Parent: `../AGENTS.md` covers project overview, build, naming conventions.
 
 ## ROLE
 
@@ -15,6 +15,9 @@ Everything here is shared infrastructure consumed by `Thunks/`.
 | `Musa.Core.cpp` | Init sequence: `MusaCoreStartup` → `MusaCoreLiteStartup` → `EnvironmentBlockSetup` → thunk logging |
 | `Musa.Core.def` | Module definition — ~490 `_Mi_Zw*` exports mapping ntdll ZwRoutines |
 | `Musa.Core.SystemEnvironmentBlock.h/.cpp` | Kernel-mode PEB/TEB/SEB setup via `EnvironmentBlockSetup`/`EnvironmentBlockTeardown`; `ThreadNotifyCallback` null-guards `MusaCoreThreadNotifyCallbackObject` before `ExNotifyCallback` |
+| `Musa.Core.SystemEnvironmentBlock.Process.h/.cpp` | `ProcessEnvironmentBlockSetup/Teardown` — fake PEB allocation, RegistryPath copy, LdrEntry extraction, default heap creation, \Device\Null stdin/stdout/stderr |
+| `Musa.Core.SystemEnvironmentBlock.Thread.h/.cpp` | `ThreadEnvironmentBlockSetup/Teardown` — TEB AVL table + lookaside pool, lazy TEB creation via `RtlGetCurrentTeb()` |
+| `Musa.Core.SystemEnvironmentBlock.Fls.h/.cpp` | `FlsCreate/FlsCleanup/FlsDataCleanup` — Fiber Local Storage initialization |
 | `Musa.Utilities.h` | Security cookie init (`__security_init_cookie`), stack alignment helpers |
 | `Musa.Utilities.PEParser.h` | PE image parsing: section/export/import/delay-import enumeration |
 | `Musa.Utilities.Overlay.cpp` | IAT overlay — `MakeImageOverlay` patches import table at init |
@@ -22,7 +25,7 @@ Everything here is shared infrastructure consumed by `Thunks/`.
 
 ## INIT SEQUENCE
 
-1. `MusaCoreStartup()` — entry point for both modes
+1. `MusaCoreStartup()` — kernel-mode entry point
 2. Calls `MusaCoreLiteStartup()` (from Musa.CoreLite v1.1.0 dependency)
 3. Calls `EnvironmentBlockSetup()` — kernel-mode only: creates fake PEB/TEB
 4. Logs result via `MusaLOG`
