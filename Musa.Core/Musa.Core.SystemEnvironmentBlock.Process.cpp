@@ -1,4 +1,4 @@
-﻿#include "Musa.Core.SystemEnvironmentBlock.Fls.h"
+#include "Musa.Core.SystemEnvironmentBlock.Fls.h"
 #include "Musa.Core.SystemEnvironmentBlock.Thread.h"
 #include "Musa.Core.SystemEnvironmentBlock.Process.h"
 
@@ -12,8 +12,6 @@
 #endif
 
 EXTERN_C_START
-
-#if defined(_KERNEL_MODE)
 
 using namespace Musa;
 using namespace Musa::Core;
@@ -262,7 +260,5 @@ VOID MUSA_API MUSA_NAME_PRIVATE(RtlReleasePebLockShared)()
     ExReleaseResourceAndLeaveCriticalRegion(
         &static_cast<PKPEB>(MUSA_NAME_PRIVATE(RtlGetCurrentPeb)())->Lock);
 }
-
-#endif // defined(_KERNEL_MODE)
 
 EXTERN_C_END

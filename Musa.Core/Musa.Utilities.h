@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 EXTERN_C uintptr_t __security_cookie;
 
@@ -78,7 +78,6 @@ namespace Musa::Utils
         _In_    SIZE_T* ViewSize
     );
 
-#ifdef _KERNEL_MODE
     typedef
         _IRQL_requires_max_(APC_LEVEL)
         _Function_class_(TASK_FUNCTION)
@@ -94,6 +93,5 @@ namespace Musa::Utils
         _In_ PCTASK_FUNCTION Task,
         _In_opt_ PVOID Context
     );
-#endif
 
 }

@@ -1,4 +1,4 @@
-﻿#include "KernelBase.Private.h"
+#include "KernelBase.Private.h"
 #include "Internal/KernelBase.Thread.h"
 
 #ifdef ALLOC_PRAGMA
@@ -88,7 +88,6 @@ HANDLE WINAPI MUSA_NAME(CreateRemoteThread)(
 
 MUSA_IAT_SYMBOL(CreateRemoteThread, 28);
 
-#if defined(_KERNEL_MODE)
 extern PDRIVER_OBJECT MusaCoreDriverObject;
 
 VEIL_DECLARE_STRUCT(MUSA_USER_THREAD_PARAMETER)
@@ -189,7 +188,6 @@ HANDLE WINAPI MUSA_NAME(CreateRemoteThreadEx)(
 }
 
 MUSA_IAT_SYMBOL(CreateRemoteThreadEx, 32);
-#endif // defined(_KERNEL_MODE)
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
 VOID WINAPI MUSA_NAME(ExitThread)(
@@ -554,13 +552,7 @@ VOID WINAPI MUSA_NAME(GetCurrentThreadStackLimits)(
 {
     PAGED_CODE();
 
-    #ifdef _KERNEL_MODE
     IoGetStackLimits(LowLimit, HighLimit);
-    #else
-    const auto Teb = ZwCurrentTeb();
-    *LowLimit  = reinterpret_cast<ULONG_PTR>(Teb->DeallocationStack);
-    *HighLimit = reinterpret_cast<ULONG_PTR>(Teb->NtTib.StackBase);
-    #endif
 }
 
 MUSA_IAT_SYMBOL(GetCurrentThreadStackLimits, 8);

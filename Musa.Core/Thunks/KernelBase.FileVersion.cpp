@@ -1,4 +1,4 @@
-﻿#include "KernelBase.Private.h"
+#include "KernelBase.Private.h"
 #include "Internal/KernelBase.FileVersion.h"
 
 #ifdef ALLOC_PRAGMA
@@ -7,8 +7,6 @@
 #endif
 
 EXTERN_C_START
-
-#if defined(_KERNEL_MODE)
 
 /* Read version info into buffer */
 _IRQL_requires_max_(PASSIVE_LEVEL)
@@ -207,7 +205,5 @@ BOOL APIENTRY MUSA_NAME(VerQueryValueW)(
 
 MUSA_IAT_SYMBOL(VerQueryValueW, 16);
 #pragma warning(pop)
-
-#endif // defined(_KERNEL_MODE)
 
 EXTERN_C_END

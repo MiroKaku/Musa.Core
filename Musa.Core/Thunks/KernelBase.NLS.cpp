@@ -1,4 +1,4 @@
-﻿//
+//
 // National Language Support
 //
 
@@ -13,8 +13,6 @@
 #include "Internal/KernelBase.NLS.Table.cpp"
 
 EXTERN_C_START
-
-#if defined(_KERNEL_MODE)
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
 _Success_(return != 0)
@@ -372,7 +370,5 @@ BOOL WINAPI MUSA_NAME(GetCPInfoExW)(
 }
 
 MUSA_IAT_SYMBOL(GetCPInfoExW, 12);
-
-#endif // defined(_KERNEL_MODE)
 
 EXTERN_C_END

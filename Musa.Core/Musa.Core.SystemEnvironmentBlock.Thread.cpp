@@ -1,4 +1,4 @@
-﻿#include "Musa.Utilities.h"
+#include "Musa.Utilities.h"
 #include "Musa.Core.SystemEnvironmentBlock.Fls.h"
 #include "Musa.Core.SystemEnvironmentBlock.Process.h"
 #include "Musa.Core.SystemEnvironmentBlock.Thread.h"
@@ -9,8 +9,6 @@
 #endif
 
 EXTERN_C_START
-
-#if defined(_KERNEL_MODE)
 
 using namespace Musa;
 using namespace Musa::Core;
@@ -273,7 +271,5 @@ VOID  MUSA_API MUSA_NAME_PRIVATE(RtlReleaseTebLockShared)(_In_ _IRQL_restores_ K
 {
     return ExReleaseSpinLockShared(&MusaCoreTebLock, Irql);
 }
-
-#endif // defined(_KERNEL_MODE)
 
 EXTERN_C_END

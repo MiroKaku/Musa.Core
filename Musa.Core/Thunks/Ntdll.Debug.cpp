@@ -1,6 +1,4 @@
-﻿EXTERN_C_START
-
-#if defined(_KERNEL_MODE)
+EXTERN_C_START
 
 #pragma warning(push)
 #pragma warning(disable: 6387)
@@ -181,7 +179,5 @@ NTSTATUS NTAPI MUSA_NAME(RtlFindAndFormatMessage)(
 
 MUSA_IAT_SYMBOL(RtlFindAndFormatMessage, 28);
 #pragma warning(pop)
-
-#endif // defined(_KERNEL_MODE)
 
 EXTERN_C_END

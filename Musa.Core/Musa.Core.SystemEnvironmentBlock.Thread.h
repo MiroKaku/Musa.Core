@@ -1,6 +1,4 @@
-﻿#pragma once
-
-#if defined(_KERNEL_MODE)
+#pragma once
 
 namespace Musa::Core
 {
@@ -56,5 +54,3 @@ _IRQL_requires_(DISPATCH_LEVEL)
 VOID  MUSA_API MUSA_NAME_PRIVATE(RtlReleaseTebLockShared)(_In_ _IRQL_restores_ KIRQL Irql);
 
 EXTERN_C_END
-
-#endif // defined(_KERNEL_MODE)

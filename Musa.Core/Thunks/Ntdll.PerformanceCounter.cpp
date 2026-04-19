@@ -1,6 +1,4 @@
-﻿EXTERN_C_START
-
-#if defined(_KERNEL_MODE)
+EXTERN_C_START
 
 LOGICAL NTAPI MUSA_NAME(RtlQueryPerformanceCounter)(
     _Out_ PLARGE_INTEGER PerformanceCount
@@ -21,7 +19,5 @@ LOGICAL NTAPI MUSA_NAME(RtlQueryPerformanceFrequency)(
 }
 
 MUSA_IAT_SYMBOL(RtlQueryPerformanceFrequency, 4);
-
-#endif // defined(_KERNEL_MODE)
 
 EXTERN_C_END

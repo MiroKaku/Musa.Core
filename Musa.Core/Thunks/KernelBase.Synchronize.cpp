@@ -1,4 +1,4 @@
-﻿#include "KernelBase.Private.h"
+#include "KernelBase.Private.h"
 #include "Internal/KernelBase.Synchronize.h"
 
 #ifdef ALLOC_PRAGMA
@@ -81,10 +81,7 @@ HANDLE WINAPI MUSA_NAME(CreateMutexExW)(
     OBJECT_ATTRIBUTES ObjectAttributes{};
 
     ObjectAttributes.Length = sizeof(OBJECT_ATTRIBUTES);
-
-    #if defined _KERNEL_MODE
     ObjectAttributes.Attributes = OBJ_KERNEL_HANDLE;
-    #endif
 
     if (MutexAttributes) {
         ObjectAttributes.SecurityDescriptor = MutexAttributes->lpSecurityDescriptor;
@@ -125,10 +122,7 @@ HANDLE WINAPI MUSA_NAME(OpenMutexW)(
     OBJECT_ATTRIBUTES ObjectAttributes{};
 
     ObjectAttributes.Length = sizeof(OBJECT_ATTRIBUTES);
-
-    #if defined _KERNEL_MODE
     ObjectAttributes.Attributes = OBJ_KERNEL_HANDLE;
-    #endif
 
     if (InheritHandle) {
         ObjectAttributes.Attributes |= OBJ_INHERIT;
@@ -211,10 +205,7 @@ HANDLE WINAPI MUSA_NAME(CreateEventExW)(
     OBJECT_ATTRIBUTES ObjectAttributes{};
 
     ObjectAttributes.Length = sizeof(OBJECT_ATTRIBUTES);
-
-    #if defined _KERNEL_MODE
     ObjectAttributes.Attributes = OBJ_KERNEL_HANDLE;
-    #endif
 
     if (EventAttributes) {
         ObjectAttributes.SecurityDescriptor = EventAttributes->lpSecurityDescriptor;
@@ -256,10 +247,7 @@ HANDLE WINAPI MUSA_NAME(OpenEventW)(
     OBJECT_ATTRIBUTES ObjectAttributes{};
 
     ObjectAttributes.Length = sizeof(OBJECT_ATTRIBUTES);
-
-    #if defined _KERNEL_MODE
     ObjectAttributes.Attributes = OBJ_KERNEL_HANDLE;
-    #endif
 
     if (InheritHandle) {
         ObjectAttributes.Attributes |= OBJ_INHERIT;
@@ -270,7 +258,7 @@ HANDLE WINAPI MUSA_NAME(OpenEventW)(
         ObjectAttributes.ObjectName = &NameString;
     }
 
-    HANDLE     Event  = nullptr;
+    HANDLE     Event = nullptr;
     const auto Status = ZwOpenEvent(&Event, DesiredAccess, &ObjectAttributes);
     if (NT_SUCCESS(Status)) {
         return Event;
@@ -355,10 +343,7 @@ HANDLE WINAPI MUSA_NAME(CreateSemaphoreExW)(
     OBJECT_ATTRIBUTES ObjectAttributes{};
 
     ObjectAttributes.Length = sizeof(OBJECT_ATTRIBUTES);
-
-    #if defined _KERNEL_MODE
     ObjectAttributes.Attributes = OBJ_KERNEL_HANDLE;
-    #endif
 
     if (SemaphoreAttributes) {
         ObjectAttributes.SecurityDescriptor = SemaphoreAttributes->lpSecurityDescriptor;
@@ -398,10 +383,7 @@ HANDLE WINAPI MUSA_NAME(OpenSemaphoreW)(
     OBJECT_ATTRIBUTES ObjectAttributes{};
 
     ObjectAttributes.Length = sizeof(OBJECT_ATTRIBUTES);
-
-    #if defined _KERNEL_MODE
     ObjectAttributes.Attributes = OBJ_KERNEL_HANDLE;
-    #endif
 
     if (InheritHandle) {
         ObjectAttributes.Attributes |= OBJ_INHERIT;
@@ -459,7 +441,6 @@ VOID WINAPI MUSA_NAME(Sleep)(
 
 MUSA_IAT_SYMBOL(Sleep, 4);
 
-#if defined(_KERNEL_MODE)
 _IRQL_requires_max_(APC_LEVEL)
 DWORD WINAPI MUSA_NAME(SleepEx)(
     _In_ DWORD Milliseconds,
@@ -488,7 +469,6 @@ DWORD WINAPI MUSA_NAME(SleepEx)(
 }
 
 MUSA_IAT_SYMBOL(SleepEx, 8);
-#endif // defined(_KERNEL_MODE)
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
 DWORD WINAPI MUSA_NAME(WaitForSingleObject)(

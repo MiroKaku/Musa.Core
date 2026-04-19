@@ -1,4 +1,4 @@
-﻿#include "Musa.Core/Musa.Utilities.PEParser.h"
+#include "Musa.Core/Musa.Utilities.PEParser.h"
 #include "Internal/Ntdll.LibraryLoader.h"
 
 using namespace Musa;
@@ -21,8 +21,6 @@ using namespace Musa::Utils;
 #endif
 
 EXTERN_C_START
-
-#if defined(_KERNEL_MODE)
 
 _IRQL_requires_max_(APC_LEVEL)
 NTSTATUS NTAPI MUSA_NAME(LdrUnloadDll)(
@@ -424,9 +422,7 @@ NTSTATUS NTAPI MUSA_NAME(LdrGetKnownDllSectionHandle)(
         InitializeObjectAttributes(&ObjectAttributes, &KnownDllName, OBJ_CASE_INSENSITIVE,
             nullptr, nullptr)
 
-        #ifdef _KERNEL_MODE
         ObjectAttributes.Attributes |= OBJ_KERNEL_HANDLE;
-        #endif
 
         Status = ZwOpenDirectoryObject(&DirectoryHandle, DIRECTORY_QUERY, &ObjectAttributes);
         if (!NT_SUCCESS(Status)) {
@@ -454,9 +450,7 @@ NTSTATUS NTAPI MUSA_NAME(LdrGetKnownDllSectionHandle)(
         InitializeObjectAttributes(&ObjectAttributes, &SectionName, OBJ_CASE_INSENSITIVE,
             DirectoryHandle, nullptr)
 
-        #ifdef _KERNEL_MODE
         ObjectAttributes.Attributes |= OBJ_KERNEL_HANDLE;
-        #endif
 
         Status = ZwOpenSection(Section, SECTION_QUERY | SECTION_MAP_READ | SECTION_MAP_EXECUTE,
             &ObjectAttributes);
@@ -554,7 +548,5 @@ NTSTATUS NTAPI MUSA_NAME(LdrUnloadDataFile)(
 }
 
 MUSA_IAT_SYMBOL(LdrUnloadDataFile, 4);
-
-#endif // defined(_KERNEL_MODE)
 
 EXTERN_C_END

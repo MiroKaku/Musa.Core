@@ -1,4 +1,4 @@
-﻿#include "Musa.Core/Musa.Core.SystemEnvironmentBlock.Fls.h"
+#include "Musa.Core/Musa.Core.SystemEnvironmentBlock.Fls.h"
 #include "Musa.Core/Musa.Core.SystemEnvironmentBlock.Thread.h"
 #include "Internal/Ntdll.FiberLocalStorage.h"
 
@@ -7,8 +7,6 @@
 #endif
 
 EXTERN_C_START
-
-#if defined(_KERNEL_MODE)
 
 using namespace Musa;
 using namespace Musa::Core;
@@ -283,7 +281,5 @@ NTSTATUS NTAPI MUSA_NAME(RtlFlsSetValue)(
 }
 
 MUSA_IAT_SYMBOL(RtlFlsSetValue, 8);
-
-#endif // defined(_KERNEL_MODE)
 
 EXTERN_C_END

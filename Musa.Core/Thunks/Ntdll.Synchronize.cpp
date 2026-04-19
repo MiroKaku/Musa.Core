@@ -1,4 +1,4 @@
-﻿#include "Internal/Ntdll.Synchronize.h"
+#include "Internal/Ntdll.Synchronize.h"
 
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text(PAGE, MUSA_NAME(RtlAcquireSRWLockExclusive))
@@ -19,8 +19,6 @@
 #endif
 
 EXTERN_C_START
-
-#if defined(_KERNEL_MODE)
 
 //
 // R/W lock
@@ -395,7 +393,5 @@ VOID NTAPI MUSA_NAME(RtlWakeAllConditionVariable)(
 }
 
 MUSA_IAT_SYMBOL(RtlWakeAllConditionVariable, 4);
-
-#endif // defined(_KERNEL_MODE) 
 
 EXTERN_C_END

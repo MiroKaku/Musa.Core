@@ -1,4 +1,4 @@
-﻿#include "Musa.Core/Musa.Utilities.PEParser.h"
+#include "Musa.Core/Musa.Utilities.PEParser.h"
 #include "Internal/Ntdll.Image.h"
 
 using namespace Musa;
@@ -12,8 +12,6 @@ using namespace Musa::Utils;
 #endif
 
 EXTERN_C_START
-
-#if defined(_KERNEL_MODE)
 
 PIMAGE_SECTION_HEADER NTAPI MUSA_NAME(RtlImageRvaToSection)(
     _In_ PIMAGE_NT_HEADERS NtHeaders,
@@ -223,7 +221,5 @@ NTSTATUS NTAPI MUSA_NAME(RtlLoadResource)(
 }
 
 MUSA_IAT_SYMBOL(RtlLoadResource, 16);
-
-#endif // defined(_KERNEL_MODE)
 
 EXTERN_C_END

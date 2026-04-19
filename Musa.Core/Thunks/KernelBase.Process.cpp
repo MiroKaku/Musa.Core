@@ -1,4 +1,4 @@
-﻿#include "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h"
+#include "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h"
 #include "KernelBase.Private.h"
 #include "Internal/KernelBase.Process.h"
 
@@ -76,7 +76,6 @@ DWORD WINAPI MUSA_NAME(GetCurrentProcessId)(
 
 MUSA_IAT_SYMBOL(GetCurrentProcessId, 0);
 
-#if defined _KERNEL_MODE
 VOID WINAPI MUSA_NAME(ExitProcess)(
     _In_ UINT ExitCode
 )
@@ -85,7 +84,6 @@ VOID WINAPI MUSA_NAME(ExitProcess)(
 }
 
 MUSA_IAT_SYMBOL(ExitProcess, 4);
-#endif
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
 BOOL WINAPI MUSA_NAME(TerminateProcess)(
@@ -95,11 +93,9 @@ BOOL WINAPI MUSA_NAME(TerminateProcess)(
 {
     PAGED_CODE();
 
-    #if defined _KERNEL_MODE
     if (ProcessHandle == GetCurrentProcess()) {
         ExitProcess(ExitCode);
     }
-    #endif
 
     const auto Status = ZwTerminateProcess(ProcessHandle, ExitCode);
     if (NT_SUCCESS(Status)) {
@@ -181,10 +177,6 @@ VOID WINAPI MUSA_NAME(GetStartupInfoW)(
     _Out_ LPSTARTUPINFOW StartupInfo
 )
 {
-    #ifdef _KERNEL_MODE
-    // TODO
-    //const auto ProcessParameters = MUSA_NAME_PRIVATE(RtlGetCurrentPeb)();
-
     *StartupInfo = {sizeof(*StartupInfo)};
 
     if (StartupInfo->dwFlags & (STARTF_USESTDHANDLES | STARTF_USEHOTKEY | STARTF_HASSHELLDATA)) {
@@ -195,31 +187,6 @@ VOID WINAPI MUSA_NAME(GetStartupInfoW)(
             StartupInfo->hStdError  = Peb->StandardError;
         }
     }
-    #else
-    const auto ProcessParameters = NtCurrentPeb()->ProcessParameters;
-
-    StartupInfo->cb              = sizeof(*StartupInfo);
-    StartupInfo->lpReserved      = ProcessParameters->ShellInfo.Buffer;
-    StartupInfo->lpDesktop       = ProcessParameters->DesktopInfo.Buffer;
-    StartupInfo->lpTitle         = ProcessParameters->WindowTitle.Buffer;
-    StartupInfo->dwX             = ProcessParameters->StartingX;
-    StartupInfo->dwY             = ProcessParameters->StartingY;
-    StartupInfo->dwXSize         = ProcessParameters->CountX;
-    StartupInfo->dwYSize         = ProcessParameters->CountY;
-    StartupInfo->dwXCountChars   = ProcessParameters->CountCharsX;
-    StartupInfo->dwYCountChars   = ProcessParameters->CountCharsY;
-    StartupInfo->dwFillAttribute = ProcessParameters->FillAttribute;
-    StartupInfo->dwFlags         = ProcessParameters->WindowFlags;
-    StartupInfo->wShowWindow     = static_cast<WORD>(ProcessParameters->ShowWindowFlags);
-    StartupInfo->cbReserved2     = ProcessParameters->RuntimeData.Length;
-    StartupInfo->lpReserved2     = reinterpret_cast<LPBYTE>(ProcessParameters->RuntimeData.Buffer);
-
-    if (StartupInfo->dwFlags & (STARTF_USESTDHANDLES | STARTF_USEHOTKEY | STARTF_HASSHELLDATA)) {
-        StartupInfo->hStdInput  = ProcessParameters->StandardInput;
-        StartupInfo->hStdOutput = ProcessParameters->StandardOutput;
-        StartupInfo->hStdError  = ProcessParameters->StandardError;
-    }
-    #endif
 }
 
 MUSA_IAT_SYMBOL(GetStartupInfoW, 4);
@@ -252,10 +219,6 @@ BOOL WINAPI MUSA_NAME(SetPriorityClass)(
 {
     PAGED_CODE();
 
-    #if !defined(_KERNEL_MODE)
-    PVOID State = nullptr;
-    #endif
-
     UCHAR Priority;
     if (PriorityClass & IDLE_PRIORITY_CLASS) {
         Priority = PROCESS_PRIORITY_CLASS_IDLE;
@@ -268,17 +231,7 @@ BOOL WINAPI MUSA_NAME(SetPriorityClass)(
     } else if (PriorityClass & HIGH_PRIORITY_CLASS) {
         Priority = PROCESS_PRIORITY_CLASS_HIGH;
     } else if (PriorityClass & REALTIME_PRIORITY_CLASS) {
-        #if !defined(_KERNEL_MODE)
-        State = BaseIsRealtimeAllowed(TRUE, FALSE);
-        if (State) {
-            Priority = PROCESS_PRIORITY_CLASS_REALTIME;
-        }
-        else {
-            Priority = PROCESS_PRIORITY_CLASS_HIGH;
-        }
-        #else
         Priority = PROCESS_PRIORITY_CLASS_REALTIME;
-        #endif
     } else {
         BaseSetLastNTError(STATUS_INVALID_PARAMETER);
         return FALSE;
@@ -288,12 +241,6 @@ BOOL WINAPI MUSA_NAME(SetPriorityClass)(
 
     const auto Status = ZwSetInformationProcess(ProcessHandle, ProcessPriorityClass,
         &PriorityInformation, sizeof(PriorityInformation));
-
-    #if !defined _KERNEL_MODE
-    if (State) {
-        RtlReleasePrivilege(State);
-    }
-    #endif
 
     if (!NT_SUCCESS(Status)) {
         BaseSetLastNTError(Status);
@@ -361,11 +308,7 @@ BOOL WINAPI MUSA_NAME(ProcessIdToSessionId)(
     }
 
     if (ProcessId == GetCurrentProcessId()) {
-        #if !defined _KERNEL_MODE
-        *SessionId = ZwCurrentPeb()->SessionId;
-        #else
         *SessionId = PsGetCurrentProcessSessionId();
-        #endif
         return TRUE;
     }
 

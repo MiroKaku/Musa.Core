@@ -1,8 +1,6 @@
-﻿#include "Musa.Core/Musa.Core.SystemEnvironmentBlock.Thread.h"
+#include "Musa.Core/Musa.Core.SystemEnvironmentBlock.Thread.h"
 
 EXTERN_C_START
-
-#ifdef _KERNEL_MODE
 
 using namespace Musa;
 using namespace Musa::Core;
@@ -169,7 +167,5 @@ ULONG NTAPI MUSA_NAME(RtlRemoveVectoredContinueHandler)(
 }
 
 MUSA_IAT_SYMBOL(RtlRemoveVectoredContinueHandler, 4);
-
-#endif // defined(_KERNEL_MODE)
 
 EXTERN_C_END

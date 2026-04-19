@@ -1,4 +1,4 @@
-﻿#include "KernelBase.Private.h"
+#include "KernelBase.Private.h"
 #include "Internal/KernelBase.System.h"
 
 #ifdef ALLOC_PRAGMA
@@ -103,76 +103,16 @@ BOOL WINAPI MUSA_NAME(GetLogicalProcessorInformationEx)(
 
 MUSA_IAT_SYMBOL(GetLogicalProcessorInformationEx, 12);
 
-#if !defined _KERNEL_MODE
-static BOOL GetProcessorGroupInformation(
-    _Out_ PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX* ProcessorInformation,
-    _Out_ DWORD* ReturnLength
-)
-{
-    DWORD Size = 0;
-
-    if (GetLogicalProcessorInformationEx(RelationGroup, nullptr, &Size)) {
-        BaseSetLastNTError(STATUS_IO_DEVICE_INVALID_DATA);
-        return FALSE;
-    }
-
-    if (Size == 0) {
-        return FALSE;
-    }
-
-    const auto Information = static_cast<PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX>(LocalAlloc(LPTR, Size));
-    if (Information == nullptr) {
-        BaseSetLastNTError(STATUS_NO_MEMORY);
-        return FALSE;
-    }
-
-    if (GetLogicalProcessorInformationEx(RelationGroup, Information, &Size)) {
-        *ReturnLength = Size;
-        *ProcessorInformation = Information;
-
-        return TRUE;
-    }
-
-    LocalFree(Information);
-    return FALSE;
-}
-#endif
-
 WORD WINAPI MUSA_NAME(GetActiveProcessorGroupCount)(VOID)
 {
-    #if defined _KERNEL_MODE
     return KeQueryActiveGroupCount();
-    #else
-    DWORD ReturnLength = 0;
-    PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX ProcessorInformation = nullptr;
-    if (!GetProcessorGroupInformation(&ProcessorInformation, &ReturnLength)) {
-        return 0;
-    }
-
-    const auto Count = ProcessorInformation->Group.ActiveGroupCount;
-    LocalFree(ProcessorInformation);
-    return Count;
-    #endif
 }
 
 MUSA_IAT_SYMBOL(GetActiveProcessorGroupCount, 0);
 
 WORD WINAPI MUSA_NAME(GetMaximumProcessorGroupCount)(VOID)
 {
-    #if defined _KERNEL_MODE
     return KeQueryMaximumGroupCount();
-    #else
-    DWORD ReturnLength = 0;
-    PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX ProcessorInformation = nullptr;
-    if (!GetProcessorGroupInformation(&ProcessorInformation, &ReturnLength)) {
-        return 0;
-    }
-
-    const auto Count = ProcessorInformation->Group.MaximumGroupCount;
-
-    LocalFree(ProcessorInformation);
-    return Count;
-    #endif
 }
 
 MUSA_IAT_SYMBOL(GetMaximumProcessorGroupCount, 0);
@@ -181,33 +121,7 @@ DWORD WINAPI MUSA_NAME(GetActiveProcessorCount)(
     _In_ WORD GroupNumber
 )
 {
-    #if defined _KERNEL_MODE
     return KeQueryActiveProcessorCountEx(GroupNumber);
-    #else
-    DWORD ReturnLength = 0;
-    PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX ProcessorInformation = nullptr;
-    if (!GetProcessorGroupInformation(&ProcessorInformation, &ReturnLength)) {
-        return 0;
-    }
-
-    DWORD Count = 0;
-
-    if (GroupNumber == ALL_PROCESSOR_GROUPS) {
-        const auto GroupCount = ProcessorInformation->Group.ActiveGroupCount;
-        for (size_t Idx = 0; Idx < GroupCount; ++Idx) {
-            Count += ProcessorInformation->Group.GroupInfo[Idx].ActiveProcessorCount;
-        }
-    }
-    else if(GroupNumber > ProcessorInformation->Group.ActiveGroupCount) {
-        BaseSetLastNTError(STATUS_INVALID_PARAMETER);
-    }
-    else {
-        Count = ProcessorInformation->Group.GroupInfo[GroupNumber].ActiveProcessorCount;
-    }
-
-    LocalFree(ProcessorInformation);
-    return Count;
-    #endif
 }
 
 MUSA_IAT_SYMBOL(GetActiveProcessorCount, 4);
@@ -216,33 +130,7 @@ DWORD WINAPI MUSA_NAME(GetMaximumProcessorCount)(
     _In_ WORD GroupNumber
 )
 {
-    #if defined _KERNEL_MODE
     return KeQueryMaximumProcessorCountEx(GroupNumber);
-    #else
-    DWORD ReturnLength = 0;
-    PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX ProcessorInformation = nullptr;
-    if (!GetProcessorGroupInformation(&ProcessorInformation, &ReturnLength)) {
-        return 0;
-    }
-
-    DWORD Count = 0;
-
-    if (GroupNumber == ALL_PROCESSOR_GROUPS) {
-        const auto GroupCount = ProcessorInformation->Group.ActiveGroupCount;
-        for (size_t Idx = 0; Idx < GroupCount; ++Idx) {
-            Count += ProcessorInformation->Group.GroupInfo[Idx].MaximumProcessorCount;
-        }
-    }
-    else if (GroupNumber > ProcessorInformation->Group.ActiveGroupCount) {
-        BaseSetLastNTError(STATUS_INVALID_PARAMETER);
-    }
-    else {
-        Count = ProcessorInformation->Group.GroupInfo[GroupNumber].MaximumProcessorCount;
-    }
-
-    LocalFree(ProcessorInformation);
-    return Count;
-    #endif
 }
 
 MUSA_IAT_SYMBOL(GetMaximumProcessorCount, 4);

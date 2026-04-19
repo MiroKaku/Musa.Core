@@ -1,6 +1,4 @@
-﻿#pragma once
-
-#if defined(_KERNEL_MODE)
+#pragma once
 
 namespace Musa::Core
 {
@@ -43,5 +41,3 @@ VOID NTAPI MUSA_NAME_PRIVATE(FlsDataCleanup)(
     );
 
 EXTERN_C_END
-
-#endif // defined(_KERNEL_MODE)

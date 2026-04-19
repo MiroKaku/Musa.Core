@@ -1,4 +1,4 @@
-﻿#include "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h"
+#include "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h"
 #include "Musa.Core/Musa.Utilities.h"
 #include "Internal/Ntdll.Heap.h"
 
@@ -10,8 +10,6 @@
 #endif
 
 EXTERN_C_START
-
-#if defined(_KERNEL_MODE)
 
 using namespace Musa;
 using namespace Musa::Core;
@@ -1094,7 +1092,5 @@ VOID NTAPI MUSA_NAME(RtlFlushHeaps)(
 }
 
 MUSA_IAT_SYMBOL(RtlFlushHeaps, 0);
-
-#endif // _KERNEL_MODE
 
 EXTERN_C_END
