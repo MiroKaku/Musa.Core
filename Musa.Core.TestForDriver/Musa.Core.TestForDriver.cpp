@@ -1,4 +1,4 @@
-﻿// unnecessary, fix ReSharper's code analysis.
+// unnecessary, fix ReSharper's code analysis.
 #pragma warning(suppress: 4117)
 #define _KERNEL_MODE 1
 
@@ -392,6 +392,124 @@ namespace Main
             KTEST_EXPECT(GetLastError() == ERROR_INVALID_PARAMETER,
                 "Error_SetGetLastError_InvalidParameter");
             SetLastError(ERROR_SUCCESS);
+        }
+
+        // --- LibraryLoader ---
+
+        {
+            const auto Ntdll = GetModuleHandleW(L"ntdll.dll");
+            KTEST_EXPECT(Ntdll != nullptr,
+                "LibraryLoader_GetModuleHandleNtdll_Succeeds");
+        }
+
+        {
+            const auto Kernel32 = GetModuleHandleW(L"kernel32.dll");
+            KTEST_EXPECT(Kernel32 == nullptr,
+                "LibraryLoader_GetModuleHandleKernel32_ReturnsNull");
+        }
+
+        {
+            const auto Ntdll = GetModuleHandleW(L"ntdll.dll");
+            if (Ntdll) {
+                const auto Fn = GetProcAddress(Ntdll, "NtQuerySystemInformation");
+                KTEST_EXPECT(Fn != nullptr,
+                    "LibraryLoader_GetProcAddress_Succeeds");
+            }
+        }
+
+        // --- NLS ---
+
+        {
+            const wchar_t WStr[] = L"Hello";
+            char Buf[32] = {};
+            const auto Result = WideCharToMultiByte(CP_UTF8, 0, WStr, -1, Buf, sizeof(Buf), nullptr, nullptr);
+            KTEST_EXPECT(Result > 0,
+                "NLS_WideCharToMultiByte_Succeeds");
+        }
+
+        {
+            const char Str[] = "Hello";
+            wchar_t Buf[32] = {};
+            const auto Result = MultiByteToWideChar(CP_UTF8, 0, Str, -1, Buf, sizeof(Buf) / sizeof(wchar_t));
+            KTEST_EXPECT(Result > 0,
+                "NLS_MultiByteToWideChar_Succeeds");
+        }
+
+        {
+            const auto Acp = GetACP();
+            KTEST_EXPECT(Acp != 0,
+                "NLS_GetACP_ReturnsNonZero");
+        }
+
+        {
+            CPINFOEXW CpInfo = {};
+            KTEST_EXPECT(GetCPInfoExW(CP_UTF8, 0, &CpInfo),
+                "NLS_GetCPInfoExW_Succeeds");
+        }
+
+        // --- RealTime ---
+
+        {
+            FILETIME Ft{};
+            GetSystemTimePreciseAsFileTime(&Ft);
+            KTEST_EXPECT(Ft.dwLowDateTime != 0 || Ft.dwHighDateTime != 0,
+                "RealTime_GetSystemTimePreciseAsFileTime_NonZero");
+        }
+
+        {
+            const auto Ticks = GetTickCount64();
+            KTEST_EXPECT(Ticks > 0,
+                "RealTime_GetTickCount64_ReturnsNonZero");
+        }
+
+        {
+            const auto Ticks32 = GetTickCount();
+            KTEST_EXPECT(Ticks32 != 0,
+                "RealTime_GetTickCount_ReturnsNonZero");
+        }
+
+        {
+            LARGE_INTEGER Freq{};
+            KTEST_EXPECT(QueryPerformanceFrequency(&Freq),
+                "RealTime_QueryPerformanceFrequency_Succeeds");
+            KTEST_EXPECT(Freq.QuadPart > 0,
+                "RealTime_QueryPerformanceFrequency_Positive");
+        }
+
+        {
+            LARGE_INTEGER Counter{};
+            KTEST_EXPECT(QueryPerformanceCounter(&Counter),
+                "RealTime_QueryPerformanceCounter_Succeeds");
+        }
+
+        // --- Handle ---
+
+        {
+            const auto Event = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+            if (Event) {
+                DWORD Flags = 0;
+                KTEST_EXPECT(GetHandleInformation(Event, &Flags),
+                    "Handle_GetHandleInformation_Succeeds");
+                KTEST_EXPECT(Flags & HANDLE_FLAG_PROTECT_FROM_CLOSE,
+                    "Handle_GetHandleInformation_ProtectFromClose");
+                CloseHandle(Event);
+            }
+        }
+
+        // --- Debug ---
+
+        {
+            wchar_t Buf[256] = {};
+            const auto Result = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                nullptr, ERROR_SUCCESS, 0, Buf, sizeof(Buf) / sizeof(wchar_t), nullptr);
+            KTEST_EXPECT(Result > 0,
+                "Debug_FormatMessageW_Succeeds");
+        }
+
+        {
+            OutputDebugStringW(L"[Musa.Core.Test] Debug output test\n");
+            KTEST_EXPECT(true,
+                "Debug_OutputDebugStringW_NoCrash");
         }
 
         // --- Results ---
