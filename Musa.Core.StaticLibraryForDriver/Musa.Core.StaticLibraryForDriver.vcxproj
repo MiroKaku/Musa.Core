@@ -96,6 +96,8 @@
     <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.Synchronize.Mutex.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.Synchronize.Semaphore.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.System.cpp" />
+    <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.System.Processor.cpp" />
+    <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.System.Times.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.Thread.Create.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.Thread.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.Thread.ProcAttr.cpp" />
@@ -113,11 +115,13 @@
     <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.PerformanceCounter.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.Pool.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.RealTime.cpp" />
-    <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.Synchronize.cpp" />
+    <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.Synchronize.CriticalSection.cpp" />
+    <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.Synchronize.ConditionVariable.cpp" />
+    <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.Synchronize.SRWLock.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.System.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.Thread.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.Utility.cpp" />
-    <ClCompile Include="..\Musa.Core\Thunks\Internal\KernelBase.NLS.Table.cpp" />
+    <ClCompile Include="$(SourcesDirectory)Thunks\Internal\KernelBase.NLS.Table.cpp" />
   </ItemGroup>
   <PropertyGroup>
     <MusaCoreOnlyHeader>true</MusaCoreOnlyHeader>

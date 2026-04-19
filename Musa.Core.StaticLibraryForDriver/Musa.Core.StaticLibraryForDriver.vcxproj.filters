@@ -136,6 +136,8 @@
     <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.NLS.cpp">
       <Filter>Musa.Core\Thunks</Filter>
     </ClCompile>
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
     <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.FiberLocalStorage.cpp">
       <Filter>Musa.Core\Thunks</Filter>
     </ClCompile>
@@ -175,6 +177,12 @@
     <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.System.cpp">
       <Filter>Musa.Core\Thunks</Filter>
     </ClCompile>
+    <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.System.Processor.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.System.Times.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
     <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.Thread.Create.cpp">
       <Filter>Musa.Core\Thunks</Filter>
     </ClCompile>
@@ -202,7 +210,13 @@
     <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.Synchronize.cpp">
       <Filter>Musa.Core\Thunks</Filter>
     </ClCompile>
-    <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.Synchronize.cpp">
+    <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.Synchronize.CriticalSection.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.Synchronize.ConditionVariable.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.Synchronize.SRWLock.cpp">
       <Filter>Musa.Core\Thunks</Filter>
     </ClCompile>
     <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.Thread.cpp">
