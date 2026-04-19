@@ -1,4 +1,4 @@
-#include "KernelBase.Private.h"
+﻿#include "KernelBase.Private.h"
 
 
 namespace Musa

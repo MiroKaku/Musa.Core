@@ -89,10 +89,6 @@ NTSTATUS MUSA_API MUSA_NAME_PRIVATE(EnvironmentBlockSetup)(
             MusaCoreHeap = RtlDestroyHeap(MusaCoreHeap);
         }
 
-        if (MusaCoreProcessEnvironmentBlock) {
-            (void)MUSA_NAME_PRIVATE(ProcessEnvironmentBlockTeardown)();
-        }
-
         const auto CallbackObject = static_cast<PCALLBACK_OBJECT>(InterlockedExchangePointer(
             reinterpret_cast<PVOID volatile*>(&MusaCoreThreadNotifyCallbackObject), nullptr));
         if (CallbackObject) {
