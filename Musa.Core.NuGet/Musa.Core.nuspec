@@ -18,7 +18,7 @@ Musa.Core - Use ntoskrnl to implement Kernel32, Advapi32 and other APIs (kernel-
     <projectUrl>https://github.com/MiroKaku/Musa.Core</projectUrl>
     <repository type="git" url="https://github.com/MiroKaku/Musa.Core.git" branch="main" commit="$commit$" />
     <dependencies>
-      <dependency id="Musa.CoreLite" version="1.1.0" />
+      <dependency id="Musa.CoreLite" version="1.1.1" />
     </dependencies>
   </metadata>
   <files>
