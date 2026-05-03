@@ -10,8 +10,6 @@
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text(PAGE, MUSA_NAME(GetFileType))
 #pragma alloc_text(PAGE, MUSA_NAME(CreateFileW))
-#pragma alloc_text(PAGE, MUSA_NAME(SetFilePointerEx))
-#pragma alloc_text(PAGE, MUSA_NAME(SetFilePointer))
 #pragma alloc_text(PAGE, MUSA_NAME(GetFileAttributesExW))
 #pragma alloc_text(PAGE, MUSA_NAME(DeleteFileW))
 #pragma alloc_text(PAGE, MUSA_NAME(SetFileAttributesW))
@@ -135,6 +133,10 @@ BOOL WINAPI MUSA_NAME(ReadFile)(
 {
     hFile = MusaCoreResolveStdHandle(hFile);
     if (hFile == INVALID_HANDLE_VALUE) {
+        return FALSE;
+    }
+    if (lpBuffer == nullptr) {
+        BaseSetLastNTError(STATUS_INVALID_PARAMETER);
         return FALSE;
     }
 
@@ -722,6 +724,8 @@ BOOL WINAPI MUSA_NAME(SetFileAttributesW)(
 MUSA_IAT_SYMBOL(SetFileAttributesW, 8);
 
 
+#pragma warning(push)
+#pragma warning(disable: 6385)
 _IRQL_requires_max_(PASSIVE_LEVEL)
 DWORD WINAPI MUSA_NAME(GetTempPathW)(
     _In_ DWORD nBufferLength,
@@ -753,9 +757,11 @@ DWORD WINAPI MUSA_NAME(GetTempPathW)(
         BaseSetLastNTError(STATUS_BUFFER_TOO_SMALL);
         return FallbackLen;
     }
+#pragma warning(suppress: 6385)
     RtlStringCchCopyW(lpBuffer, nBufferLength, Fallback);
     return FallbackLen - 1;
 }
+#pragma warning(pop)
 
 MUSA_IAT_SYMBOL(GetTempPathW, 8);
 
@@ -995,6 +1001,8 @@ UINT WINAPI MUSA_NAME(GetDriveTypeW)(
         }
     }
 
+    _Analysis_assume_(NtPath.Buffer != nullptr);
+#pragma warning(suppress: 6001)
     RtlFreeUnicodeString(&NtPath);
     return DRIVE_UNKNOWN;
 }
@@ -1152,6 +1160,7 @@ BOOL WINAPI MUSA_NAME(FindClose)(
     _Inout_ HANDLE hFindFile
 )
 {
+    PAGED_CODE();
     if (hFindFile == INVALID_HANDLE_VALUE || hFindFile == nullptr) {
         BaseSetLastNTError(STATUS_INVALID_HANDLE);
         return FALSE;

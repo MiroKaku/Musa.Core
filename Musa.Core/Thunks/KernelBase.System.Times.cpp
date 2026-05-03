@@ -3,6 +3,14 @@
 
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text(PAGE, MUSA_NAME(GetSystemTimes))
+#pragma alloc_text(PAGE, MUSA_NAME(GetSystemTime))
+#pragma alloc_text(PAGE, MUSA_NAME(GetLocalTime))
+#pragma alloc_text(PAGE, MUSA_NAME(FileTimeToSystemTime))
+#pragma alloc_text(PAGE, MUSA_NAME(SystemTimeToFileTime))
+#pragma alloc_text(PAGE, MUSA_NAME(FileTimeToLocalFileTime))
+#pragma alloc_text(PAGE, MUSA_NAME(LocalFileTimeToFileTime))
+#pragma alloc_text(PAGE, MUSA_NAME(GetTimeZoneInformation))
+#pragma alloc_text(PAGE, MUSA_NAME(GetDynamicTimeZoneInformation))
 #endif
 
 using namespace Musa;

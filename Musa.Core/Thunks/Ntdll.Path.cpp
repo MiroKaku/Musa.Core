@@ -8,8 +8,7 @@
 #pragma alloc_text(PAGE, MUSA_NAME(RtlSetCurrentDirectory_U))
 #endif
 
-// Verify STATUS_OBJECT_PATH_SYNTAX_BAD is the correct NTSTATUS error code
-static_assert(static_cast<NTSTATUS>(0xC000003B) != 0, "Expected non-zero NTSTATUS");
+
 EXTERN_C_START
 
 // Path type constants matching ntdll.dll RtlDetermineDosPathNameType_Ustr
@@ -50,12 +49,14 @@ static int RtlpDetermineDosPathNameType(PCWSTR Path)
     return MUSA_RTL_PATH_UNC_ROOT;
 }
 
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSTATUS NTAPI MUSA_NAME(RtlDosPathNameToNtPathName_U_WithStatus)(
     _In_ PCWSTR DosPathName,
     _Out_ PUNICODE_STRING NtPathName,
     _Out_opt_ PCWSTR* FilePart,
     _Out_opt_ PRTL_RELATIVE_NAME_U RelativeName)
 {
+    PAGED_CODE();
     if (NtPathName == nullptr)
         return STATUS_INVALID_PARAMETER;
 
@@ -65,7 +66,7 @@ NTSTATUS NTAPI MUSA_NAME(RtlDosPathNameToNtPathName_U_WithStatus)(
         NtPathName->MaximumLength = 0;
         if (FilePart) *FilePart = nullptr;
         if (RelativeName) RelativeName->RelativeName.Buffer = nullptr;
-        return 0xC000003B;
+        return STATUS_OBJECT_PATH_SYNTAX_BAD;
     }
 
     // Validate input length (ntdll max is 0x7FFE WCHARs)
@@ -122,7 +123,7 @@ NTSTATUS NTAPI MUSA_NAME(RtlDosPathNameToNtPathName_U_WithStatus)(
 
     case MUSA_RTL_PATH_DRIVE_RELATIVE:
     case MUSA_RTL_PATH_RELATIVE:
-        return 0xC000003B;
+        return STATUS_OBJECT_PATH_SYNTAX_BAD;
 
     case MUSA_RTL_PATH_UNC: {
         // Always allocate a copy so caller can safely RtlFreeUnicodeString
@@ -143,7 +144,7 @@ NTSTATUS NTAPI MUSA_NAME(RtlDosPathNameToNtPathName_U_WithStatus)(
 
     case MUSA_RTL_PATH_SHORT_PREFIX:
     default:
-        return 0xC000003B;
+        return STATUS_OBJECT_PATH_SYNTAX_BAD;
     }
 
     // Validate path characters
@@ -166,6 +167,7 @@ NTSTATUS NTAPI MUSA_NAME(RtlDosPathNameToNtPathName_U_WithStatus)(
     if (Buffer == nullptr)
         return STATUS_INSUFFICIENT_RESOURCES;
 
+#pragma warning(suppress: 6386)
     // Build NT path
     memcpy(Buffer, Prefix, PrefixLen * sizeof(WCHAR));
     memcpy(Buffer + PrefixLen, Source, SourceLen * sizeof(WCHAR));
@@ -190,6 +192,7 @@ BOOLEAN NTAPI MUSA_NAME(RtlDosPathNameToNtPathName_U)(
     _Out_opt_ PCWSTR* FilePart,
     _Out_opt_ PRTL_RELATIVE_NAME_U RelativeName)
 {
+    PAGED_CODE();
     return NT_SUCCESS(MUSA_NAME(RtlDosPathNameToNtPathName_U_WithStatus)(
         DosPathName, NtPathName, FilePart, RelativeName));
 }

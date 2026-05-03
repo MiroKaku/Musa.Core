@@ -20,11 +20,13 @@ NTSTATUS NTAPI MUSA_NAME(RtlDosPathNameToNtPathName_U_WithStatus)(
 
 
 
+_IRQL_requires_max_(PASSIVE_LEVEL)
 ULONG NTAPI MUSA_NAME(RtlGetCurrentDirectory_U)(
     _In_ ULONG BufferLength,
     _Out_writes_bytes_(BufferLength) PWSTR Buffer
     );
 
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSTATUS NTAPI MUSA_NAME(RtlSetCurrentDirectory_U)(
     _In_ PCUNICODE_STRING PathName
     );

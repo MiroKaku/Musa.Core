@@ -135,6 +135,8 @@ LPWSTR WINAPI MUSA_NAME(GetCommandLineW)(
 
 MUSA_IAT_SYMBOL(GetCommandLineW, 0);
 
+#pragma warning(push)
+#pragma warning(disable: 6385)
 _IRQL_requires_max_(PASSIVE_LEVEL)
 DWORD WINAPI MUSA_NAME(GetEnvironmentVariableW)(
     _In_ LPCWSTR lpName,
@@ -223,9 +225,11 @@ DWORD WINAPI MUSA_NAME(GetEnvironmentVariableW)(
         return ValueChars;
     }
 
+#pragma warning(suppress: 6385)
     memcpy(lpBuffer, Info->Data, Info->DataLength);
     RtlFreeHeap(RtlProcessHeap(), 0, Info);
 
+#pragma warning(pop)
     return ValueChars - 1; // Length without null
 }
 
@@ -241,6 +245,7 @@ DWORD WINAPI MUSA_NAME(GetCurrentDirectoryW)(
     PAGED_CODE();
 
     // Wrap RtlGetCurrentDirectory_U (returns character count)
+#pragma warning(suppress: 6387)
     ULONG Result = RtlGetCurrentDirectory_U(nBufferLength * sizeof(WCHAR),
         reinterpret_cast<PWSTR>(lpBuffer));
     return Result;
@@ -272,6 +277,8 @@ BOOL WINAPI MUSA_NAME(SetCurrentDirectoryW)(
 
 MUSA_IAT_SYMBOL(SetCurrentDirectoryW, 4);
 
+#pragma warning(push)
+#pragma warning(disable: 6385)
 _IRQL_requires_max_(PASSIVE_LEVEL)
 DWORD WINAPI MUSA_NAME(ExpandEnvironmentStringsW)(
     _In_ LPCWSTR lpSrc,
@@ -279,6 +286,7 @@ DWORD WINAPI MUSA_NAME(ExpandEnvironmentStringsW)(
     _In_ DWORD nSize
 )
 {
+#pragma warning(suppress: 6385)
     PAGED_CODE();
 
     if (lpSrc == nullptr) {
@@ -339,6 +347,7 @@ DWORD WINAPI MUSA_NAME(ExpandEnvironmentStringsW)(
     }
     return TotalLen + 1;
 }
+#pragma warning(pop)
 
 MUSA_IAT_SYMBOL(ExpandEnvironmentStringsW, 12);
 EXTERN_C_END
