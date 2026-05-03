@@ -7,111 +7,108 @@
 ![Windows](https://img.shields.io/badge/Windows-10+-orange.svg)
 ![Platform](https://img.shields.io/badge/Windows-X64%7CARM64-%23FFBCD9)
 
-* [简体中文](https://github.com/MiroKaku/Musa.Core/blob/main/README.zh-CN.md)
+* [简体中文](./README.zh-CN.md)
 
-## Introduction
+## Overview
 
 > **Warning**
-> 
-> Musa.Core is in beta testing...
+>
+> Musa.Core is in beta.
 
-Musa.Core is a derivative of the underlying API implementation of [Musa.Runtime](https://github.com/MiroKaku/Musa.Runtime) (formerly [ucxxrt](https://github.com/MiroKaku/ucxxrt)).
+Musa.Core is a derivative of the low-level API implementation from [Musa.Runtime](https://github.com/MiroKaku/Musa.Runtime) (formerly [ucxxrt](https://github.com/MiroKaku/ucxxrt)). It reimplements Kernel32, Advapi32, and other Win32 APIs on top of ntoskrnl in kernel mode.
 
-Use ntoskrnl to implement Kernel32, Advapi32 and other APIs (kernel-mode only).
+## Architecture
 
-## How to use
-
-Right click on the project, select "Manage NuGet Packages".
-Search for `Musa.Core`, choose the version that suits you, and then click "Install".
-
-> NuGet package depends on [Musa.Veil](https://github.com/MiroKaku/Musa.Veil), you can directly include `<Veil.h>`
-
-Or
-
-If your project template uses [Mile.Project.Windows](https://github.com/ProjectMile/Mile.Project.Windows), you can add the following code directly to your `.vcxproj` file:
-
-```XML
-  <ItemGroup>
-    <PackageReference Include="Musa.Core">
-      <!-- Optional: Expected version -->
-      <Version>0.4.1</Version>
-    </PackageReference>
-  </ItemGroup>
+```mermaid
+graph TD
+    A[Kernel Driver] --> B[MusaCoreStartup]
+    B --> C[Musa.Core StaticLibrary]
+    C --> D[Musa.CoreLite]
+    D --> E[Musa.Veil]
+    E --> F[ntoskrnl.exe]
+    C --> G[Kernel32 Thunks]
+    C --> H[Advapi32 Thunks]
+    C --> I[Ntdll Thunks]
+    G --> F
+    H --> F
+    I --> F
 ```
 
-### Header-only mode
+## Quick Start
 
-Add the following code to your `.vcxproj` file:
+### NuGet Install
 
-```XML
-  <PropertyGroup>
-    <MusaCoreOnlyHeader>true</MusaCoreOnlyHeader>
-  </PropertyGroup>
+```xml
+<ItemGroup>
+  <PackageReference Include="Musa.Core">
+    <Version>1.1.1</Version>
+  </PackageReference>
+</ItemGroup>
 ```
 
-This mode will not automatically import lib files.
+The NuGet package depends on [Musa.CoreLite](https://github.com/MiroKaku/Musa.CoreLite). You can directly include `<Veil.h>` to access underlying APIs.
 
-## Feature
+### DriverEntry Example
 
-- [x] All ZwRoutines supported by the current system can be used directly.
-    ```C
-    NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath)
-    {
-        UNREFERENCED_PARAMETER(DriverObject);
-        UNREFERENCED_PARAMETER(RegistryPath);
+```c
+NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath)
+{
+    NTSTATUS Status = MusaCoreStartup(DriverObject, RegistryPath, FALSE);
+    if (!NT_SUCCESS(Status)) return Status;
 
-        NTSTATUS Status;
+    // Kernel32/Advapi32 APIs now available
+    WCHAR Dir[MAX_PATH];
+    DWORD Len = GetCurrentDirectoryW(MAX_PATH, Dir);
 
-        do {
-            DriverObject->DriverUnload = DriverUnload;
+    return Status;
+}
+```
 
-            Status = MusaCoreStartup(DriverObject, RegistryPath);
-            if (!NT_SUCCESS(Status)) {
-                break;
-            }
+### Build Requirements
 
-            LARGE_INTEGER SystemTime{};
-            Status = ZwQuerySystemTime(&SystemTime);
-            if (!NT_SUCCESS(Status)) {
-                break;
-            }
+| Dependency | Minimum Version |
+|---|---|
+| Visual Studio 2022 | 17.10+ |
+| Windows Driver Kit (WDK) | Matching SDK build |
+| Mile.Project.Configurations | 1.0.1917 |
 
-            Status = RtlSystemTimeToLocalTime(&SystemTime, &SystemTime);
-            if (!NT_SUCCESS(Status)) {
-                break;
-            }
+### Building from Source
 
-            TIME_FIELDS Time{};
-            RtlTimeToTimeFields(&SystemTime, &Time);
+```cmd
+.\BuildAllTargets.cmd
+```
 
-            MusaLOG("Loading time is %04d/%02d/%02d %02d:%02d:%02d",
-                Time.Year, Time.Month, Time.Day,
-                Time.Hour, Time.Minute, Time.Second);
+Build artifacts are output to the `Publish/` directory.
 
-        } while (false);
+## Implemented Modules
 
-        if (!NT_SUCCESS(Status)) {
-            DriverUnload(DriverObject);
-        }
+| Module | Status |
+|---|---|
+| Zw Routines | ✅ All available |
+| Rtl Series API | ✅ Partial |
+| KernelBase API | ✅ Partial |
+| Kernel32 Thunks (Phase 1-6) | ✅ Implemented |
+| Advapi32 API | 🚧 In Progress |
 
-        return Status;
-    }
-    ```
+## Key Features
 
-- [x] Support part of RtlXxxx API.
-- [x] Support part of KernelBase API.
-- [ ] Support part of Advapi32 API.
+- **Kernel-mode only** — exclusively supports KernelMode toolset projects; enforced at consumer build time
+- **NuGet integration** — auto-configures header and library paths, injects `/INTEGRITYCHECK` linker flag
+- **Debug logging** — `MusaLOG` macro outputs `DbgPrintEx` in Debug builds, no-op in Release
 
-## Progress
-See [Project](https://github.com/users/MiroKaku/projects/1/views/1)
+## Documentation
 
-## Acknowledgements
+- [System Architecture](./docs/system-architecture.md) — component relationships, data flow, service dependencies
+- [Deployment Guide](./docs/deployment-guide.md) — CI/CD pipeline and NuGet publishing
+- [Configuration Guide](./docs/configuration-guide.md) — complete build configuration reference
+- [Changelog](./docs/changelog.md) — version history
 
-Thanks to [JetBrains](https://www.jetbrains.com/?from=meesong) for providing free licenses such as [Resharper C++](https://www.jetbrains.com/resharper-cpp/?from=meesong) for my open-source projects.
+## License
 
-[<img src="https://resources.jetbrains.com/storage/products/company/brand/logos/ReSharperCPP_icon.png" alt="ReSharper C++ logo." width=200>](https://www.jetbrains.com/?from=meesong)
+[MIT License](./LICENSE)
 
-## Thanks & References
-* Thanks: The scheme to export ZwRoutines is provided by @[xiaobfly](https://github.com/xiaobfly).
-* References: [systeminformer](https://github.com/winsiderss/systeminformer)/phnt
-* References: [Windows_OS_Internals_Curriculum_Resource_Kit-ACADEMIC](https://github.com/MeeSong/Windows_OS_Internals_Curriculum_Resource_Kit-ACADEMIC)
+## References
+
+- [systeminformer](https://github.com/winsiderss/systeminformer)/phnt
+- [Windows_OS_Internals_Curriculum_Resource_Kit-ACADEMIC](https://github.com/MeeSong/Windows_OS_Internals_Curriculum_Resource_Kit-ACADEMIC)
+- Zw routine resolution approach provided by @[xiaobfly](https://github.com/xiaobfly)

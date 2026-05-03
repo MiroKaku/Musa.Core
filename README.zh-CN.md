@@ -12,108 +12,115 @@
 ## 简介
 
 > **Warning**
-> 
-> Musa.Core 在测试阶段中 ...
+>
+> Musa.Core 处于 beta 测试阶段。
 
-Musa.Core 是 [Musa.Runtime](https://github.com/MiroKaku/Musa.Runtime) (原 [ucxxrt](https://github.com/MiroKaku/ucxxrt)) 的底层API实现的衍生物。
+Musa.Core 是 [Musa.Runtime](https://github.com/MiroKaku/Musa.Runtime)（原 [ucxxrt](https://github.com/MiroKaku/ucxxrt)）底层 API 实现的衍生物，使用 ntoskrnl 在内核态重新实现 Kernel32、Advapi32 等 Win32 API。
 
-主要是用 ntoskrnl 实现 Kernel32、Advapi32 等API（内核态）。
+## 架构概览
 
-## 使用方法
-
-右键单击该项目并选择“管理 NuGet 包”，然后搜索`Musa.Core`并选择适合你的版本，最后单击“安装”。
-
-> NuGet 包依赖 [Musa.Veil](https://github.com/MiroKaku/Musa.Veil)，你可以直接包含 `<Veil.h>`
-
-或者
-
-如果你的项目模板用的是 [Mile.Project.Windows](https://github.com/ProjectMile/Mile.Project.Windows)，那么可以直接在你的 `.vcxproj` 文件里面添加下面代码：
-
-```XML
-  <ItemGroup>
-    <PackageReference Include="Musa.Core">
-      <!-- 可选: 期望的版本 -->
-      <Version>0.4.1</Version>
-    </PackageReference>
-  </ItemGroup>
+```mermaid
+graph TD
+    A[内核驱动] --> B[MusaCoreStartup]
+    B --> C[Musa.Core StaticLibrary]
+    C --> D[Musa.CoreLite]
+    D --> E[Musa.Veil]
+    E --> F[ntoskrnl.exe]
+    C --> G[Kernel32 Thunks]
+    C --> H[Advapi32 Thunks]
+    C --> I[Ntdll Thunks]
+    G --> F
+    H --> F
+    I --> F
 ```
+
+## 快速开始
+
+### NuGet 安装
+
+```xml
+<ItemGroup>
+  <PackageReference Include="Musa.Core">
+    <Version>1.1.1</Version>
+  </PackageReference>
+</ItemGroup>
+```
+
+NuGet 包依赖 [Musa.CoreLite](https://github.com/MiroKaku/Musa.CoreLite)，可直接包含 `<Veil.h>` 使用底层 API。
 
 ### 仅头文件模式
 
 在你的 `.vcxproj` 文件里面添加下面代码：
 
-```XML
-  <PropertyGroup>
-    <MusaCoreOnlyHeader>true</MusaCoreOnlyHeader>
-  </PropertyGroup>
+```xml
+<PropertyGroup>
+  <MusaCoreOnlyHeader>true</MusaCoreOnlyHeader>
+</PropertyGroup>
 ```
 
-这个模式不会自动引入lib文件。
+这个模式不会自动引入 lib 文件。
 
-## 特性
+### DriverEntry 示例
 
-- [x] 可以直接使用所有的当前系统支持的 Zw 例程。
-    ```C
-    NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath)
-    {
+```c
+NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath)
+{
+    NTSTATUS Status = MusaCoreStartup(DriverObject, RegistryPath, FALSE);
+    if (!NT_SUCCESS(Status)) return Status;
 
-        UNREFERENCED_PARAMETER(DriverObject);
-        UNREFERENCED_PARAMETER(RegistryPath);
+    // 现在可以使用 Kernel32/Advapi32 API
+    WCHAR Dir[MAX_PATH];
+    DWORD Len = GetCurrentDirectoryW(MAX_PATH, Dir);
 
-        NTSTATUS Status;
+    return Status;
+}
+```
 
-        do {
-            DriverObject->DriverUnload = DriverUnload;
+### 构建要求
 
-            Status = MusaCoreStartup(DriverObject, RegistryPath);
-            if (!NT_SUCCESS(Status)) {
-                break;
-            }
+| 依赖 | 最低版本 |
+|---|---|
+| Visual Studio 2022 | 17.10+ |
+| Windows Driver Kit (WDK) | 匹配 SDK build |
+| Mile.Project.Configurations | 1.0.1917 |
 
-            LARGE_INTEGER SystemTime{};
-            Status = ZwQuerySystemTime(&SystemTime);
-            if (!NT_SUCCESS(Status)) {
-                break;
-            }
+### 从源码构建
 
-            Status = RtlSystemTimeToLocalTime(&SystemTime, &SystemTime);
-            if (!NT_SUCCESS(Status)) {
-                break;
-            }
+```cmd
+.\BuildAllTargets.cmd
+```
 
-            TIME_FIELDS Time{};
-            RtlTimeToTimeFields(&SystemTime, &Time);
+构建产物输出至 `Publish/` 目录。
 
-            MusaLOG("Loading time is %04d/%02d/%02d %02d:%02d:%02d",
-                Time.Year, Time.Month, Time.Day,
-                Time.Hour, Time.Minute, Time.Second);
+## 已实现模块
 
-        } while (false);
+| 模块 | 状态 |
+|---|---|
+| Zw 例程 | ✅ 全部可用 |
+| Rtl 系列 API | ✅ 部分实现 |
+| KernelBase API | ✅ 部分实现 |
+| Kernel32 Thunks (Phase 1-6) | ✅ 已实现 |
+| Advapi32 API | 🚧 进行中 |
 
-        if (!NT_SUCCESS(Status)) {
-            DriverUnload(DriverObject);
-        }
+## 关键特性
 
-        return Status;
-    }
-    ```
+- **内核模式专属** — 仅支持 KernelMode 工具集项目，消费方构建时自动校验
+- **NuGet 集成** — 自动配置头文件和库路径，注入 `/INTEGRITYCHECK` 链接器标志
+- **调试日志** — `MusaLOG` 宏在 Debug 模式输出 `DbgPrintEx`，Release 空操作
 
-- [x] 支持部分 RuntimeLibrary(Rtl) 系列的 APIs
-- [x] 支持部分 KernelBase 模块的 APIs
-- [ ] 支持部分 Advapi32 模块的的 APIs
+## 文档
 
-## 进度
-查看 [Project](https://github.com/users/MiroKaku/projects/1/views/1)
+- [系统架构](./docs/system-architecture.md) — 组件关系、数据流、服务依赖
+- [部署指南](./docs/deployment-guide.md) — CI/CD 流水线与 NuGet 发布
+- [构建配置](./docs/configuration-guide.md) — 完整构建配置参考
+- [变更日志](./docs/changelog.md) — 版本更新历史
 
-## 鸣谢
+## 许可
 
-> [IntelliJ IDEA](https://zh.wikipedia.org/zh-hans/IntelliJ_IDEA) 是一个在各个方面都最大程度地提高开发人员的生产力的 IDE。
+[MIT License](./LICENSE)
 
-特别感谢 [JetBrains](https://www.jetbrains.com/?from=meesong) 为开源项目提供免费的 [Resharper C++](https://www.jetbrains.com/resharper-cpp/?from=meesong) 等 IDE 的授权
+## 参考 & 感谢
 
-[<img src="https://resources.jetbrains.com/storage/products/company/brand/logos/ReSharperCPP_icon.png" alt="ReSharper C++ logo." width=200>](https://www.jetbrains.com/?from=meesong)
-
-## 感谢 & 参考
-* 感谢：Zw 例程获取方案由 @[xiaobfly](https://github.com/xiaobfly) 提供。
-* 参考：[systeminformer](https://github.com/winsiderss/systeminformer)/phnt
-* 参考：[Windows_OS_Internals_Curriculum_Resource_Kit-ACADEMIC](https://github.com/MeeSong/Windows_OS_Internals_Curriculum_Resource_Kit-ACADEMIC)
+- Zw 例程获取方案由 @[xiaobfly](https://github.com/xiaobfly) 提供
+- 参考：[systeminformer](https://github.com/winsiderss/systeminformer)/phnt
+- 参考：[Windows_OS_Internals_Curriculum_Resource_Kit-ACADEMIC](https://github.com/MeeSong/Windows_OS_Internals_Curriculum_Resource_Kit-ACADEMIC)
