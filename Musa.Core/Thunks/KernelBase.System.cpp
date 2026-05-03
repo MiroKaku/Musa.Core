@@ -226,4 +226,100 @@ DWORD WINAPI MUSA_NAME(GetEnvironmentVariableW)(
 
 MUSA_IAT_SYMBOL(GetEnvironmentVariableW, 12);
 
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+DWORD WINAPI MUSA_NAME(GetCurrentDirectoryW)(
+    _In_ DWORD nBufferLength,
+    _Out_writes_to_opt_(nBufferLength, return + 1) LPWSTR lpBuffer
+)
+{
+    PAGED_CODE();
+    // Kernel mode has no current directory concept. Return system root.
+    const wchar_t* SysRoot = L"C:\\Windows";
+    const DWORD Len = static_cast<DWORD>(wcslen(SysRoot)) + 1;
+
+    if (lpBuffer == nullptr || nBufferLength == 0) {
+        return Len;
+    }
+    if (Len > nBufferLength) {
+        BaseSetLastNTError(STATUS_BUFFER_TOO_SMALL);
+        return Len;
+    }
+    RtlStringCchCopyW(lpBuffer, nBufferLength, SysRoot);
+    return Len - 1;
+}
+
+MUSA_IAT_SYMBOL(GetCurrentDirectoryW, 8);
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(SetCurrentDirectoryW)(
+    _In_ LPCWSTR lpPathName
+)
+{
+    PAGED_CODE();
+    UNREFERENCED_PARAMETER(lpPathName);
+    // Kernel mode: no per-process CWD. Always succeeds for compatibility.
+    return TRUE;
+}
+
+MUSA_IAT_SYMBOL(SetCurrentDirectoryW, 4);
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+DWORD WINAPI MUSA_NAME(ExpandEnvironmentStringsW)(
+    _In_ LPCWSTR lpSrc,
+    _Out_writes_to_opt_(nSize, return + 1) LPWSTR lpDst,
+    _In_ DWORD nSize
+)
+{
+    PAGED_CODE();
+
+    if (lpSrc == nullptr) {
+        BaseSetLastNTError(STATUS_INVALID_PARAMETER);
+        return 0;
+    }
+
+    DWORD TotalLen = 0;
+    PWSTR Dst = lpDst;
+    DWORD Remaining = nSize;
+
+    for (PCWSTR p = lpSrc; *p; ) {
+        if (p[0] == L'%') {
+            // Find closing %
+            PCWSTR end = wcschr(p + 1, L'%');
+            if (end == nullptr) { end = p + wcslen(p); }
+            // Extract variable name
+            WCHAR NameBuf[128];
+            size_t NameLen = static_cast<size_t>(end - p - 1);
+            if (NameLen >= _countof(NameBuf)) NameLen = _countof(NameBuf) - 1;
+            wcsncpy_s(NameBuf, p + 1, NameLen);
+            NameBuf[NameLen] = L'\0';
+
+            DWORD ValLen = GetEnvironmentVariableW(NameBuf, nullptr, 0);
+            if (ValLen > 0) {
+                if (Remaining > ValLen) {
+                    GetEnvironmentVariableW(NameBuf, Dst, Remaining);
+                    Dst += ValLen - 1;
+                    Remaining -= ValLen - 1;
+                } else {
+                    Dst += ValLen - 1;
+                    Remaining = 0;
+                }
+                TotalLen += ValLen - 1;
+            }
+            p = (*end == L'%') ? end + 1 : end;
+        } else {
+            if (Remaining > 0) {
+                if (Dst) *Dst++ = *p;
+                --Remaining;
+            }
+            ++TotalLen;
+            ++p;
+        }
+    }
+
+    if (Dst && nSize > 0) *Dst = L'\0';
+    return TotalLen + 1;
+}
+
+MUSA_IAT_SYMBOL(ExpandEnvironmentStringsW, 12);
 EXTERN_C_END
