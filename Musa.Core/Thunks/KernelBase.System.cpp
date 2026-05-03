@@ -151,86 +151,76 @@ DWORD WINAPI MUSA_NAME(GetEnvironmentVariableW)(
         return 0;
     }
 
-    // Open system environment registry key
-    UNICODE_STRING KeyPath = RTL_CONSTANT_STRING(
-        L"\\Registry\\Machine\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment");
-
-    OBJECT_ATTRIBUTES ObjAttrs;
-    InitializeObjectAttributes(&ObjAttrs, &KeyPath, OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE, nullptr, nullptr);
-
-    HANDLE KeyHandle = nullptr;
-    NTSTATUS Status = ZwOpenKey(&KeyHandle, KEY_READ, &ObjAttrs);
-    if (!NT_SUCCESS(Status)) {
-        BaseSetLastNTError(Status);
-        return 0;
-    }
+    // Try system environment key first
+    static UNICODE_STRING EnvKeyPath =
+        RTL_CONSTANT_STRING(L"\\Registry\\Machine\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment");
+    static UNICODE_STRING NtKeyPath =
+        RTL_CONSTANT_STRING(L"\\Registry\\Machine\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion");
 
     UNICODE_STRING ValueName;
     RtlInitUnicodeString(&ValueName, lpName);
 
-    ULONG ResultLength = 0;
-    Status = ZwQueryValueKey(KeyHandle, &ValueName, KeyValuePartialInformation,
-        nullptr, 0, &ResultLength);
+    PUNICODE_STRING KeyPaths[] = { &EnvKeyPath, &NtKeyPath };
+    for (size_t i = 0; i < _countof(KeyPaths); ++i) {
+        PUNICODE_STRING KeyPath = KeyPaths[i];
+        OBJECT_ATTRIBUTES ObjAttrs;
+        InitializeObjectAttributes(&ObjAttrs, KeyPath, OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE, nullptr, nullptr);
 
-    if (Status == STATUS_OBJECT_NAME_NOT_FOUND) {
+        HANDLE KeyHandle = nullptr;
+        NTSTATUS Status = ZwOpenKey(&KeyHandle, KEY_READ, &ObjAttrs);
+        if (!NT_SUCCESS(Status)) continue;
+
+        ULONG ResultLength = 0;
+        Status = ZwQueryValueKey(KeyHandle, &ValueName, KeyValuePartialInformation, nullptr, 0, &ResultLength);
+        if (Status == STATUS_OBJECT_NAME_NOT_FOUND) {
+            ZwClose(KeyHandle);
+            continue;
+        }
+        if (Status != STATUS_BUFFER_OVERFLOW && Status != STATUS_BUFFER_TOO_SMALL) {
+            ZwClose(KeyHandle);
+            continue;
+        }
+
+        ULONG BufSize = ResultLength + sizeof(KEY_VALUE_PARTIAL_INFORMATION);
+        auto Info = static_cast<PKEY_VALUE_PARTIAL_INFORMATION>(
+            RtlAllocateHeap(RtlProcessHeap(), 0, BufSize));
+        if (Info == nullptr) {
+            ZwClose(KeyHandle);
+            continue;
+        }
+
+        Status = ZwQueryValueKey(KeyHandle, &ValueName, KeyValuePartialInformation, Info, BufSize, &ResultLength);
         ZwClose(KeyHandle);
-        BaseSetLastNTError(STATUS_OBJECT_NAME_NOT_FOUND);
-        return 0;
-    }
+        if (!NT_SUCCESS(Status)) {
+            RtlFreeHeap(RtlProcessHeap(), 0, Info);
+            continue;
+        }
 
-    if (Status != STATUS_BUFFER_OVERFLOW && Status != STATUS_BUFFER_TOO_SMALL) {
-        ZwClose(KeyHandle);
-        BaseSetLastNTError(Status);
-        return 0;
-    }
+        if (Info->Type != REG_SZ && Info->Type != REG_EXPAND_SZ) {
+            RtlFreeHeap(RtlProcessHeap(), 0, Info);
+            continue;
+        }
 
-    ULONG BufSize = ResultLength + sizeof(KEY_VALUE_PARTIAL_INFORMATION);
-    auto Info = static_cast<PKEY_VALUE_PARTIAL_INFORMATION>(
-        RtlAllocateHeap(RtlProcessHeap(), 0, BufSize));
-    if (Info == nullptr) {
-        ZwClose(KeyHandle);
-        BaseSetLastNTError(STATUS_INSUFFICIENT_RESOURCES);
-        return 0;
-    }
-
-    Status = ZwQueryValueKey(KeyHandle, &ValueName, KeyValuePartialInformation,
-        Info, BufSize, &ResultLength);
-    ZwClose(KeyHandle);
-
-    if (!NT_SUCCESS(Status)) {
-        RtlFreeHeap(RtlProcessHeap(), 0, Info);
-        BaseSetLastNTError(Status);
-        return 0;
-    }
-
-    if (Info->Type != REG_SZ && Info->Type != REG_EXPAND_SZ) {
-        RtlFreeHeap(RtlProcessHeap(), 0, Info);
-        BaseSetLastNTError(STATUS_OBJECT_TYPE_MISMATCH);
-        return 0;
-    }
-
-    // DataLength includes null terminator
-    DWORD ValueChars = Info->DataLength / sizeof(WCHAR);
-
-    // Return required size (including null)
-    if (lpBuffer == nullptr || nSize == 0) {
-        DWORD RequiredSize = ValueChars;
-        RtlFreeHeap(RtlProcessHeap(), 0, Info);
-        return RequiredSize;
-    }
-
-    if (ValueChars > nSize) {
-        RtlFreeHeap(RtlProcessHeap(), 0, Info);
-        BaseSetLastNTError(STATUS_BUFFER_TOO_SMALL);
-        return ValueChars;
-    }
+        DWORD ValueChars = Info->DataLength / sizeof(WCHAR);
+        if (lpBuffer == nullptr || nSize == 0) {
+            RtlFreeHeap(RtlProcessHeap(), 0, Info);
+            return ValueChars;
+        }
+        if (ValueChars > nSize) {
+            RtlFreeHeap(RtlProcessHeap(), 0, Info);
+            BaseSetLastNTError(STATUS_BUFFER_TOO_SMALL);
+            return ValueChars;
+        }
 
 #pragma warning(suppress: 6385)
-    memcpy(lpBuffer, Info->Data, Info->DataLength);
-    RtlFreeHeap(RtlProcessHeap(), 0, Info);
+        memcpy(lpBuffer, Info->Data, Info->DataLength);
+        RtlFreeHeap(RtlProcessHeap(), 0, Info);
+        return ValueChars - 1;
+    }
 
-#pragma warning(pop)
-    return ValueChars - 1; // Length without null
+    BaseSetLastNTError(STATUS_OBJECT_NAME_NOT_FOUND);
+    return 0;
+
 }
 
 MUSA_IAT_SYMBOL(GetEnvironmentVariableW, 12);
