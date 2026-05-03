@@ -1,4 +1,4 @@
-// unnecessary, fix ReSharper's code analysis.
+﻿// unnecessary, fix ReSharper's code analysis.
 #pragma warning(suppress: 4117)
 #define _KERNEL_MODE 1
 
@@ -473,6 +473,337 @@ namespace Main
                 "RealTime_QueryPerformanceCounter_Succeeds");
         }
 
+
+        // --- Time ---
+
+        {
+            SYSTEMTIME St{};
+            GetSystemTime(&St);
+            KTEST_EXPECT(St.wYear >= 2026,
+                "Time_GetSystemTime_ReturnsPlausibleYear");
+            KTEST_EXPECT(St.wMonth >= 1 && St.wMonth <= 12,
+                "Time_GetSystemTime_MonthInRange");
+        }
+
+        {
+            SYSTEMTIME St{};
+            GetLocalTime(&St);
+            KTEST_EXPECT(St.wYear >= 2026,
+                "Time_GetLocalTime_ReturnsPlausibleYear");
+        }
+
+        {
+            SYSTEMTIME St{};
+            GetSystemTime(&St);
+
+            FILETIME Ft{};
+            KTEST_EXPECT(SystemTimeToFileTime(&St, &Ft),
+                "Time_SystemTimeToFileTime_Succeeds");
+
+            SYSTEMTIME St2{};
+            KTEST_EXPECT(FileTimeToSystemTime(&Ft, &St2),
+                "Time_FileTimeToSystemTime_Succeeds");
+
+            KTEST_EXPECT(St2.wYear == St.wYear && St2.wMonth == St.wMonth && St2.wDay == St.wDay,
+                "Time_FileTimeToSystemTime_RoundTrip");
+        }
+
+        {
+            SYSTEMTIME St{};
+            GetSystemTime(&St);
+
+            FILETIME Ft{};
+            SystemTimeToFileTime(&St, &Ft);
+
+            FILETIME LocalFt{};
+            KTEST_EXPECT(FileTimeToLocalFileTime(&Ft, &LocalFt),
+                "Time_FileTimeToLocalFileTime_Succeeds");
+
+            FILETIME UtcFt{};
+            KTEST_EXPECT(LocalFileTimeToFileTime(&LocalFt, &UtcFt),
+                "Time_LocalFileTimeToFileTime_Succeeds");
+
+            KTEST_EXPECT(UtcFt.dwLowDateTime == Ft.dwLowDateTime && UtcFt.dwHighDateTime == Ft.dwHighDateTime,
+                "Time_LocalFileTimeToFileTime_RoundTrip");
+        }
+
+
+        // --- Path ---
+
+        {
+            DWORD TempLen = GetTempPathW(0, nullptr);
+            KTEST_EXPECT(TempLen > 0,
+                "Path_GetTempPathW_ReturnsLength");
+
+            WCHAR TempBuf[260] = {};
+            TempLen = GetTempPathW(_countof(TempBuf), TempBuf);
+            KTEST_EXPECT(TempLen > 0 && TempLen < _countof(TempBuf),
+                "Path_GetTempPathW_ReturnsPath");
+        }
+
+        {
+            // RtlDosPathNameToNtPathName_U
+            UNICODE_STRING NtPath{};
+            BOOLEAN Result = RtlDosPathNameToNtPathName_U(
+                L"C:\\Windows\\System32\\ntoskrnl.exe",
+                &NtPath, nullptr, nullptr);
+            KTEST_EXPECT(Result,
+                "Path_RtlDosPathNameToNtPathName_U_DrivePath");
+            KTEST_EXPECT(NtPath.Length > 0,
+                "Path_RtlDosPathNameToNtPathName_U_NonEmpty");
+            RtlFreeUnicodeString(&NtPath);
+
+            // UNC path
+            NtPath.Buffer = nullptr;
+            Result = RtlDosPathNameToNtPathName_U(
+                L"\\\\localhost\\share\\file.txt",
+                &NtPath, nullptr, nullptr);
+            KTEST_EXPECT(Result,
+                "Path_RtlDosPathNameToNtPathName_U_UncPath");
+            RtlFreeUnicodeString(&NtPath);
+
+            // Already NT path (pass-through, no allocation)
+            NtPath.Buffer = nullptr;
+            Result = RtlDosPathNameToNtPathName_U(
+                L"\\Device\\HarddiskVolume3\\Windows",
+                &NtPath, nullptr, nullptr);
+            KTEST_EXPECT(Result,
+                "Path_RtlDosPathNameToNtPathName_U_NtPath");
+            RtlFreeUnicodeString(&NtPath);
+
+            // Extended-length path
+            NtPath.Buffer = nullptr;
+            Result = RtlDosPathNameToNtPathName_U(
+                L"\\\\?\\C:\\Windows\\System32\\ntoskrnl.exe",
+                &NtPath, nullptr, nullptr);
+            KTEST_EXPECT(Result,
+                "Path_RtlDosPathNameToNtPathName_U_ExtendedPath");
+            RtlFreeUnicodeString(&NtPath);
+
+            // Invalid path
+            NtPath.Buffer = nullptr;
+            Result = RtlDosPathNameToNtPathName_U(
+                L"no_backslash_here",
+                &NtPath, nullptr, nullptr);
+            KTEST_EXPECT(!Result,
+                "Path_RtlDosPathNameToNtPathName_U_RelativeFails");
+        }
+
+        // --- File I/O ---
+
+        {
+            // Create a test file
+            HANDLE hFile = CreateFileW(
+                L"C:\\Windows\\Temp\\MusaCore_testfile.tmp",
+                GENERIC_READ | GENERIC_WRITE,
+                FILE_SHARE_READ | FILE_SHARE_DELETE,
+                nullptr,
+                CREATE_ALWAYS,
+                FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE,
+                nullptr);
+            KTEST_EXPECT(hFile != INVALID_HANDLE_VALUE,
+                "FileIO_CreateFileW_CreatesFile");
+
+
+            // Test hTemplateFile
+            HANDLE hFromTemplate = CreateFileW(
+                L"C:\\Windows\\Temp\\MusaCore_from_template.tmp",
+                GENERIC_READ,
+                FILE_SHARE_DELETE,
+                nullptr,
+                CREATE_ALWAYS,
+                FILE_ATTRIBUTE_TEMPORARY | FILE_ATTRIBUTE_NORMAL | FILE_FLAG_DELETE_ON_CLOSE,
+                hFile);
+            KTEST_EXPECT(hFromTemplate != INVALID_HANDLE_VALUE,
+                "FileIO_CreateFileW_WithTemplateFile_Succeeds");
+            if (hFromTemplate != INVALID_HANDLE_VALUE) {
+                CloseHandle(hFromTemplate);
+            }
+            if (hFile != INVALID_HANDLE_VALUE) {
+                // Get file type
+                DWORD FileType = GetFileType(hFile);
+                KTEST_EXPECT(FileType == FILE_TYPE_DISK,
+                    "FileIO_GetFileType_ReturnsDisk");
+
+                // Write data
+                const char TestData[] = "Hello Musa.Core!";
+                DWORD BytesWritten = 0;
+                KTEST_EXPECT(WriteFile(hFile, TestData, sizeof(TestData) - 1, &BytesWritten, nullptr),
+                    "FileIO_WriteFile_Succeeds");
+                KTEST_EXPECT(BytesWritten == sizeof(TestData) - 1,
+                    "FileIO_WriteFile_ByteCountMatches");
+
+                // Set file pointer to beginning
+                LARGE_INTEGER Dist{};
+                Dist.QuadPart = 0;
+                LARGE_INTEGER NewPos{};
+                KTEST_EXPECT(SetFilePointerEx(hFile, Dist, &NewPos, FILE_BEGIN),
+                    "FileIO_SetFilePointerEx_Begin_Succeeds");
+
+                // Read data back
+                char ReadBuf[64] = {};
+                DWORD BytesRead = 0;
+                KTEST_EXPECT(ReadFile(hFile, ReadBuf, sizeof(ReadBuf), &BytesRead, nullptr),
+                    "FileIO_ReadFile_Succeeds");
+                KTEST_EXPECT(BytesRead == sizeof(TestData) - 1,
+                    "FileIO_ReadFile_ByteCountMatches");
+                KTEST_EXPECT(memcmp(ReadBuf, TestData, sizeof(TestData) - 1) == 0,
+                    "FileIO_ReadFile_DataMatches");
+
+                // Set file pointer to end
+                Dist.QuadPart = 0;
+                KTEST_EXPECT(SetFilePointerEx(hFile, Dist, &NewPos, FILE_END),
+                    "FileIO_SetFilePointerEx_End_Succeeds");
+                KTEST_EXPECT(NewPos.QuadPart == static_cast<LONGLONG>(sizeof(TestData) - 1),
+                    "FileIO_SetFilePointerEx_End_CorrectPosition");
+
+                // Flush buffers
+                KTEST_EXPECT(FlushFileBuffers(hFile),
+                    "FileIO_FlushFileBuffers_Succeeds");
+
+                CloseHandle(hFile);
+            }
+        }
+
+        {
+            // Get file attributes of an existing file
+            WIN32_FILE_ATTRIBUTE_DATA AttrData{};
+            BOOL Result = GetFileAttributesExW(
+                L"C:\\Windows\\System32\\ntoskrnl.exe",
+                GetFileExInfoStandard,
+                &AttrData);
+            KTEST_EXPECT(Result,
+                "FileIO_GetFileAttributesExW_Succeeds");
+            if (Result) {
+                KTEST_EXPECT((AttrData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0,
+                    "FileIO_GetFileAttributesExW_NotDirectory");
+            }
+        }
+
+        {
+            // SetFilePointer legacy API
+            HANDLE hFile = CreateFileW(
+                L"C:\\Windows\\Temp\\MusaCore_testfile2.tmp",
+                GENERIC_READ | GENERIC_WRITE,
+                FILE_SHARE_READ | FILE_SHARE_DELETE,
+                nullptr,
+                CREATE_ALWAYS,
+                FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE,
+                nullptr);
+            if (hFile != INVALID_HANDLE_VALUE) {
+                const char Data[32] = {};
+                WriteFile(hFile, Data, sizeof(Data), nullptr, nullptr);
+
+                DWORD Result = SetFilePointer(hFile, 8, nullptr, FILE_BEGIN);
+                KTEST_EXPECT(Result != INVALID_SET_FILE_POINTER,
+                    "FileIO_SetFilePointer_Succeeds");
+                KTEST_EXPECT(Result == 8,
+                    "FileIO_SetFilePointer_CorrectPosition");
+
+                CloseHandle(hFile);
+            }
+        }
+
+        {
+            // SetFileAttributesW
+            SetFileAttributesW(L"C:\\Windows\\Temp\\MusaCore_attr_test.tmp", 0);
+        }
+
+        {
+            // DeleteFileW
+            HANDLE hFile = CreateFileW(
+                L"C:\\Windows\\Temp\\MusaCore_delme.tmp",
+                GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS,
+                FILE_ATTRIBUTE_TEMPORARY, nullptr);
+            if (hFile != INVALID_HANDLE_VALUE) {
+                CloseHandle(hFile);
+                KTEST_EXPECT(DeleteFileW(L"\\??\\C:\\Windows\\Temp\\MusaCore_delme.tmp"),
+                    "FileIO_DeleteFileW_Succeeds");
+            }
+        }
+
+
+        // --- Directory & Find ---
+
+        {
+            KTEST_EXPECT(CreateDirectoryW(L"C:\\Windows\\Temp\\MusaCore_dir_test", nullptr),
+                "DirIO_CreateDirectoryW_Succeeds");
+            KTEST_EXPECT(RemoveDirectoryW(L"C:\\Windows\\Temp\\MusaCore_dir_test"),
+                "DirIO_RemoveDirectoryW_Succeeds");
+        }
+
+        {
+            HANDLE hFile = CreateFileW(
+                L"C:\\Windows\\Temp\\MusaCore_rename_src.tmp",
+                GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS,
+                FILE_ATTRIBUTE_TEMPORARY, nullptr);
+            if (hFile != INVALID_HANDLE_VALUE) {
+                CloseHandle(hFile);
+                KTEST_EXPECT(MoveFileExW(
+                    L"C:\\Windows\\Temp\\MusaCore_rename_src.tmp",
+                    L"C:\\Windows\\Temp\\MusaCore_rename_dst.tmp",
+                    MOVEFILE_REPLACE_EXISTING),
+                    "DirIO_MoveFileExW_Succeeds");
+                DeleteFileW(L"C:\\Windows\\Temp\\MusaCore_rename_dst.tmp");
+            }
+        }
+
+        {
+            UINT DriveType = GetDriveTypeW(L"C:\\");
+            KTEST_EXPECT(DriveType == DRIVE_FIXED || DriveType == DRIVE_REMOTE,
+                "DirIO_GetDriveTypeW_ReturnsValidType");
+        }
+
+        {
+            WIN32_FIND_DATAW FindData{};
+            HANDLE hFind = FindFirstFileExW(
+                L"C:\\Windows\\System32",
+                FindExInfoStandard, &FindData,
+                FindExSearchNameMatch, nullptr, 0);
+            if (hFind != INVALID_HANDLE_VALUE) {
+                KTEST_EXPECT(FindData.cFileName[0] != L'\0',
+                    "DirIO_FindFirstFileExW_ReturnsFileName");
+
+                int FoundCount = 1;
+                while (FindNextFileW(hFind, &FindData)) {
+                    ++FoundCount;
+                    if (FoundCount >= 50) break;
+                }
+                KTEST_EXPECT(FoundCount >= 1,
+                    "DirIO_FindNextFileW_FindsMultiple");
+
+                KTEST_EXPECT(FindClose(hFind),
+                    "DirIO_FindClose_Succeeds");
+            }
+        }
+
+        {
+            // FindClose on invalid handle
+            KTEST_EXPECT(!FindClose(nullptr),
+                "DirIO_FindClose_NullFails");
+            KTEST_EXPECT(!FindClose(INVALID_HANDLE_VALUE),
+                "DirIO_FindClose_InvalidFails");
+        }
+        // --- CommandLine & Environment ---
+
+        {
+            LPWSTR CmdLine = GetCommandLineW();
+            KTEST_EXPECT(CmdLine != nullptr,
+                "Sys_GetCommandLineW_ReturnsNonNull");
+        }
+
+        {
+            // SystemRoot may be unavailable at DriverEntry time
+            DWORD Len = GetEnvironmentVariableW(L"SystemRoot", nullptr, 0); (void)Len;
+            KTEST_EXPECT(true,
+                "Sys_GetEnvironmentVariableW_SystemRoot_NoCrash");
+        }
+
+        {
+            DWORD MissingLen = GetEnvironmentVariableW(L"MusaCore_NoSuchVar_XYZ", nullptr, 0);
+            KTEST_EXPECT(MissingLen == 0,
+                "Sys_GetEnvironmentVariableW_NonExistent_ReturnsZero");
+        }
         // --- Handle ---
 
         {

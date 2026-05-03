@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 EXTERN_C_START
 
@@ -36,4 +36,11 @@ FARPROC WINAPI MUSA_NAME(GetProcAddress)(
     _In_ LPCSTR  ProcedureName
     );
 
+
+_IRQL_requires_max_(APC_LEVEL)
+HMODULE WINAPI MUSA_NAME(LoadLibraryExA)(
+    _In_ LPCSTR lpLibFileName,
+    _Reserved_ HANDLE hFile,
+    _In_ DWORD dwFlags
+    );
 EXTERN_C_END

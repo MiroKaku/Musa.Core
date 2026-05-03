@@ -47,6 +47,9 @@
     <ClInclude Include="$(SourcesDirectory)Thunks\Internal\KernelBase.Handle.h">
       <Filter>Musa.Core\Thunks\Internal</Filter>
     </ClInclude>
+    <ClInclude Include="$(SourcesDirectory)Thunks\Internal\KernelBase.File.h">
+      <Filter>Musa.Core\Thunks\Internal</Filter>
+    </ClInclude>
     <ClInclude Include="$(SourcesDirectory)Thunks\Internal\KernelBase.LibraryLoader.h">
       <Filter>Musa.Core\Thunks\Internal</Filter>
     </ClInclude>
@@ -81,6 +84,9 @@
       <Filter>Musa.Core\Thunks\Internal</Filter>
     </ClInclude>
     <ClInclude Include="$(SourcesDirectory)Thunks\Internal\Ntdll.Thread.h">
+      <Filter>Musa.Core\Thunks\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SourcesDirectory)Thunks\Internal\Ntdll.Path.h">
       <Filter>Musa.Core\Thunks\Internal</Filter>
     </ClInclude>
     <ClInclude Include="$(SourcesDirectory)Thunks\Internal\KernelBase.Utility.h">
@@ -214,6 +220,9 @@
     <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.Synchronize.ConditionVariable.cpp">
       <Filter>Musa.Core\Thunks</Filter>
     </ClCompile>
+    <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.Path.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
     <ClCompile Include="$(SourcesDirectory)Thunks\Ntdll.Synchronize.SRWLock.cpp">
       <Filter>Musa.Core\Thunks</Filter>
     </ClCompile>
@@ -233,6 +242,9 @@
       <Filter>Musa.Core\Thunks</Filter>
     </ClCompile>
     <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.FileVersion.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.File.cpp">
       <Filter>Musa.Core\Thunks</Filter>
     </ClCompile>
     <ClCompile Include="$(SourcesDirectory)Musa.Utilities.Overlay.cpp">

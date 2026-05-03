@@ -246,4 +246,21 @@ FARPROC WINAPI MUSA_NAME(GetProcAddress)(
 
 MUSA_IAT_SYMBOL(GetProcAddress, 8);
 
+
+_IRQL_requires_max_(APC_LEVEL)
+HMODULE WINAPI MUSA_NAME(LoadLibraryExA)(
+    _In_ LPCSTR lpLibFileName,
+    _Reserved_ HANDLE hFile,
+    _In_ DWORD dwFlags
+)
+{
+    UNREFERENCED_PARAMETER(lpLibFileName);
+    UNREFERENCED_PARAMETER(hFile);
+    UNREFERENCED_PARAMETER(dwFlags);
+
+    BaseSetLastNTError(STATUS_NOT_SUPPORTED);
+    return nullptr;
+}
+
+MUSA_IAT_SYMBOL(LoadLibraryExA, 12);
 EXTERN_C_END
