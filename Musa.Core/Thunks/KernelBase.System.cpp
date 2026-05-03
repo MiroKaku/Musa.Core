@@ -324,12 +324,12 @@ DWORD WINAPI MUSA_NAME(ExpandEnvironmentStringsW)(
             if (ValLen > 0) {
                 if (ValLen <= Remaining && Dst) {
                     GetEnvironmentVariableW(NameBuf, Dst, Remaining);
-                    Dst += ValLen - 1;
-                    Remaining -= ValLen - 1;
+                    Dst += ValLen;
+                    Remaining -= ValLen;
                 } else if (Dst) {
                     Remaining = 0;
                 }
-                TotalLen += ValLen - 1;
+                TotalLen += ValLen;
             }
             p = end + 1;
         } else {

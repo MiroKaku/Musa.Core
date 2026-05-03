@@ -847,7 +847,7 @@ namespace Main
                 Len = ExpandEnvironmentStringsW(L"%SystemRoot%\\System32\\ntoskrnl.exe", ExpBuf, Len);
                 KTEST_EXPECT(Len > 0,
                     "Sys_ExpandEnvironmentStringsW_Expands");
-                KTEST_EXPECT(Len >= wcslen(L"C:\\Windows\\System32\\ntoskrnl.exe"),
+                KTEST_EXPECT(Len >= static_cast<DWORD>(wcslen(L"C:\\Windows\\System32\\ntoskrnl.exe")),
                     "Sys_ExpandEnvironmentStringsW_ExpandedLength");
             }
 
