@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 namespace Musa::Core
 {
@@ -31,6 +31,8 @@ namespace Musa::Core
         HANDLE          DefaultStandardOutput;
         HANDLE          DefaultStandardError;
 
+
+        WCHAR           CurrentDirectory[MAX_PATH];
         PVOID           WaitOnAddressHashTable[128];
 
         // Heaps[1] ...

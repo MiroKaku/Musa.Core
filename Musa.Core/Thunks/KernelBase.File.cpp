@@ -15,7 +15,13 @@
 #pragma alloc_text(PAGE, MUSA_NAME(GetFileAttributesExW))
 #pragma alloc_text(PAGE, MUSA_NAME(DeleteFileW))
 #pragma alloc_text(PAGE, MUSA_NAME(SetFileAttributesW))
-#pragma alloc_text(PAGE, MUSA_NAME(FlushFileBuffers))
+#pragma alloc_text(PAGE, MUSA_NAME(GetTempPathW))
+#pragma alloc_text(PAGE, MUSA_NAME(CreateDirectoryW))
+#pragma alloc_text(PAGE, MUSA_NAME(RemoveDirectoryW))
+#pragma alloc_text(PAGE, MUSA_NAME(MoveFileExW))
+#pragma alloc_text(PAGE, MUSA_NAME(GetDriveTypeW))
+#pragma alloc_text(PAGE, MUSA_NAME(FindFirstFileExW))
+#pragma alloc_text(PAGE, MUSA_NAME(FindClose))
 #endif
 
 EXTERN_C_START

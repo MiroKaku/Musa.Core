@@ -1,11 +1,12 @@
+#include "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h"
 #include "Internal/Ntdll.Path.h"
 #include "Internal/Ntdll.Heap.h"
-
 #ifdef ALLOC_PRAGMA
+#pragma alloc_text(PAGE, MUSA_NAME(RtlDosPathNameToNtPathName_U_WithStatus))
 #pragma alloc_text(PAGE, MUSA_NAME(RtlDosPathNameToNtPathName_U))
-
+#pragma alloc_text(PAGE, MUSA_NAME(RtlGetCurrentDirectory_U))
+#pragma alloc_text(PAGE, MUSA_NAME(RtlSetCurrentDirectory_U))
 #endif
-
 
 // Verify STATUS_OBJECT_PATH_SYNTAX_BAD is the correct NTSTATUS error code
 static_assert(static_cast<NTSTATUS>(0xC000003B) != 0, "Expected non-zero NTSTATUS");
@@ -193,5 +194,50 @@ BOOLEAN NTAPI MUSA_NAME(RtlDosPathNameToNtPathName_U)(
         DosPathName, NtPathName, FilePart, RelativeName));
 }
 
+_IRQL_requires_max_(PASSIVE_LEVEL)
+ULONG NTAPI MUSA_NAME(RtlGetCurrentDirectory_U)(
+    _In_ ULONG BufferLength,
+    _Out_writes_bytes_(BufferLength) PWSTR Buffer
+)
+{
+    PAGED_CODE();
+
+    if (BufferLength == 0 || Buffer == nullptr) {
+        const auto Peb = static_cast<Musa::Core::KPEB*>(MUSA_NAME_PRIVATE(RtlGetCurrentPeb)());
+        if (Peb == nullptr) return 0;
+        return static_cast<ULONG>(wcslen(Peb->CurrentDirectory)) + 1;
+    }
+
+    const auto Peb = static_cast<Musa::Core::KPEB*>(MUSA_NAME_PRIVATE(RtlGetCurrentPeb)());
+    if (Peb == nullptr) return 0;
+
+    RtlStringCchCopyW(Buffer, BufferLength / sizeof(WCHAR), Peb->CurrentDirectory);
+    return static_cast<ULONG>(wcslen(Peb->CurrentDirectory));
+}
+
+MUSA_IAT_SYMBOL(RtlGetCurrentDirectory_U, 8);
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+NTSTATUS NTAPI MUSA_NAME(RtlSetCurrentDirectory_U)(
+    _In_ PCUNICODE_STRING PathName
+)
+{
+    PAGED_CODE();
+
+    if (PathName == nullptr || PathName->Buffer == nullptr || PathName->Length == 0) {
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    const auto Peb = static_cast<Musa::Core::KPEB*>(MUSA_NAME_PRIVATE(RtlGetCurrentPeb)());
+    if (Peb == nullptr) {
+        return STATUS_UNSUCCESSFUL;
+    }
+
+    const USHORT CopyLen = min(PathName->Length, (MAX_PATH - 1) * sizeof(WCHAR));
+    RtlStringCchCopyNW(Peb->CurrentDirectory, MAX_PATH, PathName->Buffer, CopyLen / sizeof(WCHAR));
+    return STATUS_SUCCESS;
+}
+
+MUSA_IAT_SYMBOL(RtlSetCurrentDirectory_U, 4);
+
 EXTERN_C_END
-MUSA_IAT_SYMBOL(RtlDosPathNameToNtPathName_U, 16);

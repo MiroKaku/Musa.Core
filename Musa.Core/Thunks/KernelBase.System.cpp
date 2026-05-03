@@ -6,6 +6,11 @@
 #pragma alloc_text(PAGE, MUSA_NAME(GetNativeSystemInfo))
 #pragma alloc_text(PAGE, MUSA_NAME(GetSystemInfo))
 #pragma alloc_text(PAGE, MUSA_NAME(VerifyVersionInfoW))
+#pragma alloc_text(PAGE, MUSA_NAME(GetCommandLineW))
+#pragma alloc_text(PAGE, MUSA_NAME(GetEnvironmentVariableW))
+#pragma alloc_text(PAGE, MUSA_NAME(GetCurrentDirectoryW))
+#pragma alloc_text(PAGE, MUSA_NAME(SetCurrentDirectoryW))
+#pragma alloc_text(PAGE, MUSA_NAME(ExpandEnvironmentStringsW))
 #endif
 
 using namespace Musa;
@@ -234,19 +239,11 @@ DWORD WINAPI MUSA_NAME(GetCurrentDirectoryW)(
 )
 {
     PAGED_CODE();
-    // Kernel mode has no current directory concept. Return system root.
-    const wchar_t* SysRoot = L"C:\\Windows";
-    const DWORD Len = static_cast<DWORD>(wcslen(SysRoot)) + 1;
 
-    if (lpBuffer == nullptr || nBufferLength == 0) {
-        return Len;
-    }
-    if (Len > nBufferLength) {
-        BaseSetLastNTError(STATUS_BUFFER_TOO_SMALL);
-        return Len;
-    }
-    RtlStringCchCopyW(lpBuffer, nBufferLength, SysRoot);
-    return Len - 1;
+    // Wrap RtlGetCurrentDirectory_U (returns character count)
+    ULONG Result = RtlGetCurrentDirectory_U(nBufferLength * sizeof(WCHAR),
+        reinterpret_cast<PWSTR>(lpBuffer));
+    return Result;
 }
 
 MUSA_IAT_SYMBOL(GetCurrentDirectoryW, 8);
@@ -257,8 +254,19 @@ BOOL WINAPI MUSA_NAME(SetCurrentDirectoryW)(
 )
 {
     PAGED_CODE();
-    UNREFERENCED_PARAMETER(lpPathName);
-    // Kernel mode: no per-process CWD. Always succeeds for compatibility.
+
+    if (lpPathName == nullptr || lpPathName[0] == L'\0') {
+        BaseSetLastNTError(STATUS_INVALID_PARAMETER);
+        return FALSE;
+    }
+
+    UNICODE_STRING PathStr;
+    RtlInitUnicodeString(&PathStr, lpPathName);
+    NTSTATUS Status = RtlSetCurrentDirectory_U(&PathStr);
+    if (!NT_SUCCESS(Status)) {
+        BaseSetLastNTError(Status);
+        return FALSE;
+    }
     return TRUE;
 }
 
@@ -279,45 +287,56 @@ DWORD WINAPI MUSA_NAME(ExpandEnvironmentStringsW)(
     }
 
     DWORD TotalLen = 0;
+    DWORD Remaining = (lpDst && nSize > 0) ? nSize : 0;
     PWSTR Dst = lpDst;
-    DWORD Remaining = nSize;
 
     for (PCWSTR p = lpSrc; *p; ) {
         if (p[0] == L'%') {
-            // Find closing %
             PCWSTR end = wcschr(p + 1, L'%');
-            if (end == nullptr) { end = p + wcslen(p); }
-            // Extract variable name
-            WCHAR NameBuf[128];
+            if (end == nullptr) {
+                if (Remaining > 0 && Dst) { *Dst++ = *p; --Remaining; }
+                TotalLen++;
+                p++;
+                continue;
+            }
+
             size_t NameLen = static_cast<size_t>(end - p - 1);
+            if (NameLen == 0) {
+                if (Remaining > 0 && Dst) { *Dst++ = L'%'; --Remaining; }
+                TotalLen++;
+                p = end + 1;
+                continue;
+            }
+
+            WCHAR NameBuf[128];
             if (NameLen >= _countof(NameBuf)) NameLen = _countof(NameBuf) - 1;
-            wcsncpy_s(NameBuf, p + 1, NameLen);
-            NameBuf[NameLen] = L'\0';
+            RtlStringCchCopyNW(NameBuf, _countof(NameBuf), p + 1, NameLen);
 
             DWORD ValLen = GetEnvironmentVariableW(NameBuf, nullptr, 0);
             if (ValLen > 0) {
-                if (Remaining > ValLen) {
+                if (ValLen <= Remaining && Dst) {
                     GetEnvironmentVariableW(NameBuf, Dst, Remaining);
                     Dst += ValLen - 1;
                     Remaining -= ValLen - 1;
-                } else {
-                    Dst += ValLen - 1;
+                } else if (Dst) {
                     Remaining = 0;
                 }
                 TotalLen += ValLen - 1;
             }
-            p = (*end == L'%') ? end + 1 : end;
+            p = end + 1;
         } else {
-            if (Remaining > 0) {
-                if (Dst) *Dst++ = *p;
+            if (Remaining > 0 && Dst) {
+                *Dst++ = *p;
                 --Remaining;
             }
-            ++TotalLen;
-            ++p;
+            TotalLen++;
+            p++;
         }
     }
 
-    if (Dst && nSize > 0) *Dst = L'\0';
+    if (Dst && nSize > 0 && Remaining > 0) {
+        *Dst = L'\0';
+    }
     return TotalLen + 1;
 }
 

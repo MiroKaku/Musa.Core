@@ -19,4 +19,13 @@ NTSTATUS NTAPI MUSA_NAME(RtlDosPathNameToNtPathName_U_WithStatus)(
     );
 
 
+
+ULONG NTAPI MUSA_NAME(RtlGetCurrentDirectory_U)(
+    _In_ ULONG BufferLength,
+    _Out_writes_bytes_(BufferLength) PWSTR Buffer
+    );
+
+NTSTATUS NTAPI MUSA_NAME(RtlSetCurrentDirectory_U)(
+    _In_ PCUNICODE_STRING PathName
+    );
 EXTERN_C_END

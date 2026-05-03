@@ -127,6 +127,8 @@ NTSTATUS MUSA_API MUSA_NAME_PRIVATE(ProcessEnvironmentBlockSetup)(
             Peb->StandardError  = NullHandles[2];
         }
 
+        // Initialize default current directory
+        RtlStringCchCopyW(Peb->CurrentDirectory, MAX_PATH, L"C:\\Windows");
         MUSA_NAME_PRIVATE(FlsCreate)();
     } while (false);
 
