@@ -87,7 +87,7 @@ NTSTATUS NTAPI MUSA_NAME(RtlDosPathNameToNtPathName_U_WithStatus)(
         if (InputLen >= 8 && DosPathName[4] == L'U' && DosPathName[5] == L'N' &&
             DosPathName[6] == L'C' && (DosPathName[7] == L'\\' || DosPathName[7] == L'/')) {
             Prefix = L"\\??\\UNC\\";
-            PrefixLen = 10;
+            PrefixLen = 8;
             Source = DosPathName + 8;
             SourceLen = InputLen - 8;
         } else if (DosPathName[2] == L'.' && InputLen >= 12 &&
@@ -107,7 +107,7 @@ NTSTATUS NTAPI MUSA_NAME(RtlDosPathNameToNtPathName_U_WithStatus)(
 
     case MUSA_RTL_PATH_UNC_ROOT:
         Prefix = L"\\??\\UNC\\";
-        PrefixLen = 10;
+        PrefixLen = 8;
         Source = DosPathName + 2;
         SourceLen = InputLen - 2;
         break;
