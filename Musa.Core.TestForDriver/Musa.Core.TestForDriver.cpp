@@ -847,6 +847,9 @@ namespace Main
                 Len = ExpandEnvironmentStringsW(L"%SystemRoot%\\System32\\ntoskrnl.exe", ExpBuf, Len);
                 KTEST_EXPECT(Len > 0,
                     "Sys_ExpandEnvironmentStringsW_Expands");
+                // Verify content starts with SystemRoot
+                KTEST_EXPECT(wcsncmp(ExpBuf, L"C:\\Windows\\", 11) == 0,
+                    "Sys_ExpandEnvironmentStringsW_ExpandedStartsWithSystemRoot");
                 KTEST_EXPECT(Len >= static_cast<DWORD>(wcslen(L"C:\\Windows\\System32\\ntoskrnl.exe")),
                     "Sys_ExpandEnvironmentStringsW_ExpandedLength");
             }
