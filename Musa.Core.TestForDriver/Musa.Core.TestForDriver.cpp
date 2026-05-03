@@ -810,6 +810,53 @@ namespace Main
             KTEST_EXPECT(MissingLen == 0,
                 "Sys_GetEnvironmentVariableW_NonExistent_ReturnsZero");
         }
+
+        // --- CWD ---
+
+        {
+            WCHAR CwdBuf[MAX_PATH] = {};
+            DWORD Len = GetCurrentDirectoryW(0, nullptr);
+            KTEST_EXPECT(Len > 0,
+                "Sys_GetCurrentDirectoryW_QuerySize_Succeeds");
+
+            Len = GetCurrentDirectoryW(Len, CwdBuf);
+            KTEST_EXPECT(Len > 0 && CwdBuf[0] != L'\0',
+                "Sys_GetCurrentDirectoryW_ReturnsPath");
+            KTEST_EXPECT(wcsncmp(CwdBuf, L"C:\\Windows", Len) == 0,
+                "Sys_GetCurrentDirectoryW_ReturnsSystemRoot");
+
+            // Change CWD and verify
+            KTEST_EXPECT(SetCurrentDirectoryW(L"C:\\Windows\\Temp"),
+                "Sys_SetCurrentDirectoryW_Succeeds");
+            WCHAR NewCwd[MAX_PATH] = {};
+            DWORD NewLen = GetCurrentDirectoryW(_countof(NewCwd), NewCwd);
+            KTEST_EXPECT(NewLen > 0 && wcsncmp(NewCwd, L"C:\\Windows\\Temp", NewLen) == 0,
+                "Sys_SetCurrentDirectoryW_ValueStored");
+
+            // Restore
+            SetCurrentDirectoryW(L"C:\\Windows");
+        }
+
+        {
+            DWORD Len = ExpandEnvironmentStringsW(L"%SystemRoot%\\System32\\ntoskrnl.exe", nullptr, 0);
+            KTEST_EXPECT(Len > 0,
+                "Sys_ExpandEnvironmentStringsW_QuerySize_Succeeds");
+
+            if (Len > 0 && Len < MAX_PATH) {
+                WCHAR ExpBuf[MAX_PATH] = {};
+                Len = ExpandEnvironmentStringsW(L"%SystemRoot%\\System32\\ntoskrnl.exe", ExpBuf, Len);
+                KTEST_EXPECT(Len > 0,
+                    "Sys_ExpandEnvironmentStringsW_Expands");
+                KTEST_EXPECT(Len >= wcslen(L"C:\\Windows\\System32\\ntoskrnl.exe"),
+                    "Sys_ExpandEnvironmentStringsW_ExpandedLength");
+            }
+
+            // Literal string without variables
+            WCHAR LitBuf[64] = {};
+            Len = ExpandEnvironmentStringsW(L"C:\\Windows\\System32", LitBuf, _countof(LitBuf));
+            KTEST_EXPECT(Len > 0 && wcsncmp(LitBuf, L"C:\\Windows\\System32", wcslen(L"C:\\Windows\\System32")) == 0,
+                "Sys_ExpandEnvironmentStringsW_LiteralContentMatches");
+        }
         // --- Handle ---
 
         {

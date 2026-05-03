@@ -243,4 +243,5 @@ NTSTATUS NTAPI MUSA_NAME(RtlSetCurrentDirectory_U)(
 
 MUSA_IAT_SYMBOL(RtlSetCurrentDirectory_U, 4);
 
+MUSA_IAT_SYMBOL(RtlDosPathNameToNtPathName_U, 16);
 EXTERN_C_END
