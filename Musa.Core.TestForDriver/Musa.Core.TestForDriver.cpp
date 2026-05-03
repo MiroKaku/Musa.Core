@@ -1,4 +1,4 @@
-﻿// unnecessary, fix ReSharper's code analysis.
+// unnecessary, fix ReSharper's code analysis.
 #pragma warning(suppress: 4117)
 #define _KERNEL_MODE 1
 
@@ -549,8 +549,8 @@ namespace Main
                 &NtPath, nullptr, nullptr);
             KTEST_EXPECT(Result,
                 "Path_RtlDosPathNameToNtPathName_U_DrivePath");
-            KTEST_EXPECT(NtPath.Length > 0,
-                "Path_RtlDosPathNameToNtPathName_U_NonEmpty");
+            KTEST_EXPECT(wcsncmp(NtPath.Buffer, L"\\??\\C:\\Windows\\System32\\ntoskrnl.exe", NtPath.Length / sizeof(WCHAR)) == 0,
+                "Path_RtlDosPathNameToNtPathName_U_DrivePath_Content");
             RtlFreeUnicodeString(&NtPath);
 
             // UNC path
@@ -560,15 +560,19 @@ namespace Main
                 &NtPath, nullptr, nullptr);
             KTEST_EXPECT(Result,
                 "Path_RtlDosPathNameToNtPathName_U_UncPath");
+            KTEST_EXPECT(wcsncmp(NtPath.Buffer, L"\\??\\UNC\\localhost\\share\\file.txt", NtPath.Length / sizeof(WCHAR)) == 0,
+                "Path_RtlDosPathNameToNtPathName_U_UncPath_Content");
             RtlFreeUnicodeString(&NtPath);
 
-            // Already NT path (pass-through, no allocation)
+            // Already NT path
             NtPath.Buffer = nullptr;
             Result = RtlDosPathNameToNtPathName_U(
                 L"\\Device\\HarddiskVolume3\\Windows",
                 &NtPath, nullptr, nullptr);
             KTEST_EXPECT(Result,
                 "Path_RtlDosPathNameToNtPathName_U_NtPath");
+            KTEST_EXPECT(wcsncmp(NtPath.Buffer, L"\\Device\\HarddiskVolume3\\Windows", NtPath.Length / sizeof(WCHAR)) == 0,
+                "Path_RtlDosPathNameToNtPathName_U_NtPath_Content");
             RtlFreeUnicodeString(&NtPath);
 
             // Extended-length path
@@ -578,6 +582,8 @@ namespace Main
                 &NtPath, nullptr, nullptr);
             KTEST_EXPECT(Result,
                 "Path_RtlDosPathNameToNtPathName_U_ExtendedPath");
+            KTEST_EXPECT(wcsncmp(NtPath.Buffer, L"\\??\\C:\\Windows\\System32\\ntoskrnl.exe", NtPath.Length / sizeof(WCHAR)) == 0,
+                "Path_RtlDosPathNameToNtPathName_U_ExtendedPath_Content");
             RtlFreeUnicodeString(&NtPath);
 
             // Invalid path
