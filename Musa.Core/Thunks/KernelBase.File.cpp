@@ -1275,30 +1275,48 @@ BOOL WINAPI MUSA_NAME(GetFileInformationByHandle)(
 {
     PAGED_CODE();
 
+
     IO_STATUS_BLOCK IoStatusBlock{};
+    NTSTATUS Status;
 
-    FILE_FS_VOLUME_INFORMATION VolInfo{};
-    NTSTATUS Status = ZwQueryVolumeInformationFile(hFile, &IoStatusBlock, &VolInfo, sizeof(VolInfo), FileFsVolumeInformation);
-    DWORD VolSerial = NT_SUCCESS(Status) ? VolInfo.VolumeSerialNumber : 0;
+    // Two-call: query size, allocate, query again
+    ULONG VolSize = 0;
+    Status = ZwQueryVolumeInformationFile(hFile, &IoStatusBlock, nullptr, 0, FileFsVolumeInformation);
+    VolSize = (Status == STATUS_BUFFER_OVERFLOW) ? static_cast<ULONG>(IoStatusBlock.Information) : sizeof(FILE_FS_VOLUME_INFORMATION);
+    auto VolBuf = static_cast<PFILE_FS_VOLUME_INFORMATION>(RtlAllocateHeap(RtlProcessHeap(), 0, VolSize));
+    DWORD VolSerial = 0;
+    if (VolBuf) {
+        Status = ZwQueryVolumeInformationFile(hFile, &IoStatusBlock, VolBuf, VolSize, FileFsVolumeInformation);
+        if (NT_SUCCESS(Status)) VolSerial = VolBuf->VolumeSerialNumber;
+        RtlFreeHeap(RtlProcessHeap(), 0, VolBuf);
+    }
 
-    FILE_ALL_INFORMATION FileInfo{};
-    Status = ZwQueryInformationFile(hFile, &IoStatusBlock, &FileInfo, sizeof(FileInfo), FileAllInformation);
-    MusaLOG("[GetFileInformationByHandle] Status=0x%08X, sizeof=%zu", Status, sizeof(FileInfo));
+    ULONG FileSize = 0;
+    Status = ZwQueryInformationFile(hFile, &IoStatusBlock, nullptr, 0, FileAllInformation);
+    FileSize = (Status == STATUS_BUFFER_OVERFLOW) ? static_cast<ULONG>(IoStatusBlock.Information) : sizeof(FILE_ALL_INFORMATION);
+    auto FileBuf = static_cast<PFILE_ALL_INFORMATION>(RtlAllocateHeap(RtlProcessHeap(), 0, FileSize));
+    if (!FileBuf) {
+        BaseSetLastNTError(STATUS_NO_MEMORY);
+        return FALSE;
+    }
+    Status = ZwQueryInformationFile(hFile, &IoStatusBlock, FileBuf, FileSize, FileAllInformation);
     if (!NT_SUCCESS(Status)) {
+        RtlFreeHeap(RtlProcessHeap(), 0, FileBuf);
         BaseSetLastNTError(Status);
         return FALSE;
     }
 
-    lpFileInformation->dwFileAttributes = FileInfo.BasicInformation.FileAttributes;
-    lpFileInformation->ftCreationTime   = *reinterpret_cast<const FILETIME*>(&FileInfo.BasicInformation.CreationTime);
-    lpFileInformation->ftLastAccessTime = *reinterpret_cast<const FILETIME*>(&FileInfo.BasicInformation.LastAccessTime);
-    lpFileInformation->ftLastWriteTime  = *reinterpret_cast<const FILETIME*>(&FileInfo.BasicInformation.LastWriteTime);
+    lpFileInformation->dwFileAttributes = FileBuf->BasicInformation.FileAttributes;
+    lpFileInformation->ftCreationTime   = *reinterpret_cast<const FILETIME*>(&FileBuf->BasicInformation.CreationTime);
+    lpFileInformation->ftLastAccessTime = *reinterpret_cast<const FILETIME*>(&FileBuf->BasicInformation.LastAccessTime);
+    lpFileInformation->ftLastWriteTime  = *reinterpret_cast<const FILETIME*>(&FileBuf->BasicInformation.LastWriteTime);
     lpFileInformation->dwVolumeSerialNumber = VolSerial;
-    lpFileInformation->nFileSizeHigh    = FileInfo.StandardInformation.EndOfFile.HighPart;
-    lpFileInformation->nFileSizeLow     = FileInfo.StandardInformation.EndOfFile.LowPart;
-    lpFileInformation->nNumberOfLinks   = FileInfo.StandardInformation.NumberOfLinks;
-    lpFileInformation->nFileIndexHigh   = FileInfo.InternalInformation.IndexNumber.HighPart;
-    lpFileInformation->nFileIndexLow    = FileInfo.InternalInformation.IndexNumber.LowPart;
+    lpFileInformation->nFileSizeHigh    = FileBuf->StandardInformation.EndOfFile.HighPart;
+    lpFileInformation->nFileSizeLow     = FileBuf->StandardInformation.EndOfFile.LowPart;
+    lpFileInformation->nNumberOfLinks   = FileBuf->StandardInformation.NumberOfLinks;
+    lpFileInformation->nFileIndexHigh   = FileBuf->InternalInformation.IndexNumber.HighPart;
+    lpFileInformation->nFileIndexLow    = FileBuf->InternalInformation.IndexNumber.LowPart;
+    RtlFreeHeap(RtlProcessHeap(), 0, FileBuf);
     return TRUE;
 
 }
