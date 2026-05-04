@@ -1260,6 +1260,10 @@ BOOL WINAPI MUSA_NAME(GetFileSizeEx)(
         return FALSE;
     }
     *lpFileSize = reinterpret_cast<PFILE_STANDARD_INFORMATION>(StdBuf)->EndOfFile;
+
+    MusaLOG("[GetFileSizeEx] SizeLo=%u SizeHi=%u",
+        reinterpret_cast<PFILE_STANDARD_INFORMATION>(StdBuf)->EndOfFile.LowPart,
+        reinterpret_cast<PFILE_STANDARD_INFORMATION>(StdBuf)->EndOfFile.HighPart);
     return TRUE;
 }
 
@@ -1279,16 +1283,30 @@ BOOL WINAPI MUSA_NAME(GetFileInformationByHandle)(
     // Mimic kernel32: fixed stack buffer for volume info (0x18, 8-byte aligned)
     __declspec(align(8)) UCHAR VolBuf[0x18]{};
     NTSTATUS Status = ZwQueryVolumeInformationFile(hFile, &IoStatusBlock, VolBuf, 0x18, FileFsVolumeInformation);
-    DWORD VolSerial = NT_SUCCESS(Status) ? reinterpret_cast<PFILE_FS_VOLUME_INFORMATION>(VolBuf)->VolumeSerialNumber : 0;
 
+    DWORD VolSerial = NT_SUCCESS(Status) ? reinterpret_cast<PFILE_FS_VOLUME_INFORMATION>(VolBuf)->VolumeSerialNumber : 0;
+    MusaLOG("[GetFileInformationByHandle] VolStatus=0x%08X VolSerial=%u", Status, VolSerial);
     // Mimic kernel32: fixed stack buffer for file info (0x68, 8-byte aligned)
     __declspec(align(8)) UCHAR FileBuf[0x68]{};
     Status = ZwQueryInformationFile(hFile, &IoStatusBlock, FileBuf, 0x68, FileAllInformation);
+
+    MusaLOG("[GetFileInformationByHandle] FileStatus=0x%08X", Status);
     if (!NT_SUCCESS(Status)) {
         BaseSetLastNTError(Status);
         return FALSE;
     }
     PFILE_ALL_INFORMATION FileInfo = reinterpret_cast<PFILE_ALL_INFORMATION>(FileBuf);
+
+    MusaLOG("[GetFileInformationByHandle] Status=0x%08X Attrib=0x%X SizeLo=%u SizeHi=%u Links=%u",
+        Status,
+        FileInfo->BasicInformation.FileAttributes,
+        FileInfo->StandardInformation.EndOfFile.LowPart,
+        FileInfo->StandardInformation.EndOfFile.HighPart,
+        FileInfo->StandardInformation.NumberOfLinks);
+    // Dump first 8 bytes of access info (offset 0x48 from FileAllInformation)
+    MusaLOG("[GetFileInformationByHandle] Buf00: %02X %02X %02X %02X %02X %02X %02X %02X",
+        FileBuf[0x00], FileBuf[0x01], FileBuf[0x02], FileBuf[0x03],
+        FileBuf[0x04], FileBuf[0x05], FileBuf[0x06], FileBuf[0x07]);
 
     lpFileInformation->dwFileAttributes = FileInfo->BasicInformation.FileAttributes;
     lpFileInformation->ftCreationTime   = *reinterpret_cast<const FILETIME*>(&FileInfo->BasicInformation.CreationTime);
