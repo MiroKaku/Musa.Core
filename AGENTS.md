@@ -1,4 +1,4 @@
-# AGENTS.md — Musa.Core
+﻿# AGENTS.md — Musa.Core
 
 ## OVERVIEW
 
@@ -10,8 +10,8 @@ Author: MiroKaku/MeeSong. Beta. MIT license.
 
 ```
 Musa.Core/                  Core source — headers, init, PE parser, thunks
-  Thunks/                   Win32 API shim implementations (31 .cpp files)
-  Thunks/Internal/          Private headers for thunk internals (17 .h/.cpp files)
+  Thunks/                   Win32 API shim implementations (32 .cpp files)
+  Thunks/Internal/          Private headers for thunk internals (18 .h/.cpp files)
 Musa.Core.StaticLibraryForDriver/  Kernel-mode static library (universal.h + vcxproj)
 Musa.Core.TestForDriver/    Kernel-mode test (KMDF driver, DriverEntry, boot-start reinit)
 Musa.Core.NuGet/            NuGet packaging (.nuspec, .props, .targets)
@@ -20,6 +20,7 @@ Publish/                    Staged output consumed by dependents + NuGet
   Library/{Config}/{Platform}/  Built .lib files
   Config/                   .props/.targets injected into consuming projects
 Output/                     Build artifacts (Binaries/, Objects/, .binlog)
+docs/                       Comprehensive project documentation
 ```
 
 ## KEY DEPENDENCIES
@@ -61,6 +62,13 @@ Output/                     Build artifacts (Binaries/, Objects/, .binlog)
 ### Debug Logging
 - `MusaLOG(fmt, ...)` → `DbgPrintEx` (DEBUG builds), no-op in Release
 
+### Environment Variables (kernel-mode)
+- Per-process environment stored in KPEB `EnvironmentListHead` linked list
+- `SetEnvironmentVariableW` writes to KPEB only, does NOT modify system registry
+- `GetEnvironmentVariableW` checks KPEB first, falls back to system registry
+- `GetEnvironmentStringsW` builds from KPEB; falls back to registry enumeration
+- PEB lock (shared for reads, exclusive for writes) protects concurrent access
+
 ## WHERE TO LOOK
 
 | Task | Location |
@@ -73,6 +81,7 @@ Output/                     Build artifacts (Binaries/, Objects/, .binlog)
 | Build configuration | `Directory.Build.props`, `Directory.Packages.Cpp.props` |
 | NuGet package layout | `Musa.Core.NuGet/Musa.Core.nuspec` |
 | Kernel-mode macros | `Musa.Core.StaticLibraryForDriver/universal.h` |
+| Full project documentation | `docs/` — architecture, API reference, coding standards, testing guide |
 
 ## ANTI-PATTERNS
 
@@ -82,6 +91,7 @@ Output/                     Build artifacts (Binaries/, Objects/, .binlog)
 - Do NOT omit `#pragma alloc_text` in kernel-mode thunks — causes non-paged pool bloat
 - Do NOT assume heap APIs work identically in kernel — kernel uses `RtlAllocateHeap` with special pool setup
 - Do NOT test kernel-mode code without `/INTEGRITYCHECK` linker flag
+- Do NOT add forward declarations directly in .cpp files — place them in `Thunks/Internal/` headers
 
 ## KNOWN ISSUES
 
@@ -99,3 +109,4 @@ Output/                     Build artifacts (Binaries/, Objects/, .binlog)
 
 - `Musa.Core/AGENTS.md` — core source, headers, init logic
 - `Musa.Core/Thunks/AGENTS.md` — thunk implementation patterns and conventions
+- `docs/` — comprehensive documentation: architecture, API reference, coding standards, testing guide
