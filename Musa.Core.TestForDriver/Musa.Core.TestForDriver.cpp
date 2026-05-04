@@ -1151,8 +1151,10 @@ namespace Main
                     L"\\\\.\\pipe\\MusaCore_PeekTest",
                     GENERIC_READ | GENERIC_WRITE, 0, nullptr,
                     OPEN_EXISTING, 0, nullptr);
+                KTEST_EXPECT(hClient != INVALID_HANDLE_VALUE,
+                    "Pipe_ClientConnect_Succeeds");
+
                 if (hClient != INVALID_HANDLE_VALUE) {
-                    // Write from client so server can peek
                     DWORD Written = 0;
                     WriteFile(hClient, "Test", 4, &Written, nullptr);
 
