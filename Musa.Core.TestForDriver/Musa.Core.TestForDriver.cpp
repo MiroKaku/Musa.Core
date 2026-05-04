@@ -1139,18 +1139,31 @@ namespace Main
         {
             HANDLE hPipe = CreateNamedPipeW(
                 L"\\\\.\\pipe\\MusaCore_PeekTest",
-                PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
+                PIPE_ACCESS_DUPLEX,
                 PIPE_TYPE_BYTE | PIPE_READMODE_BYTE,
                 1, 256, 256, 0, nullptr);
             KTEST_EXPECT(hPipe != INVALID_HANDLE_VALUE,
                 "Pipe_CreateNamedPipeW_Succeeds");
 
             if (hPipe != INVALID_HANDLE_VALUE) {
-                // Pipes need a connected client before PeekNamedPipe works.
-                // Just verify the handle is valid.
-                DWORD Flags = 0;
-                KTEST_EXPECT(GetHandleInformation(hPipe, &Flags),
-                    "Pipe_CreateNamedPipeW_HandleIsValid");
+                // Open client side to connect the pipe
+                HANDLE hClient = CreateFileW(
+                    L"\\\\.\\pipe\\MusaCore_PeekTest",
+                    GENERIC_READ | GENERIC_WRITE, 0, nullptr,
+                    OPEN_EXISTING, 0, nullptr);
+                if (hClient != INVALID_HANDLE_VALUE) {
+                    // Write from client so server can peek
+                    DWORD Written = 0;
+                    WriteFile(hClient, "Test", 4, &Written, nullptr);
+
+                    DWORD TotalAvail = 0, BytesRead = 0;
+                    BOOL Result = PeekNamedPipe(hPipe, nullptr, 0, &BytesRead, &TotalAvail, nullptr);
+                    KTEST_EXPECT(Result,
+                        "Pipe_PeekNamedPipe_WithData_Succeeds");
+                    KTEST_EXPECT(TotalAvail == 4,
+                        "Pipe_PeekNamedPipe_TotalAvail");
+                    CloseHandle(hClient);
+                }
                 CloseHandle(hPipe);
             }
         }
