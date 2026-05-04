@@ -1121,15 +1121,33 @@ namespace Main
                 KTEST_EXPECT(FileSize.QuadPart == 3,
                     "FileIO_SetEndOfFile_Truncated");
 
-                // GetFileInformationByHandle
+
+                // GetFileInformationByHandle — cross-validate with GetFileSizeEx & GetFileAttributesExW
                 BY_HANDLE_FILE_INFORMATION FileInfo{};
                 KTEST_EXPECT(GetFileInformationByHandle(hFile, &FileInfo),
                     "FileIO_GetFileInformationByHandle_Succeeds");
-                KTEST_EXPECT(FileInfo.nFileSizeLow == 3,
-                    "FileIO_GetFileInformationByHandle_SizeAfterTruncate");
+
+                // Compare file size with GetFileSizeEx
+                LARGE_INTEGER SizeFromEx{};
+                GetFileSizeEx(hFile, &SizeFromEx);
+                KTEST_EXPECT(FileInfo.nFileSizeLow == static_cast<DWORD>(SizeFromEx.LowPart) &&
+                             FileInfo.nFileSizeHigh == static_cast<DWORD>(SizeFromEx.HighPart),
+                    "FileIO_GetFileInformationByHandle_SizeMatchesGetFileSizeEx");
+
+                // Compare attributes with GetFileAttributesExW
+                WIN32_FILE_ATTRIBUTE_DATA AttrData{};
+                if (GetFileAttributesExW(L"C:\\Windows\\Temp\\MusaCore_eof_test.tmp", GetFileExInfoStandard, &AttrData)) {
+                    KTEST_EXPECT(FileInfo.dwFileAttributes == AttrData.dwFileAttributes,
+                        "FileIO_GetFileInformationByHandle_AttribMatchesGetFileAttributesExW");
+                }
+
+                // Number of links should be at least 1
+                KTEST_EXPECT(FileInfo.nNumberOfLinks >= 1,
+                    "FileIO_GetFileInformationByHandle_HasLinks");
 
                 CloseHandle(hFile);
             }
+
         }
 
 
