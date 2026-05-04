@@ -19,6 +19,10 @@
 #pragma alloc_text(PAGE, MUSA_NAME(MoveFileExW))
 
 #pragma alloc_text(PAGE, MUSA_NAME(GetFullPathNameW))
+
+#pragma alloc_text(PAGE, MUSA_NAME(SetEndOfFile))
+#pragma alloc_text(PAGE, MUSA_NAME(GetFileSizeEx))
+#pragma alloc_text(PAGE, MUSA_NAME(GetFileInformationByHandle))
 #pragma alloc_text(PAGE, MUSA_NAME(GetDriveTypeW))
 #pragma alloc_text(PAGE, MUSA_NAME(FindFirstFileExW))
 #pragma alloc_text(PAGE, MUSA_NAME(FindClose))
@@ -1205,6 +1209,99 @@ DWORD WINAPI MUSA_NAME(GetFullPathNameW)(
 
     return static_cast<DWORD>(wcslen(lpBuffer));
 }
+
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(SetEndOfFile)(
+    _In_ HANDLE hFile
+)
+{
+    PAGED_CODE();
+
+    IO_STATUS_BLOCK IoStatusBlock{};
+    FILE_POSITION_INFORMATION PosInfo{};
+    NTSTATUS Status = ZwQueryInformationFile(hFile, &IoStatusBlock, &PosInfo, sizeof(PosInfo), FilePositionInformation);
+    if (!NT_SUCCESS(Status)) {
+        BaseSetLastNTError(Status);
+        return FALSE;
+    }
+
+    FILE_END_OF_FILE_INFORMATION EofInfo{};
+    EofInfo.EndOfFile = PosInfo.CurrentByteOffset;
+    Status = ZwSetInformationFile(hFile, &IoStatusBlock, &EofInfo, sizeof(EofInfo), FileEndOfFileInformation);
+    if (!NT_SUCCESS(Status)) {
+        BaseSetLastNTError(Status);
+        return FALSE;
+    }
+
+    FILE_ALLOCATION_INFORMATION AllocInfo{};
+    AllocInfo.AllocationSize = PosInfo.CurrentByteOffset;
+    ZwSetInformationFile(hFile, &IoStatusBlock, &AllocInfo, sizeof(AllocInfo), FileAllocationInformation);
+    return TRUE;
+}
+
+MUSA_IAT_SYMBOL(SetEndOfFile, 4);
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(GetFileSizeEx)(
+    _In_ HANDLE hFile,
+    _Out_ PLARGE_INTEGER lpFileSize
+)
+{
+    PAGED_CODE();
+
+    IO_STATUS_BLOCK IoStatusBlock{};
+    FILE_STANDARD_INFORMATION StdInfo{};
+    NTSTATUS Status = ZwQueryInformationFile(hFile, &IoStatusBlock, &StdInfo, sizeof(StdInfo), FileStandardInformation);
+    if (!NT_SUCCESS(Status)) {
+        BaseSetLastNTError(Status);
+        return FALSE;
+    }
+
+    *lpFileSize = StdInfo.EndOfFile;
+    return TRUE;
+}
+
+MUSA_IAT_SYMBOL(GetFileSizeEx, 8);
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(GetFileInformationByHandle)(
+    _In_ HANDLE hFile,
+    _Out_ LPBY_HANDLE_FILE_INFORMATION lpFileInformation
+)
+{
+    PAGED_CODE();
+
+    IO_STATUS_BLOCK IoStatusBlock{};
+
+    FILE_FS_VOLUME_INFORMATION VolInfo{};
+    NTSTATUS Status = ZwQueryVolumeInformationFile(hFile, &IoStatusBlock, &VolInfo, sizeof(VolInfo), FileFsVolumeInformation);
+    DWORD VolSerial = NT_SUCCESS(Status) ? VolInfo.VolumeSerialNumber : 0;
+
+    FILE_ALL_INFORMATION FileInfo{};
+    Status = ZwQueryInformationFile(hFile, &IoStatusBlock, &FileInfo, sizeof(FileInfo), FileAllInformation);
+    if (!NT_SUCCESS(Status)) {
+        BaseSetLastNTError(Status);
+        return FALSE;
+    }
+
+    lpFileInformation->dwFileAttributes = FileInfo.BasicInformation.FileAttributes;
+    lpFileInformation->ftCreationTime.dwLowDateTime   = FileInfo.BasicInformation.CreationTime.LowPart;
+    lpFileInformation->ftCreationTime.dwHighDateTime  = FileInfo.BasicInformation.CreationTime.HighPart;
+    lpFileInformation->ftLastAccessTime.dwLowDateTime  = FileInfo.BasicInformation.LastAccessTime.LowPart;
+    lpFileInformation->ftLastAccessTime.dwHighDateTime = FileInfo.BasicInformation.LastAccessTime.HighPart;
+    lpFileInformation->ftLastWriteTime.dwLowDateTime   = FileInfo.BasicInformation.LastWriteTime.LowPart;
+    lpFileInformation->ftLastWriteTime.dwHighDateTime  = FileInfo.BasicInformation.LastWriteTime.HighPart;
+    lpFileInformation->dwVolumeSerialNumber = VolSerial;
+    lpFileInformation->nFileSizeHigh    = FileInfo.StandardInformation.EndOfFile.HighPart;
+    lpFileInformation->nFileSizeLow     = FileInfo.StandardInformation.EndOfFile.LowPart;
+    lpFileInformation->nNumberOfLinks   = FileInfo.StandardInformation.NumberOfLinks;
+    lpFileInformation->nFileIndexHigh   = FileInfo.InternalInformation.IndexNumber.HighPart;
+    lpFileInformation->nFileIndexLow    = FileInfo.InternalInformation.IndexNumber.LowPart;
+    return TRUE;
+}
+
+MUSA_IAT_SYMBOL(GetFileInformationByHandle, 8);
 
 MUSA_IAT_SYMBOL(GetFullPathNameW, 16);
 EXTERN_C_END

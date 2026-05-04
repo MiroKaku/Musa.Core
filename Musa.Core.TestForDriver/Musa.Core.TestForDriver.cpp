@@ -1086,6 +1086,50 @@ namespace Main
                 "Path_GetFullPathNameW_Relative_Expanded");
             KTEST_EXPECT(FilePart != nullptr && wcscmp(FilePart, L"System32") == 0,
                 "Path_GetFullPathNameW_Relative_FilePart");
+
+        }
+
+
+        // SetEndOfFile / GetFileSizeEx / GetFileInformationByHandle
+        {
+            HANDLE hFile = CreateFileW(
+                L"C:\\Windows\\Temp\\MusaCore_eof_test.tmp",
+                GENERIC_READ | GENERIC_WRITE,
+                FILE_SHARE_READ | FILE_SHARE_DELETE,
+                nullptr, CREATE_ALWAYS,
+                FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE,
+                nullptr);
+            if (hFile != INVALID_HANDLE_VALUE) {
+                const char Data[] = "Hello";
+                DWORD Written = 0;
+                WriteFile(hFile, Data, sizeof(Data), &Written, nullptr);
+
+                // GetFileSizeEx
+                LARGE_INTEGER FileSize{};
+                KTEST_EXPECT(GetFileSizeEx(hFile, &FileSize),
+                    "FileIO_GetFileSizeEx_Succeeds");
+                KTEST_EXPECT(FileSize.QuadPart == sizeof(Data),
+                    "FileIO_GetFileSizeEx_CorrectSize");
+
+                // SetEndOfFile truncate to 3 bytes
+                LARGE_INTEGER Dist{};
+                Dist.QuadPart = 3;
+                SetFilePointerEx(hFile, Dist, nullptr, FILE_BEGIN);
+                KTEST_EXPECT(SetEndOfFile(hFile),
+                    "FileIO_SetEndOfFile_Succeeds");
+                GetFileSizeEx(hFile, &FileSize);
+                KTEST_EXPECT(FileSize.QuadPart == 3,
+                    "FileIO_SetEndOfFile_Truncated");
+
+                // GetFileInformationByHandle
+                BY_HANDLE_FILE_INFORMATION FileInfo{};
+                KTEST_EXPECT(GetFileInformationByHandle(hFile, &FileInfo),
+                    "FileIO_GetFileInformationByHandle_Succeeds");
+                KTEST_EXPECT(FileInfo.nFileSizeLow == 3,
+                    "FileIO_GetFileInformationByHandle_SizeAfterTruncate");
+
+                CloseHandle(hFile);
+            }
         }
         // --- Results ---
 

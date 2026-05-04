@@ -135,4 +135,22 @@ DWORD WINAPI MUSA_NAME(GetFullPathNameW)(
     _Out_opt_ LPWSTR* lpFilePart
     );
 
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(SetEndOfFile)(
+    _In_ HANDLE hFile
+    );
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(GetFileSizeEx)(
+    _In_ HANDLE hFile,
+    _Out_ PLARGE_INTEGER lpFileSize
+    );
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(GetFileInformationByHandle)(
+    _In_ HANDLE hFile,
+    _Out_ LPBY_HANDLE_FILE_INFORMATION lpFileInformation
+    );
+
 EXTERN_C_END
