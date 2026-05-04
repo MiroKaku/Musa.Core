@@ -77,6 +77,8 @@ NTSTATUS MUSA_API MUSA_NAME_PRIVATE(ProcessEnvironmentBlockSetup)(
             }
         }
 
+
+        InitializeListHead(&Peb->EnvironmentListHead);
         // Publish only after basic fields are initialized, before TEB setup
         // which needs to access the PEB via RtlGetCurrentPeb()
         InterlockedExchangePointer(reinterpret_cast<PVOID volatile*>(&MusaCoreProcessEnvironmentBlock), Peb);
@@ -194,6 +196,19 @@ NTSTATUS MUSA_API MUSA_NAME_PRIVATE(ProcessEnvironmentBlockTeardown)()
         }
 
         MUSA_NAME_PRIVATE(FlsCleanup)();
+
+        // Clean up environment variable list
+        while (!IsListEmpty(&Peb->EnvironmentListHead)) {
+            auto Head = RemoveHeadList(&Peb->EnvironmentListHead);
+            auto Entry = CONTAINING_RECORD(Head, ENVIRONMENT_VARIABLE_ENTRY, Link);
+#pragma warning(push)
+#pragma warning(disable: 6001)  // CONTAINING_RECORD false positive
+            if (Entry->Name)  RtlFreeHeap(Peb->DefaultHeap, 0, Entry->Name);
+            if (Entry->Value) RtlFreeHeap(Peb->DefaultHeap, 0, Entry->Value);
+#pragma warning(pop)
+            RtlFreeHeap(Peb->DefaultHeap, 0, Entry);
+
+        }
         for (auto Idx = static_cast<int>(Peb->MaximumNumberOfHeaps - 1); Idx >= 0; --Idx) {
             if (Peb->ProcessHeaps[Idx]) {
                 #pragma warning(suppress: 6001)

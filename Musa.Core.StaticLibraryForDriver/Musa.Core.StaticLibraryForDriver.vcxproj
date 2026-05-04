@@ -50,6 +50,8 @@
     <ClInclude Include="$(SourcesDirectory)Musa.Utilities.h" />
     <ClInclude Include="$(SourcesDirectory)Musa.Utilities.PEParser.h" />
     <ClInclude Include="$(SourcesDirectory)Thunks\KernelBase.Private.h" />
+
+    <ClInclude Include="$(SourcesDirectory)Thunks\Internal\KernelBase.Console.h" />
     <ClInclude Include="$(SourcesDirectory)Thunks\Internal\KernelBase.File.h" />
     <ClInclude Include="$(SourcesDirectory)Thunks\Internal\KernelBase.FileVersion.h" />
     <ClInclude Include="$(SourcesDirectory)Thunks\Internal\KernelBase.Handle.h" />
@@ -81,6 +83,8 @@
     <ClCompile Include="$(SourcesDirectory)Musa.Core.SystemEnvironmentBlock.Fls.cpp" />
     <ClCompile Include="$(SourcesDirectory)Musa.Utilities.Overlay.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.Debug.cpp" />
+
+    <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.Console.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.Error.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.FiberLocalStorage.cpp" />
     <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.FileVersion.cpp" />

@@ -1,4 +1,4 @@
-#include "KernelBase.Private.h"
+﻿#include "KernelBase.Private.h"
 #include "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h"
 #include "Internal/KernelBase.System.h"
 
@@ -8,6 +8,9 @@
 #pragma alloc_text(PAGE, MUSA_NAME(VerifyVersionInfoW))
 #pragma alloc_text(PAGE, MUSA_NAME(GetCommandLineW))
 #pragma alloc_text(PAGE, MUSA_NAME(GetEnvironmentVariableW))
+#pragma alloc_text(PAGE, MUSA_NAME(SetEnvironmentVariableW))
+#pragma alloc_text(PAGE, MUSA_NAME(GetEnvironmentStringsW))
+#pragma alloc_text(PAGE, MUSA_NAME(FreeEnvironmentStringsW))
 #pragma alloc_text(PAGE, MUSA_NAME(GetCurrentDirectoryW))
 #pragma alloc_text(PAGE, MUSA_NAME(SetCurrentDirectoryW))
 #pragma alloc_text(PAGE, MUSA_NAME(ExpandEnvironmentStringsW))
@@ -137,6 +140,7 @@ MUSA_IAT_SYMBOL(GetCommandLineW, 0);
 
 #pragma warning(push)
 #pragma warning(disable: 6385)
+
 _IRQL_requires_max_(PASSIVE_LEVEL)
 DWORD WINAPI MUSA_NAME(GetEnvironmentVariableW)(
     _In_ LPCWSTR lpName,
@@ -151,7 +155,46 @@ DWORD WINAPI MUSA_NAME(GetEnvironmentVariableW)(
         return 0;
     }
 
-    // Try system environment key first
+    using namespace Musa::Core;
+    const auto Peb = static_cast<PKPEB>(MUSA_NAME_PRIVATE(RtlGetCurrentPeb)());
+
+    // 1. Check per-process environment list (shared lock)
+    if (Peb) {
+        MUSA_NAME_PRIVATE(RtlAcquirePebLockShared)();
+
+        DWORD Result = 0;
+        bool  Found  = false;
+        for (PLIST_ENTRY Link = Peb->EnvironmentListHead.Flink;
+             Link != &Peb->EnvironmentListHead;
+             Link = Link->Flink) {
+            auto Entry = CONTAINING_RECORD(Link, ENVIRONMENT_VARIABLE_ENTRY, Link);
+            if (_wcsicmp(Entry->Name, lpName) == 0) {
+                if (Entry->Value == nullptr) {
+                    BaseSetLastNTError(STATUS_OBJECT_NAME_NOT_FOUND);
+                    Result = 0;
+                } else {
+                    DWORD ValueLen = static_cast<DWORD>(wcslen(Entry->Value));
+                    if (lpBuffer == nullptr || nSize == 0) {
+                        Result = ValueLen + 1;
+                    } else if (ValueLen + 1 > nSize) {
+                        BaseSetLastNTError(STATUS_BUFFER_TOO_SMALL);
+                        Result = ValueLen + 1;
+                    } else {
+                        memcpy(lpBuffer, Entry->Value, (ValueLen + 1) * sizeof(WCHAR));
+                        Result = ValueLen;
+                    }
+                }
+                Found = true;
+                break;
+            }
+        }
+
+        MUSA_NAME_PRIVATE(RtlReleasePebLockShared)();
+
+        if (Found) return Result;
+    }
+
+    // 2. Fallback to system registry
     static UNICODE_STRING EnvKeyPath =
         RTL_CONSTANT_STRING(L"\\Registry\\Machine\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment");
     static UNICODE_STRING NtKeyPath =
@@ -220,11 +263,273 @@ DWORD WINAPI MUSA_NAME(GetEnvironmentVariableW)(
 
     BaseSetLastNTError(STATUS_OBJECT_NAME_NOT_FOUND);
     return 0;
-
 }
 
 MUSA_IAT_SYMBOL(GetEnvironmentVariableW, 12);
 
+#pragma warning(pop)
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(SetEnvironmentVariableW)(
+    _In_opt_ LPCWSTR lpName,
+    _In_opt_ LPCWSTR lpValue
+)
+{
+    PAGED_CODE();
+
+    if (lpName == nullptr || lpName[0] == L'\0') {
+        BaseSetLastNTError(STATUS_INVALID_PARAMETER);
+        return FALSE;
+    }
+
+    using namespace Musa::Core;
+    const auto Peb = static_cast<PKPEB>(MUSA_NAME_PRIVATE(RtlGetCurrentPeb)());
+    if (Peb == nullptr) {
+        BaseSetLastNTError(STATUS_NOT_SUPPORTED);
+        return FALSE;
+    }
+
+    MUSA_NAME_PRIVATE(RtlAcquirePebLockExclusive)();
+
+    const auto Heap = RtlProcessHeap();
+    BOOL Result = TRUE;
+
+    do {
+        // Find existing entry
+        PENVIRONMENT_VARIABLE_ENTRY Existing = nullptr;
+        for (PLIST_ENTRY Link = Peb->EnvironmentListHead.Flink;
+             Link != &Peb->EnvironmentListHead;
+             Link = Link->Flink) {
+            auto Entry = CONTAINING_RECORD(Link, ENVIRONMENT_VARIABLE_ENTRY, Link);
+            if (_wcsicmp(Entry->Name, lpName) == 0) {
+                Existing = Entry;
+                break;
+            }
+        }
+
+        if (lpValue == nullptr) {
+            // Delete
+            if (Existing) {
+                RemoveEntryList(&Existing->Link);
+                RtlFreeHeap(Heap, 0, Existing->Name);
+                if (Existing->Value) RtlFreeHeap(Heap, 0, Existing->Value);
+                RtlFreeHeap(Heap, 0, Existing);
+            }
+            break;
+        }
+
+        // Set: update or insert
+        auto ValueLen = (wcslen(lpValue) + 1) * sizeof(WCHAR);
+
+        if (Existing) {
+            auto NewValue = static_cast<PWSTR>(RtlAllocateHeap(Heap, 0, ValueLen));
+            if (NewValue == nullptr) {
+                BaseSetLastNTError(STATUS_NO_MEMORY);
+                Result = FALSE;
+                break;
+            }
+            memcpy(NewValue, lpValue, ValueLen);
+            if (Existing->Value) RtlFreeHeap(Heap, 0, Existing->Value);
+            Existing->Value = NewValue;
+        } else {
+            auto NameLen = (wcslen(lpName) + 1) * sizeof(WCHAR);
+            auto Entry = static_cast<PENVIRONMENT_VARIABLE_ENTRY>(
+                RtlAllocateHeap(Heap, 0, sizeof(ENVIRONMENT_VARIABLE_ENTRY)));
+            if (Entry == nullptr) {
+                BaseSetLastNTError(STATUS_NO_MEMORY);
+                Result = FALSE;
+                break;
+            }
+            Entry->Name = static_cast<PWSTR>(RtlAllocateHeap(Heap, 0, NameLen));
+            Entry->Value = static_cast<PWSTR>(RtlAllocateHeap(Heap, 0, ValueLen));
+            if (Entry->Name == nullptr || Entry->Value == nullptr) {
+                if (Entry->Name) RtlFreeHeap(Heap, 0, Entry->Name);
+                if (Entry->Value) RtlFreeHeap(Heap, 0, Entry->Value);
+                RtlFreeHeap(Heap, 0, Entry);
+                BaseSetLastNTError(STATUS_NO_MEMORY);
+                Result = FALSE;
+                break;
+            }
+            memcpy(Entry->Name, lpName, NameLen);
+            memcpy(Entry->Value, lpValue, ValueLen);
+            InsertTailList(&Peb->EnvironmentListHead, &Entry->Link);
+        }
+    } while (false);
+
+    MUSA_NAME_PRIVATE(RtlReleasePebLockExclusive)();
+    return Result;
+}
+
+MUSA_IAT_SYMBOL(SetEnvironmentVariableW, 8);
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+LPWCH WINAPI MUSA_NAME(GetEnvironmentStringsW)(
+    VOID
+)
+{
+    PAGED_CODE();
+
+    using namespace Musa::Core;
+    const auto Peb = static_cast<PKPEB>(MUSA_NAME_PRIVATE(RtlGetCurrentPeb)());
+    if (Peb == nullptr) {
+        BaseSetLastNTError(STATUS_NOT_SUPPORTED);
+        return NULL;
+    }
+
+    // Try KPEB list first
+    MUSA_NAME_PRIVATE(RtlAcquirePebLockShared)();
+    SIZE_T TotalBytes = 0;
+    for (PLIST_ENTRY Link = Peb->EnvironmentListHead.Flink;
+         Link != &Peb->EnvironmentListHead;
+         Link = Link->Flink) {
+        auto Entry = CONTAINING_RECORD(Link, ENVIRONMENT_VARIABLE_ENTRY, Link);
+        if (Entry->Value == nullptr) continue;
+        TotalBytes += (wcslen(Entry->Name) + wcslen(Entry->Value) + 2) * sizeof(WCHAR);
+    }
+
+    if (TotalBytes > 0) {
+        TotalBytes += sizeof(WCHAR);
+        auto Block = static_cast<PWSTR>(RtlAllocateHeap(RtlProcessHeap(), 0, TotalBytes));
+        if (Block) {
+            RtlZeroMemory(Block, TotalBytes);
+            PWSTR Dst = Block;
+            for (PLIST_ENTRY Link = Peb->EnvironmentListHead.Flink;
+                 Link != &Peb->EnvironmentListHead;
+                 Link = Link->Flink) {
+                auto Entry = CONTAINING_RECORD(Link, ENVIRONMENT_VARIABLE_ENTRY, Link);
+                if (Entry->Value == nullptr) continue;
+                auto NameLen = wcslen(Entry->Name);
+                memcpy(Dst, Entry->Name, NameLen * sizeof(WCHAR));
+                Dst += NameLen;
+                *Dst++ = L'=';
+                auto ValLen = wcslen(Entry->Value);
+                memcpy(Dst, Entry->Value, (ValLen + 1) * sizeof(WCHAR));
+                Dst += ValLen + 1;
+            }
+        }
+        MUSA_NAME_PRIVATE(RtlReleasePebLockShared)();
+        if (!Block) BaseSetLastNTError(STATUS_NO_MEMORY);
+        return Block;
+    }
+    MUSA_NAME_PRIVATE(RtlReleasePebLockShared)();
+
+#pragma warning(push)
+#pragma warning(disable: 28121)  // SAL false positive: lock released above
+    // Fallback to system registry
+    static UNICODE_STRING KeyPaths[] = {
+        RTL_CONSTANT_STRING(L"\\Registry\\Machine\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment"),
+        RTL_CONSTANT_STRING(L"\\Registry\\Machine\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion")
+    };
+
+    // First pass: compute size
+    for (size_t k = 0; k < _countof(KeyPaths); ++k) {
+        OBJECT_ATTRIBUTES ObjAttrs;
+        InitializeObjectAttributes(&ObjAttrs, &KeyPaths[k], OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE, nullptr, nullptr);
+        HANDLE KeyHandle = nullptr;
+        if (!NT_SUCCESS(ZwOpenKey(&KeyHandle, KEY_READ, &ObjAttrs))) continue;
+        ULONG Index = 0;
+        for (;;) {
+            UCHAR Buf[sizeof(KEY_VALUE_BASIC_INFORMATION) + 256 * sizeof(WCHAR)];
+            ULONG ResultLength = 0;
+            if (!NT_SUCCESS(ZwEnumerateValueKey(KeyHandle, Index, KeyValueBasicInformation, Buf, sizeof(Buf), &ResultLength)))
+                break;
+            auto Info = reinterpret_cast<PKEY_VALUE_BASIC_INFORMATION>(Buf);
+            if (Info->Type != REG_SZ && Info->Type != REG_EXPAND_SZ) { ++Index; continue; }
+            UNICODE_STRING ValueName;
+            ValueName.Buffer = Info->Name;
+            ValueName.Length = static_cast<USHORT>(Info->NameLength);
+            ValueName.MaximumLength = ValueName.Length;
+            ULONG QueryLength = 0;
+            NTSTATUS St = ZwQueryValueKey(KeyHandle, &ValueName, KeyValuePartialInformation, nullptr, 0, &QueryLength);
+            if (St != STATUS_BUFFER_OVERFLOW && St != STATUS_BUFFER_TOO_SMALL) { ++Index; continue; }
+            ULONG BufSize = QueryLength + sizeof(KEY_VALUE_PARTIAL_INFORMATION);
+            auto ValInfo = static_cast<PKEY_VALUE_PARTIAL_INFORMATION>(RtlAllocateHeap(RtlProcessHeap(), 0, BufSize));
+            if (!ValInfo) { ++Index; continue; }
+            if (NT_SUCCESS(ZwQueryValueKey(KeyHandle, &ValueName, KeyValuePartialInformation, ValInfo, BufSize, &QueryLength))) {
+                TotalBytes += Info->NameLength + sizeof(WCHAR);
+                TotalBytes += ValInfo->DataLength;
+            }
+            RtlFreeHeap(RtlProcessHeap(), 0, ValInfo);
+            ++Index;
+        }
+        ZwClose(KeyHandle);
+    }
+
+    if (TotalBytes == 0) {
+        auto Block = static_cast<PWSTR>(RtlAllocateHeap(RtlProcessHeap(), 0, sizeof(WCHAR)));
+        if (Block) Block[0] = L'\0';
+        return Block;
+    }
+
+    TotalBytes += sizeof(WCHAR);
+    auto Block = static_cast<PWSTR>(RtlAllocateHeap(RtlProcessHeap(), 0, TotalBytes));
+    if (!Block) {
+        BaseSetLastNTError(STATUS_NO_MEMORY);
+        return NULL;
+    }
+    RtlZeroMemory(Block, TotalBytes);
+
+    // Second pass: fill
+    PWSTR Dst = Block;
+    for (size_t k = 0; k < _countof(KeyPaths); ++k) {
+        OBJECT_ATTRIBUTES ObjAttrs;
+        InitializeObjectAttributes(&ObjAttrs, &KeyPaths[k], OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE, nullptr, nullptr);
+        HANDLE KeyHandle = nullptr;
+        if (!NT_SUCCESS(ZwOpenKey(&KeyHandle, KEY_READ, &ObjAttrs))) continue;
+        ULONG Index = 0;
+        for (;;) {
+            UCHAR Buf[sizeof(KEY_VALUE_BASIC_INFORMATION) + 256 * sizeof(WCHAR)];
+            ULONG ResultLength = 0;
+            if (!NT_SUCCESS(ZwEnumerateValueKey(KeyHandle, Index, KeyValueBasicInformation, Buf, sizeof(Buf), &ResultLength)))
+                break;
+            auto Info = reinterpret_cast<PKEY_VALUE_BASIC_INFORMATION>(Buf);
+            if (Info->Type != REG_SZ && Info->Type != REG_EXPAND_SZ) { ++Index; continue; }
+            UNICODE_STRING ValueName;
+            ValueName.Buffer = Info->Name;
+            ValueName.Length = static_cast<USHORT>(Info->NameLength);
+            ValueName.MaximumLength = ValueName.Length;
+            ULONG QueryLength = 0;
+            NTSTATUS St = ZwQueryValueKey(KeyHandle, &ValueName, KeyValuePartialInformation, nullptr, 0, &QueryLength);
+            if (St != STATUS_BUFFER_OVERFLOW && St != STATUS_BUFFER_TOO_SMALL) { ++Index; continue; }
+            ULONG BufSize = QueryLength + sizeof(KEY_VALUE_PARTIAL_INFORMATION);
+            auto ValInfo = static_cast<PKEY_VALUE_PARTIAL_INFORMATION>(RtlAllocateHeap(RtlProcessHeap(), 0, BufSize));
+            if (!ValInfo) { ++Index; continue; }
+            if (NT_SUCCESS(ZwQueryValueKey(KeyHandle, &ValueName, KeyValuePartialInformation, ValInfo, BufSize, &QueryLength))) {
+                memcpy(Dst, Info->Name, Info->NameLength);
+                Dst += Info->NameLength / sizeof(WCHAR);
+                *Dst++ = L'=';
+                RtlCopyMemory(Dst, ValInfo->Data, ValInfo->DataLength);
+                Dst += ValInfo->DataLength / sizeof(WCHAR);
+            }
+            RtlFreeHeap(RtlProcessHeap(), 0, ValInfo);
+            ++Index;
+        }
+        ZwClose(KeyHandle);
+    }
+
+
+#pragma warning(pop)
+    return Block;
+}
+
+MUSA_IAT_SYMBOL(GetEnvironmentStringsW, 0);
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(FreeEnvironmentStringsW)(
+    _In_opt_ LPWCH lpszEnvironmentBlock
+)
+{
+    PAGED_CODE();
+
+    if (lpszEnvironmentBlock == nullptr) {
+        return TRUE;
+    }
+
+    RtlFreeHeap(RtlProcessHeap(), 0, lpszEnvironmentBlock);
+    return TRUE;
+}
+
+MUSA_IAT_SYMBOL(FreeEnvironmentStringsW, 4);
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
 DWORD WINAPI MUSA_NAME(GetCurrentDirectoryW)(

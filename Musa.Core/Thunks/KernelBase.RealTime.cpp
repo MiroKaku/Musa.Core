@@ -1,4 +1,4 @@
-﻿EXTERN_C_START
+EXTERN_C_START
 
 NTSYSAPI
 BOOLEAN
@@ -38,6 +38,17 @@ VOID WINAPI MUSA_NAME(GetSystemTimePreciseAsFileTime)(
 }
 
 MUSA_IAT_SYMBOL(GetSystemTimePreciseAsFileTime, 4);
+VOID WINAPI MUSA_NAME(GetSystemTimeAsFileTime)(
+    _Out_ LPFILETIME lpSystemTimeAsFileTime
+)
+{
+    const auto SystemTime = RtlGetSystemTimePrecise();
+
+    lpSystemTimeAsFileTime->dwHighDateTime = SystemTime.HighPart;
+    lpSystemTimeAsFileTime->dwLowDateTime  = SystemTime.LowPart;
+}
+
+MUSA_IAT_SYMBOL(GetSystemTimeAsFileTime, 4);
 
 VOID WINAPI MUSA_NAME(QueryInterruptTime)(
     _Out_ PLARGE_INTEGER PerformanceCount

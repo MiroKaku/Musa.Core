@@ -96,6 +96,22 @@ DWORD WINAPI MUSA_NAME(GetEnvironmentVariableW)(
     );
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(SetEnvironmentVariableW)(
+    _In_opt_ LPCWSTR lpName,
+    _In_opt_ LPCWSTR lpValue
+    );
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+LPWCH WINAPI MUSA_NAME(GetEnvironmentStringsW)(
+    VOID
+    );
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(FreeEnvironmentStringsW)(
+    _In_opt_ LPWCH lpszEnvironmentBlock
+    );
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
 DWORD WINAPI MUSA_NAME(GetCurrentDirectoryW)(
     _In_ DWORD nBufferLength,
     _Out_writes_to_opt_(nBufferLength, return + 1) LPWSTR lpBuffer

@@ -2,6 +2,15 @@
 
 namespace Musa::Core
 {
+
+struct ENVIRONMENT_VARIABLE_ENTRY
+{
+    LIST_ENTRY Link;
+    PWSTR      Name;
+    PWSTR      Value;  // NULL means deleted
+};
+
+using PENVIRONMENT_VARIABLE_ENTRY = ENVIRONMENT_VARIABLE_ENTRY*;
     // Kernel Process Environment Block
     VEIL_DECLARE_STRUCT_ALIGN(KPEB, 8)
     {
@@ -35,6 +44,8 @@ namespace Musa::Core
         WCHAR           CurrentDirectory[MAX_PATH];
         PVOID           WaitOnAddressHashTable[128];
 
+
+        LIST_ENTRY      EnvironmentListHead;
         // Heaps[1] ...
     };
     STATIC_ASSERT(ALIGN_DOWN(sizeof(KPEB), 8) < PAGE_SIZE);

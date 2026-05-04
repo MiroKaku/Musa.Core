@@ -1,4 +1,4 @@
-// unnecessary, fix ReSharper's code analysis.
+﻿// unnecessary, fix ReSharper's code analysis.
 #pragma warning(suppress: 4117)
 #define _KERNEL_MODE 1
 
@@ -888,6 +888,180 @@ namespace Main
                 "Debug_OutputDebugStringW_NoCrash");
         }
 
+
+
+        // --- New APIs (missing from docs/missing-apis.md) ---
+
+
+        // GetSystemTimeAsFileTime — compare with SystemTimeToFileTime
+        {
+            FILETIME Ft1{};
+            GetSystemTimeAsFileTime(&Ft1);
+
+            SYSTEMTIME St{};
+            GetSystemTime(&St);
+            FILETIME Ft2{};
+            SystemTimeToFileTime(&St, &Ft2);
+
+            // Ft1 (precise) should be within ~1s of Ft2 (from GetSystemTime)
+            LONGLONG Diff = static_cast<LONGLONG>(Ft1.dwHighDateTime - Ft2.dwHighDateTime);
+            Diff = (Diff << 32) | (Ft1.dwLowDateTime - Ft2.dwLowDateTime);
+            // Allow 2 seconds difference (2 * 10^7 100ns units)
+            Diff = Diff < 0 ? -Diff : Diff;
+            KTEST_EXPECT(Diff < 20000000,
+                "Time_GetSystemTimeAsFileTime_WithinTwoSeconds");
+        }
+
+        // Environment Variable Write / Read / Delete
+        {
+            BOOL SetOk = SetEnvironmentVariableW(L"MusaCore_Test_Var", L"HelloWorld");
+            KTEST_EXPECT(SetOk,
+                "Env_SetEnvironmentVariableW_Succeeds");
+
+            WCHAR Buf[64] = {};
+            DWORD Len = GetEnvironmentVariableW(L"MusaCore_Test_Var", Buf, _countof(Buf));
+            KTEST_EXPECT(Len > 0,
+                "Env_GetEnvironmentVariableW_AfterSet_ReturnsNonZero");
+            KTEST_EXPECT(wcscmp(Buf, L"HelloWorld") == 0,
+                "Env_GetEnvironmentVariableW_AfterSet_ValueMatches");
+
+            // Overwrite
+            SetEnvironmentVariableW(L"MusaCore_Test_Var", L"Updated");
+            Len = GetEnvironmentVariableW(L"MusaCore_Test_Var", Buf, _countof(Buf));
+            KTEST_EXPECT(Len > 0 && wcscmp(Buf, L"Updated") == 0,
+                "Env_SetEnvironmentVariableW_Overwrite");
+
+            // Delete
+            SetEnvironmentVariableW(L"MusaCore_Test_Var", nullptr);
+            Len = GetEnvironmentVariableW(L"MusaCore_Test_Var", Buf, _countof(Buf));
+            KTEST_EXPECT(Len == 0,
+                "Env_SetEnvironmentVariableW_Delete_ReturnsZero");
+        }
+
+        // GetEnvironmentVariableW buffer query
+        {
+            SetEnvironmentVariableW(L"MusaCore_SizeTest", L"ABCD");
+            DWORD Size = GetEnvironmentVariableW(L"MusaCore_SizeTest", nullptr, 0);
+            KTEST_EXPECT(Size == 5,
+                "Env_GetEnvironmentVariableW_QuerySize_ReturnsCorrect");
+
+            // Buffer too small
+            WCHAR SmallBuf[3] = {};
+            DWORD SmallLen = GetEnvironmentVariableW(L"MusaCore_SizeTest", SmallBuf, _countof(SmallBuf));
+            KTEST_EXPECT(SmallLen == 5,
+                "Env_GetEnvironmentVariableW_BufferTooSmall_ReturnsRequiredSize");
+            KTEST_EXPECT(GetLastError() == ERROR_INSUFFICIENT_BUFFER,
+                "Env_GetEnvironmentVariableW_BufferTooSmall_SetsError");
+
+            SetEnvironmentVariableW(L"MusaCore_SizeTest", nullptr);
+        }
+
+        // Environment Strings
+        {
+            SetEnvironmentVariableW(L"MusaCore_StringsTest", L"KernelMode");
+
+            LPWCH Block = GetEnvironmentStringsW();
+            KTEST_EXPECT(Block != nullptr,
+                "Env_GetEnvironmentStringsW_ReturnsNonNull");
+
+            if (Block) {
+                BOOL FoundTestVar = FALSE;
+                for (PCWSTR p = Block; *p; p += wcslen(p) + 1) {
+                    if (wcsncmp(p, L"MusaCore_StringsTest=", 21) == 0) {
+                        KTEST_EXPECT(wcscmp(p + 21, L"KernelMode") == 0,
+                            "Env_GetEnvironmentStringsW_ContainsSetVariable");
+                        FoundTestVar = TRUE;
+                        break;
+                    }
+                }
+                KTEST_EXPECT(FoundTestVar,
+                    "Env_GetEnvironmentStringsW_FindsSetVariable");
+
+                KTEST_EXPECT(FreeEnvironmentStringsW(Block),
+                    "Env_FreeEnvironmentStringsW_Succeeds");
+            }
+
+            KTEST_EXPECT(FreeEnvironmentStringsW(nullptr),
+                "Env_FreeEnvironmentStringsW_NullSafe");
+
+            SetEnvironmentVariableW(L"MusaCore_StringsTest", nullptr);
+        }
+
+        // Console APIs
+        {
+            UINT Cp = GetConsoleOutputCP();
+            KTEST_EXPECT(Cp <= 0xFFFF,
+                "Console_GetConsoleOutputCP_ReturnsValid");
+
+            SetLastError(ERROR_SUCCESS);
+            DWORD Mode = 0;
+            BOOL ModeResult = GetConsoleMode(nullptr, &Mode);
+            KTEST_EXPECT(!ModeResult,
+                "Console_GetConsoleMode_ReturnsFalse");
+            KTEST_EXPECT(GetLastError() != ERROR_SUCCESS,
+                "Console_GetConsoleMode_SetsLastError");
+
+            SetLastError(ERROR_SUCCESS);
+            DWORD CharsRead = 0;
+            BOOL ReadResult = ReadConsoleW(nullptr, nullptr, 0, &CharsRead, nullptr);
+            KTEST_EXPECT(!ReadResult,
+                "Console_ReadConsoleW_ReturnsFalse");
+            KTEST_EXPECT(GetLastError() != ERROR_SUCCESS,
+                "Console_ReadConsoleW_SetsLastError");
+        }
+
+        // Date/Time Formatting — verify against GetLocalTime
+        {
+            SYSTEMTIME Now{};
+            GetLocalTime(&Now);
+
+            WCHAR Buf[32] = {};
+            int Ret = GetDateFormatEx(nullptr, 0, &Now, nullptr, Buf, _countof(Buf), nullptr);
+            KTEST_EXPECT(Ret == 11,
+                "NLS_GetDateFormatEx_Returns11");
+
+            // Parse YYYY-MM-DD back (4-digit, 2-digit, 2-digit)
+            int Year  = (Buf[0]-L'0')*1000 + (Buf[1]-L'0')*100 + (Buf[2]-L'0')*10 + (Buf[3]-L'0');
+            int Month = (Buf[5]-L'0')*10 + (Buf[6]-L'0');
+            int Day   = (Buf[8]-L'0')*10 + (Buf[9]-L'0');
+            KTEST_EXPECT(Year == Now.wYear && Month == Now.wMonth && Day == Now.wDay,
+                "NLS_GetDateFormatEx_MatchesGetLocalTime");
+        }
+
+        {
+            SYSTEMTIME Now{};
+            GetLocalTime(&Now);
+
+            WCHAR Buf[32] = {};
+            int Ret = GetTimeFormatEx(nullptr, 0, &Now, nullptr, Buf, _countof(Buf));
+            KTEST_EXPECT(Ret == 9,
+                "NLS_GetTimeFormatEx_Returns9");
+
+            int Hour = (Buf[0]-L'0')*10 + (Buf[1]-L'0');
+            int Min  = (Buf[3]-L'0')*10 + (Buf[4]-L'0');
+            int Sec  = (Buf[6]-L'0')*10 + (Buf[7]-L'0');
+            KTEST_EXPECT(Hour == Now.wHour && Min == Now.wMinute && Sec == Now.wSecond,
+                "NLS_GetTimeFormatEx_MatchesGetLocalTime");
+        }
+
+        // Date/Time Formatting — null time (uses current time internally)
+        {
+            WCHAR Buf[32] = {};
+            int Ret = GetDateFormatEx(nullptr, 0, nullptr, nullptr, Buf, _countof(Buf), nullptr);
+            KTEST_EXPECT(Ret == 11,
+                "NLS_GetDateFormatEx_NullTime_Returns11");
+            KTEST_EXPECT(Buf[4] == L'-' && Buf[7] == L'-',
+                "NLS_GetDateFormatEx_NullTime_HasDelimiters");
+        }
+
+        {
+            WCHAR Buf[32] = {};
+            int Ret = GetTimeFormatEx(nullptr, 0, nullptr, nullptr, Buf, _countof(Buf));
+            KTEST_EXPECT(Ret == 9,
+                "NLS_GetTimeFormatEx_NullTime_Returns9");
+            KTEST_EXPECT(Buf[2] == L':' && Buf[5] == L':',
+                "NLS_GetTimeFormatEx_NullTime_HasDelimiters");
+        }
         // --- Results ---
 
         MusaLOG("=== Results: %lu/%lu passed ===",

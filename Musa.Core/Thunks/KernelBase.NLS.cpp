@@ -1,13 +1,17 @@
-//
+﻿//
 // National Language Support
 //
 
 #include "KernelBase.Private.h"
 #include "Internal/KernelBase.NLS.h"
 
+#include "Internal/KernelBase.System.h"
+
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text(PAGE, MUSA_NAME(MultiByteToWideChar))
 #pragma alloc_text(PAGE, MUSA_NAME(WideCharToMultiByte))
+#pragma alloc_text(PAGE, MUSA_NAME(GetDateFormatEx))
+#pragma alloc_text(PAGE, MUSA_NAME(GetTimeFormatEx))
 #endif
 
 #include "Internal/KernelBase.NLS.Table.cpp"
@@ -400,5 +404,119 @@ BOOL WINAPI MUSA_NAME(GetCPInfoExW)(
 }
 
 MUSA_IAT_SYMBOL(GetCPInfoExW, 12);
+
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+int WINAPI MUSA_NAME(GetDateFormatEx)(
+    _In_opt_ LPCWSTR  lpLocaleName,
+    _In_     DWORD    dwFlags,
+    _In_opt_ const SYSTEMTIME* lpDate,
+    _In_opt_ LPCWSTR  lpFormat,
+    _Out_writes_opt_(cchDate) LPWSTR lpDateStr,
+    _In_     int      cchDate,
+    _In_opt_ LPCWSTR  lpCalendar
+)
+{
+    PAGED_CODE();
+
+    UNREFERENCED_PARAMETER(lpLocaleName);
+    UNREFERENCED_PARAMETER(lpCalendar);
+
+    // Validate parameters
+    if (cchDate < 0 || (!lpDateStr && cchDate > 0)) {
+        BaseSetLastNTError(STATUS_INVALID_PARAMETER);
+        return 0;
+    }
+
+    if (lpFormat && wcslen(lpFormat) >= 256) {
+        BaseSetLastNTError(STATUS_INVALID_PARAMETER);
+        return 0;
+    }
+
+    // Reject unsupported flags (kernel mode: no NLS worker)
+    if ((dwFlags & 0xF0) && ((dwFlags & 0xF0) - 1) & 0x70) {
+        BaseSetLastNTError(STATUS_INVALID_PARAMETER);
+        return 0;
+    }
+
+    // Use current time if not provided
+    SYSTEMTIME LocalTime{};
+    if (lpDate == nullptr) {
+        MUSA_NAME(GetLocalTime)(&LocalTime);
+        lpDate = &LocalTime;
+    }
+
+    // If output buffer provided but too small, return required size
+    if (cchDate > 0 && cchDate < 11) {
+        BaseSetLastNTError(STATUS_BUFFER_TOO_SMALL);
+        return 11;
+    }
+
+    // Format: YYYY-MM-DD (ISO 8601)
+    if (lpDateStr && cchDate >= 11) {
+        RtlStringCchPrintfW(lpDateStr, cchDate, L"%04d-%02d-%02d",
+            lpDate->wYear, lpDate->wMonth, lpDate->wDay);
+    }
+
+    return 11;
+}
+
+MUSA_IAT_SYMBOL(GetDateFormatEx, 28);
+
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+int WINAPI MUSA_NAME(GetTimeFormatEx)(
+    _In_opt_ LPCWSTR  lpLocaleName,
+    _In_     DWORD    dwFlags,
+    _In_opt_ const SYSTEMTIME* lpTime,
+    _In_opt_ LPCWSTR  lpFormat,
+    _Out_writes_opt_(cchTime) LPWSTR lpTimeStr,
+    _In_     int      cchTime
+)
+{
+    PAGED_CODE();
+
+    UNREFERENCED_PARAMETER(lpLocaleName);
+
+    // Validate parameters
+    if (cchTime < 0 || (!lpTimeStr && cchTime > 0)) {
+        BaseSetLastNTError(STATUS_INVALID_PARAMETER);
+        return 0;
+    }
+
+    if (lpFormat && wcslen(lpFormat) >= 256) {
+        BaseSetLastNTError(STATUS_INVALID_PARAMETER);
+        return 0;
+    }
+
+    // Reject unsupported flags (kernel mode: no NLS worker)
+    if ((dwFlags & 0x3FFFFFF0) != 0) {
+        BaseSetLastNTError(STATUS_INVALID_PARAMETER);
+        return 0;
+    }
+
+    // Use current time if not provided
+    SYSTEMTIME LocalTime{};
+    if (lpTime == nullptr) {
+        MUSA_NAME(GetLocalTime)(&LocalTime);
+        lpTime = &LocalTime;
+    }
+
+    // If output buffer provided but too small, return required size
+    if (cchTime > 0 && cchTime < 9) {
+        BaseSetLastNTError(STATUS_BUFFER_TOO_SMALL);
+        return 9;
+    }
+
+    // Format: HH:MM:SS (ISO 8601)
+    if (lpTimeStr && cchTime >= 9) {
+        RtlStringCchPrintfW(lpTimeStr, cchTime, L"%02d:%02d:%02d",
+            lpTime->wHour, lpTime->wMinute, lpTime->wSecond);
+    }
+
+    return 9;
+}
+
+MUSA_IAT_SYMBOL(GetTimeFormatEx, 24);
 
 EXTERN_C_END

@@ -47,6 +47,10 @@
     <ClInclude Include="$(SourcesDirectory)Thunks\Internal\KernelBase.Handle.h">
       <Filter>Musa.Core\Thunks\Internal</Filter>
     </ClInclude>
+
+    <ClInclude Include="$(SourcesDirectory)Thunks\Internal\KernelBase.Console.h">
+      <Filter>Musa.Core\Thunks\Internal</Filter>
+    </ClInclude>
     <ClInclude Include="$(SourcesDirectory)Thunks\Internal\KernelBase.File.h">
       <Filter>Musa.Core\Thunks\Internal</Filter>
     </ClInclude>
@@ -134,8 +138,14 @@
       <Filter>Musa.Core\Thunks</Filter>
     </ClCompile>
     <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.Debug.cpp">
+
       <Filter>Musa.Core\Thunks</Filter>
     </ClCompile>
+
+    <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.Console.cpp">
+      <Filter>Musa.Core\Thunks</Filter>
+    </ClCompile>
+
     <ClCompile Include="$(SourcesDirectory)Thunks\KernelBase.Error.cpp">
       <Filter>Musa.Core\Thunks</Filter>
     </ClCompile>

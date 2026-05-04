@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 EXTERN_C_START
 
@@ -26,6 +26,28 @@ int WINAPI MUSA_NAME(WideCharToMultiByte)(
     _In_ int                                                  CountOfMultiByte,
     _In_opt_ LPCCH                                            DefaultChar,
     _Out_opt_ LPBOOL                                          UsedDefaultChar
+    );
+
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+int WINAPI MUSA_NAME(GetDateFormatEx)(
+    _In_opt_ LPCWSTR  lpLocaleName,
+    _In_     DWORD    dwFlags,
+    _In_opt_ const SYSTEMTIME* lpDate,
+    _In_opt_ LPCWSTR  lpFormat,
+    _Out_writes_opt_(cchDate) LPWSTR lpDateStr,
+    _In_     int      cchDate,
+    _In_opt_ LPCWSTR  lpCalendar
+    );
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+int WINAPI MUSA_NAME(GetTimeFormatEx)(
+    _In_opt_ LPCWSTR  lpLocaleName,
+    _In_     DWORD    dwFlags,
+    _In_opt_ const SYSTEMTIME* lpTime,
+    _In_opt_ LPCWSTR  lpFormat,
+    _Out_writes_opt_(cchTime) LPWSTR lpTimeStr,
+    _In_     int      cchTime
     );
 
 EXTERN_C_END
