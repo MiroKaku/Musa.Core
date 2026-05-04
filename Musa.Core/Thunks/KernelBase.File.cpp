@@ -1255,6 +1255,7 @@ BOOL WINAPI MUSA_NAME(GetFileSizeEx)(
     IO_STATUS_BLOCK IoStatusBlock{};
     FILE_STANDARD_INFORMATION StdInfo{};
     NTSTATUS Status = ZwQueryInformationFile(hFile, &IoStatusBlock, &StdInfo, sizeof(StdInfo), FileStandardInformation);
+    MusaLOG("[GetFileSizeEx] Status=0x%08X, EndOfFile.QuadPart=%lld", Status, StdInfo.EndOfFile.QuadPart);
     if (!NT_SUCCESS(Status)) {
         BaseSetLastNTError(Status);
         return FALSE;
@@ -1284,20 +1285,24 @@ BOOL WINAPI MUSA_NAME(GetFileInformationByHandle)(
     // Use fixed buffer size = 0x68 matching kernel32
     UCHAR FileInfoBuf[0x68]{};
     Status = ZwQueryInformationFile(hFile, &IoStatusBlock, FileInfoBuf, 0x68, FileAllInformation);
+    MusaLOG("[GetFileInformationByHandle] Status=0x%08X, Info=%zu", Status, IoStatusBlock.Information);
+    // Dump first 32 bytes of buffer
+    MusaLOG("[GetFileInformationByHandle] Buf[0..7]: %02X %02X %02X %02X %02X %02X %02X %02X",
+        FileInfoBuf[0], FileInfoBuf[1], FileInfoBuf[2], FileInfoBuf[3],
+        FileInfoBuf[4], FileInfoBuf[5], FileInfoBuf[6], FileInfoBuf[7]);
+    MusaLOG("[GetFileInformationByHandle] Buf[8..15]: %02X %02X %02X %02X %02X %02X %02X %02X",
+        FileInfoBuf[8], FileInfoBuf[9], FileInfoBuf[10], FileInfoBuf[11],
+        FileInfoBuf[12], FileInfoBuf[13], FileInfoBuf[14], FileInfoBuf[15]);
+    MusaLOG("[GetFileInformationByHandle] Buf[0x20]: %02X %02X %02X %02X",
+        FileInfoBuf[0x20], FileInfoBuf[0x21], FileInfoBuf[0x22], FileInfoBuf[0x23]);
+    MusaLOG("[GetFileInformationByHandle] Buf[0x30..0x37]: %02X %02X %02X %02X %02X %02X %02X %02X",
+        FileInfoBuf[0x30], FileInfoBuf[0x31], FileInfoBuf[0x32], FileInfoBuf[0x33],
+        FileInfoBuf[0x34], FileInfoBuf[0x35], FileInfoBuf[0x36], FileInfoBuf[0x37]);
     if (!NT_SUCCESS(Status)) {
         BaseSetLastNTError(Status);
         return FALSE;
     }
 
-    // Kernel32 uses raw pointer arithmetic into the 0x68 buffer:
-    // Offset 0x00: CreationTime (8)
-    // Offset 0x08: LastAccessTime (8)
-    // Offset 0x10: LastWriteTime (8)
-    // Offset 0x20: FileAttributes (4)
-    // Offset 0x30: EndOfFile.LowPart (4)
-    // Offset 0x34: EndOfFile.HighPart (4)
-    // Offset 0x40: NumberOfLinks (4)
-    // Offset 0x60: IndexNumber (8)
     auto GetQword = [](PUCHAR Buf, ULONG Off) { return *reinterpret_cast<PLARGE_INTEGER>(Buf + Off); };
     auto GetDword = [](PUCHAR Buf, ULONG Off) { return *reinterpret_cast<PDWORD>(Buf + Off); };
 
