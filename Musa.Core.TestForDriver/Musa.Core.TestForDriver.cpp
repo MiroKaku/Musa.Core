@@ -1134,16 +1134,30 @@ namespace Main
 
 
 
-        // PeekNamedPipe
+
+        // CreateNamedPipeW + PeekNamedPipe
         {
-            DWORD TotalAvail = 0;
-            SetLastError(ERROR_SUCCESS);
-            BOOL Result = PeekNamedPipe(INVALID_HANDLE_VALUE, nullptr, 0, nullptr, &TotalAvail, nullptr);
-            KTEST_EXPECT(!Result,
-                "Pipe_PeekNamedPipe_InvalidHandle_Fails");
+            HANDLE hPipe = CreateNamedPipeW(
+                L"\\\\.\\pipe\\MusaCore_PeekTest",
+                PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
+                PIPE_TYPE_BYTE | PIPE_READMODE_BYTE,
+                1, 256, 256, 0, nullptr);
+            KTEST_EXPECT(hPipe != INVALID_HANDLE_VALUE,
+                "Pipe_CreateNamedPipeW_Succeeds");
+
+            if (hPipe != INVALID_HANDLE_VALUE) {
+                DWORD TotalAvail = 0, BytesRead = 0;
+                BOOL Result = PeekNamedPipe(hPipe, nullptr, 0, &BytesRead, &TotalAvail, nullptr);
+                KTEST_EXPECT(Result,
+                    "Pipe_PeekNamedPipe_EmptyPipe_Succeeds");
+                KTEST_EXPECT(TotalAvail == 0,
+                    "Pipe_PeekNamedPipe_EmptyPipe_NoData");
+                CloseHandle(hPipe);
+            }
         }
-        // SystemTimeToTzSpecificLocalTime
         {
+
+        // SystemTimeToTzSpecificLocalTime
             SYSTEMTIME Utc{};
             GetSystemTime(&Utc);
             SYSTEMTIME Local{};

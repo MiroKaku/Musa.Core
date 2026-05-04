@@ -30,9 +30,9 @@
 #pragma alloc_text(PAGE, MUSA_NAME(FindClose))
 #endif
 
+
+
 EXTERN_C_START
-
-
 // Resolve standard I/O pseudo-handles from PEB
 static HANDLE MusaCoreResolveStdHandle(HANDLE hFile)
 {
@@ -1369,6 +1369,85 @@ BOOL WINAPI MUSA_NAME(PeekNamedPipe)(
 }
 
 MUSA_IAT_SYMBOL(PeekNamedPipe, 24);
+
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+HANDLE WINAPI MUSA_NAME(CreateNamedPipeW)(
+    _In_ LPCWSTR lpName,
+    _In_ DWORD dwOpenMode,
+    _In_ DWORD dwPipeMode,
+    _In_ DWORD nMaxInstances,
+    _In_ DWORD nOutBufferSize,
+    _In_ DWORD nInBufferSize,
+    _In_ DWORD nDefaultTimeOut,
+    _In_opt_ LPSECURITY_ATTRIBUTES lpSecurityAttributes
+)
+{
+    PAGED_CODE();
+
+    if (nMaxInstances < 1 || nMaxInstances > PIPE_UNLIMITED_INSTANCES)
+        nMaxInstances = PIPE_UNLIMITED_INSTANCES;
+
+    UNICODE_STRING NtPath{};
+    if (!MUSA_NAME(RtlDosPathNameToNtPathName_U)(lpName, &NtPath, nullptr, nullptr)) {
+        RtlSetLastWin32Error(ERROR_PATH_NOT_FOUND);
+        return INVALID_HANDLE_VALUE;
+    }
+
+    OBJECT_ATTRIBUTES ObjAttr = RTL_CONSTANT_OBJECT_ATTRIBUTES(&NtPath, OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE);
+    if (lpSecurityAttributes) {
+        ObjAttr.SecurityDescriptor = lpSecurityAttributes->lpSecurityDescriptor;
+        if (lpSecurityAttributes->bInheritHandle) ObjAttr.Attributes |= OBJ_INHERIT;
+    }
+
+    ACCESS_MASK DesiredAccess; ULONG ShareAccess;
+    switch (dwOpenMode & 3) {
+        case PIPE_ACCESS_INBOUND:
+            DesiredAccess = FILE_GENERIC_READ; ShareAccess = FILE_SHARE_READ; break;
+        case PIPE_ACCESS_OUTBOUND:
+            DesiredAccess = FILE_GENERIC_WRITE; ShareAccess = FILE_SHARE_WRITE; break;
+        case PIPE_ACCESS_DUPLEX:
+            DesiredAccess = FILE_GENERIC_READ | FILE_GENERIC_WRITE;
+            ShareAccess = FILE_SHARE_READ | FILE_SHARE_WRITE; break;
+        default:
+            RtlFreeUnicodeString(&NtPath);
+            BaseSetLastNTError(STATUS_INVALID_PARAMETER);
+            return INVALID_HANDLE_VALUE;
+    }
+
+    ULONG CreateOptions = 0;
+    if (dwOpenMode & FILE_FLAG_WRITE_THROUGH) CreateOptions |= FILE_WRITE_THROUGH;
+    if (dwOpenMode & FILE_FLAG_OVERLAPPED) CreateOptions |= FILE_OPEN_FOR_BACKUP_INTENT;
+
+    ULONG PipeType = (dwPipeMode & PIPE_TYPE_MESSAGE) ? 1 : 0;
+    ULONG ReadMode = (dwPipeMode & PIPE_READMODE_MESSAGE) ? 1 : 0;
+    ULONG CompletionMode = (dwPipeMode & PIPE_NOWAIT) ? 1 : 0;
+
+    LARGE_INTEGER DefaultTimeOut{};
+    DefaultTimeOut.QuadPart = nDefaultTimeOut ? -10000LL * nDefaultTimeOut : -500000;
+
+    HANDLE PipeHandle = nullptr;
+    IO_STATUS_BLOCK IoStatusBlock{};
+    NTSTATUS Status = ZwCreateNamedPipeFile(&PipeHandle, DesiredAccess, &ObjAttr,
+        &IoStatusBlock, ShareAccess, FILE_CREATE, CreateOptions,
+        PipeType, ReadMode, CompletionMode, nMaxInstances,
+        nInBufferSize, nOutBufferSize, &DefaultTimeOut);
+
+    RtlFreeUnicodeString(&NtPath);
+
+    if (!NT_SUCCESS(Status)) {
+        if (Status == STATUS_INSTANCE_NOT_AVAILABLE || Status == STATUS_PIPE_NOT_AVAILABLE)
+            Status = STATUS_NO_SUCH_DEVICE;
+        BaseSetLastNTError(Status);
+        return INVALID_HANDLE_VALUE;
+    }
+
+    RtlSetLastWin32Error(IoStatusBlock.Information == FILE_CREATED
+        ? ERROR_ALREADY_EXISTS : ERROR_SUCCESS);
+    return PipeHandle;
+}
+
+MUSA_IAT_SYMBOL(CreateNamedPipeW, 32);
 
 MUSA_IAT_SYMBOL(GetFullPathNameW, 16);
 EXTERN_C_END

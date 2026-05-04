@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 EXTERN_C_START
 
@@ -162,6 +162,19 @@ BOOL WINAPI MUSA_NAME(PeekNamedPipe)(
     _Out_opt_ LPDWORD lpBytesRead,
     _Out_opt_ LPDWORD lpTotalBytesAvail,
     _Out_opt_ LPDWORD lpBytesLeftThisMessage
+    );
+
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+HANDLE WINAPI MUSA_NAME(CreateNamedPipeW)(
+    _In_ LPCWSTR lpName,
+    _In_ DWORD dwOpenMode,
+    _In_ DWORD dwPipeMode,
+    _In_ DWORD nMaxInstances,
+    _In_ DWORD nOutBufferSize,
+    _In_ DWORD nInBufferSize,
+    _In_ DWORD nDefaultTimeOut,
+    _In_opt_ LPSECURITY_ATTRIBUTES lpSecurityAttributes
     );
 
 EXTERN_C_END
