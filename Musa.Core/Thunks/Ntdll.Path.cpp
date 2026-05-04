@@ -1,4 +1,4 @@
-#include "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h"
+﻿#include "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h"
 #include "Internal/Ntdll.Path.h"
 #include "Internal/Ntdll.Heap.h"
 #ifdef ALLOC_PRAGMA
@@ -240,6 +240,85 @@ NTSTATUS NTAPI MUSA_NAME(RtlSetCurrentDirectory_U)(
     RtlStringCchCopyNW(Peb->CurrentDirectory, MAX_PATH, PathName->Buffer, CopyLen / sizeof(WCHAR));
     return STATUS_SUCCESS;
 }
+
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+NTSTATUS NTAPI MUSA_NAME(RtlGetFullPathName_UEx)(
+    _In_ PWSTR FileName,
+    _In_ ULONG BufferLength,
+    _Out_writes_bytes_opt_(BufferLength) PWSTR Buffer,
+    _Out_opt_ PWSTR* FilePart,
+    _Out_opt_ RTL_PATH_TYPE* InputPathType
+)
+{
+    PAGED_CODE();
+
+    if (FileName == nullptr || FileName[0] == L'\0') {
+        if (InputPathType) *InputPathType = RtlPathTypeUnknown;
+        return STATUS_OBJECT_NAME_INVALID;
+    }
+
+    using namespace Musa::Core;
+    const auto Peb = static_cast<KPEB*>(MUSA_NAME_PRIVATE(RtlGetCurrentPeb)());
+
+    int PathType = RtlpDetermineDosPathNameType(FileName);
+    PCWSTR Source = FileName;
+    size_t SourceLen = wcslen(FileName);
+    size_t PrefixLen = 0;
+    WCHAR CwdPrefix[MAX_PATH] = {};
+
+    // For relative paths, prepend current directory
+    if (PathType == MUSA_RTL_PATH_DRIVE_RELATIVE || PathType == MUSA_RTL_PATH_RELATIVE) {
+        if (Peb) {
+            wcscpy_s(CwdPrefix, MAX_PATH, Peb->CurrentDirectory);
+            CwdPrefix[MAX_PATH - 2] = L'\0';
+            auto CwdLen = wcslen(CwdPrefix);
+            if (CwdLen > 0 && CwdPrefix[CwdLen - 1] != L'\\') {
+                CwdPrefix[CwdLen] = L'\\';
+                CwdPrefix[CwdLen + 1] = L'\0';
+                ++CwdLen;
+            }
+            PrefixLen = CwdLen;
+        }
+    }
+
+    size_t TotalLen = PrefixLen + SourceLen;
+    size_t TotalBytes = (TotalLen + 1) * sizeof(WCHAR);
+
+    // Set path type output
+    if (InputPathType) {
+        if (PathType == MUSA_RTL_PATH_UNC_ROOT) *InputPathType = RtlPathTypeUncAbsolute;
+        else if (PathType == MUSA_RTL_PATH_DRIVE_ABSOLUTE) *InputPathType = RtlPathTypeDriveAbsolute;
+        else if (PathType == MUSA_RTL_PATH_EXTENDED) *InputPathType = RtlPathTypeLocalDevice;
+        else if (PathType == MUSA_RTL_PATH_SHORT_PREFIX) *InputPathType = RtlPathTypeRootLocalDevice;
+        else *InputPathType = RtlPathTypeUnknown;
+    }
+
+    if (Buffer == nullptr || BufferLength < TotalBytes) {
+        return STATUS_BUFFER_TOO_SMALL;
+    }
+
+    if (PrefixLen > 0)
+        memcpy(Buffer, CwdPrefix, PrefixLen * sizeof(WCHAR));
+    memcpy(Buffer + PrefixLen, Source, SourceLen * sizeof(WCHAR));
+    Buffer[TotalLen] = L'\0';
+
+    // Set FilePart to filename component
+    if (FilePart) {
+        *FilePart = nullptr;
+        for (size_t i = TotalLen; i > 0; --i) {
+            if (Buffer[i - 1] == L'\\' || Buffer[i - 1] == L'/') {
+                *FilePart = Buffer + i;
+                break;
+            }
+        }
+        if (*FilePart == nullptr) *FilePart = Buffer;
+    }
+
+    return STATUS_SUCCESS;
+}
+
+MUSA_IAT_SYMBOL(RtlGetFullPathName_UEx, 20);
 
 MUSA_IAT_SYMBOL(RtlSetCurrentDirectory_U, 4);
 

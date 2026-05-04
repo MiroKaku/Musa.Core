@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 EXTERN_C_START
 
@@ -124,6 +124,15 @@ BOOL WINAPI MUSA_NAME(FindNextFileW)(
 _IRQL_requires_max_(PASSIVE_LEVEL)
 BOOL WINAPI MUSA_NAME(FindClose)(
     _Inout_ HANDLE hFindFile
+    );
+
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+DWORD WINAPI MUSA_NAME(GetFullPathNameW)(
+    _In_ LPCWSTR lpFileName,
+    _In_ DWORD nBufferLength,
+    _Out_writes_to_opt_(nBufferLength, return + 1) LPWSTR lpBuffer,
+    _Out_opt_ LPWSTR* lpFilePart
     );
 
 EXTERN_C_END

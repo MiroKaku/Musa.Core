@@ -1,4 +1,4 @@
-// Phase 2: CreateFileW, SetFilePointerEx, GetFileAttributesExW, DeleteFileW, SetFileAttributesW
+﻿// Phase 2: CreateFileW, SetFilePointerEx, GetFileAttributesExW, DeleteFileW, SetFileAttributesW
 // Iteration 1-2: 2026-05-02 -- GetFileType, ReadFile, WriteFile, FlushFileBuffers
 // Build: PASS (x64/ARM64, Debug/Release) -- 0 errors
 #include "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h"
@@ -17,6 +17,8 @@
 #pragma alloc_text(PAGE, MUSA_NAME(CreateDirectoryW))
 #pragma alloc_text(PAGE, MUSA_NAME(RemoveDirectoryW))
 #pragma alloc_text(PAGE, MUSA_NAME(MoveFileExW))
+
+#pragma alloc_text(PAGE, MUSA_NAME(GetFullPathNameW))
 #pragma alloc_text(PAGE, MUSA_NAME(GetDriveTypeW))
 #pragma alloc_text(PAGE, MUSA_NAME(FindFirstFileExW))
 #pragma alloc_text(PAGE, MUSA_NAME(FindClose))
@@ -1176,4 +1178,33 @@ BOOL WINAPI MUSA_NAME(FindClose)(
 }
 
 MUSA_IAT_SYMBOL(FindClose, 4);
+
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+DWORD WINAPI MUSA_NAME(GetFullPathNameW)(
+    _In_ LPCWSTR lpFileName,
+    _In_ DWORD nBufferLength,
+    _Out_writes_to_opt_(nBufferLength, return + 1) LPWSTR lpBuffer,
+    _Out_opt_ LPWSTR* lpFilePart
+)
+{
+    PAGED_CODE();
+
+    RTL_PATH_TYPE PathType = RtlPathTypeUnknown;
+    NTSTATUS Status = MUSA_NAME(RtlGetFullPathName_UEx)(
+        const_cast<PWSTR>(lpFileName),
+        nBufferLength * 2,
+        lpBuffer,
+        lpFilePart,
+        &PathType);
+
+    if (!NT_SUCCESS(Status)) {
+        BaseSetLastNTError(Status);
+        return 0;
+    }
+
+    return static_cast<DWORD>(wcslen(lpBuffer));
+}
+
+MUSA_IAT_SYMBOL(GetFullPathNameW, 16);
 EXTERN_C_END

@@ -1062,6 +1062,31 @@ namespace Main
             KTEST_EXPECT(Buf[2] == L':' && Buf[5] == L':',
                 "NLS_GetTimeFormatEx_NullTime_HasDelimiters");
         }
+
+
+
+        // GetFullPathNameW
+        {
+            // Absolute path
+            WCHAR Buf[260] = {};
+            LPWSTR FilePart = nullptr;
+            DWORD Len = GetFullPathNameW(L"C:\\Windows\\System32", _countof(Buf), Buf, &FilePart);
+            KTEST_EXPECT(Len > 0,
+                "Path_GetFullPathNameW_Absolute_Succeeds");
+            KTEST_EXPECT(_wcsicmp(Buf, L"C:\\Windows\\System32") == 0,
+                "Path_GetFullPathNameW_Absolute_ContentMatches");
+            KTEST_EXPECT(FilePart != nullptr && wcscmp(FilePart, L"System32") == 0,
+                "Path_GetFullPathNameW_Absolute_FilePart");
+
+            // Relative path — prepends current directory (kernel default: C:\Windows)
+            Len = GetFullPathNameW(L"System32", _countof(Buf), Buf, &FilePart);
+            KTEST_EXPECT(Len > 0,
+                "Path_GetFullPathNameW_Relative_Succeeds");
+            KTEST_EXPECT(wcslen(Buf) >= wcslen(L"C:\\Windows\\System32"),
+                "Path_GetFullPathNameW_Relative_Expanded");
+            KTEST_EXPECT(FilePart != nullptr && wcscmp(FilePart, L"System32") == 0,
+                "Path_GetFullPathNameW_Relative_FilePart");
+        }
         // --- Results ---
 
         MusaLOG("=== Results: %lu/%lu passed ===",
