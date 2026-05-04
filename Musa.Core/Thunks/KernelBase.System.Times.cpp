@@ -11,6 +11,8 @@
 #pragma alloc_text(PAGE, MUSA_NAME(LocalFileTimeToFileTime))
 #pragma alloc_text(PAGE, MUSA_NAME(GetTimeZoneInformation))
 #pragma alloc_text(PAGE, MUSA_NAME(GetDynamicTimeZoneInformation))
+
+#pragma alloc_text(PAGE, MUSA_NAME(SystemTimeToTzSpecificLocalTime))
 #endif
 
 using namespace Musa;

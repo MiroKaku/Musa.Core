@@ -22,6 +22,8 @@
 
 #pragma alloc_text(PAGE, MUSA_NAME(PeekNamedPipe))
 
+#pragma alloc_text(PAGE, MUSA_NAME(CreateNamedPipeW))
+
 #pragma alloc_text(PAGE, MUSA_NAME(SetEndOfFile))
 #pragma alloc_text(PAGE, MUSA_NAME(GetFileSizeEx))
 #pragma alloc_text(PAGE, MUSA_NAME(GetFileInformationByHandle))
@@ -1209,6 +1211,8 @@ DWORD WINAPI MUSA_NAME(GetFullPathNameW)(
         return 0;
     }
 
+
+#pragma warning(suppress: 6387)  // SAL can't track RtlGetFullPathName_UEx filled buffer
     return static_cast<DWORD>(wcslen(lpBuffer));
 }
 

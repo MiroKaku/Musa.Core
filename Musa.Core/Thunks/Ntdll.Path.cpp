@@ -6,6 +6,8 @@
 #pragma alloc_text(PAGE, MUSA_NAME(RtlDosPathNameToNtPathName_U))
 #pragma alloc_text(PAGE, MUSA_NAME(RtlGetCurrentDirectory_U))
 #pragma alloc_text(PAGE, MUSA_NAME(RtlSetCurrentDirectory_U))
+
+#pragma alloc_text(PAGE, MUSA_NAME(RtlGetFullPathName_UEx))
 #endif
 
 
