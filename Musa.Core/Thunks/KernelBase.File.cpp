@@ -1291,7 +1291,7 @@ BOOL WINAPI MUSA_NAME(GetFileInformationByHandle)(
     Status = ZwQueryInformationFile(hFile, &IoStatusBlock, FileBuf, 0x68, FileAllInformation);
 
     MusaLOG("[GetFileInformationByHandle] FileStatus=0x%08X", Status);
-    if (!NT_SUCCESS(Status)) {
+    if (!NT_SUCCESS(Status) && Status != STATUS_BUFFER_OVERFLOW) {
         BaseSetLastNTError(Status);
         return FALSE;
     }
