@@ -1281,28 +1281,46 @@ BOOL WINAPI MUSA_NAME(GetFileInformationByHandle)(
     DWORD VolSerial = NT_SUCCESS(Status) ? reinterpret_cast<PFILE_FS_VOLUME_INFORMATION>(VolInfoBuf)->VolumeSerialNumber : 0;
 
 
-    // Use fixed buffer size = 0x68 (104) bytes matching kernel32
+    // Use fixed buffer size = 0x68 matching kernel32
     UCHAR FileInfoBuf[0x68]{};
     Status = ZwQueryInformationFile(hFile, &IoStatusBlock, FileInfoBuf, 0x68, FileAllInformation);
     if (!NT_SUCCESS(Status)) {
         BaseSetLastNTError(Status);
         return FALSE;
     }
-    PFILE_ALL_INFORMATION FileInfo = reinterpret_cast<PFILE_ALL_INFORMATION>(FileInfoBuf);
-    lpFileInformation->dwFileAttributes = FileInfo->BasicInformation.FileAttributes;
 
-    lpFileInformation->ftCreationTime.dwLowDateTime   = FileInfo->BasicInformation.CreationTime.LowPart;
-    lpFileInformation->ftCreationTime.dwHighDateTime  = FileInfo->BasicInformation.CreationTime.HighPart;
-    lpFileInformation->ftLastAccessTime.dwLowDateTime  = FileInfo->BasicInformation.LastAccessTime.LowPart;
-    lpFileInformation->ftLastAccessTime.dwHighDateTime = FileInfo->BasicInformation.LastAccessTime.HighPart;
-    lpFileInformation->ftLastWriteTime.dwLowDateTime   = FileInfo->BasicInformation.LastWriteTime.LowPart;
-    lpFileInformation->ftLastWriteTime.dwHighDateTime  = FileInfo->BasicInformation.LastWriteTime.HighPart;
+    // Kernel32 uses raw pointer arithmetic into the 0x68 buffer:
+    // Offset 0x00: CreationTime (8)
+    // Offset 0x08: LastAccessTime (8)
+    // Offset 0x10: LastWriteTime (8)
+    // Offset 0x20: FileAttributes (4)
+    // Offset 0x30: EndOfFile.LowPart (4)
+    // Offset 0x34: EndOfFile.HighPart (4)
+    // Offset 0x40: NumberOfLinks (4)
+    // Offset 0x60: IndexNumber (8)
+    auto GetQword = [](PUCHAR Buf, ULONG Off) { return *reinterpret_cast<PLARGE_INTEGER>(Buf + Off); };
+    auto GetDword = [](PUCHAR Buf, ULONG Off) { return *reinterpret_cast<PDWORD>(Buf + Off); };
+
+    LARGE_INTEGER Ct = GetQword(FileInfoBuf, 0x00);
+    LARGE_INTEGER La = GetQword(FileInfoBuf, 0x08);
+    LARGE_INTEGER Lw = GetQword(FileInfoBuf, 0x10);
+    LARGE_INTEGER Sz = GetQword(FileInfoBuf, 0x30);
+    LARGE_INTEGER Id = GetQword(FileInfoBuf, 0x60);
+
+    lpFileInformation->dwFileAttributes    = GetDword(FileInfoBuf, 0x20);
+
     lpFileInformation->dwVolumeSerialNumber = VolSerial;
-    lpFileInformation->nFileSizeHigh    = FileInfo->StandardInformation.EndOfFile.HighPart;
-    lpFileInformation->nFileSizeLow     = FileInfo->StandardInformation.EndOfFile.LowPart;
-    lpFileInformation->nNumberOfLinks   = FileInfo->StandardInformation.NumberOfLinks;
-    lpFileInformation->nFileIndexHigh   = FileInfo->InternalInformation.IndexNumber.HighPart;
-    lpFileInformation->nFileIndexLow    = FileInfo->InternalInformation.IndexNumber.LowPart;
+    lpFileInformation->ftCreationTime.dwLowDateTime   = Ct.LowPart;
+    lpFileInformation->ftCreationTime.dwHighDateTime  = Ct.HighPart;
+    lpFileInformation->ftLastAccessTime.dwLowDateTime  = La.LowPart;
+    lpFileInformation->ftLastAccessTime.dwHighDateTime = La.HighPart;
+    lpFileInformation->ftLastWriteTime.dwLowDateTime   = Lw.LowPart;
+    lpFileInformation->ftLastWriteTime.dwHighDateTime  = Lw.HighPart;
+    lpFileInformation->nFileSizeHigh    = Sz.HighPart;
+    lpFileInformation->nFileSizeLow     = Sz.LowPart;
+    lpFileInformation->nNumberOfLinks   = GetDword(FileInfoBuf, 0x40);
+    lpFileInformation->nFileIndexHigh   = Id.HighPart;
+    lpFileInformation->nFileIndexLow    = Id.LowPart;
     return TRUE;
 }
 
