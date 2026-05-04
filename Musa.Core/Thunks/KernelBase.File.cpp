@@ -1280,26 +1280,29 @@ BOOL WINAPI MUSA_NAME(GetFileInformationByHandle)(
     NTSTATUS Status = ZwQueryVolumeInformationFile(hFile, &IoStatusBlock, &VolInfo, sizeof(VolInfo), FileFsVolumeInformation);
     DWORD VolSerial = NT_SUCCESS(Status) ? VolInfo.VolumeSerialNumber : 0;
 
-    FILE_ALL_INFORMATION FileInfo{};
-    Status = ZwQueryInformationFile(hFile, &IoStatusBlock, &FileInfo, sizeof(FileInfo), FileAllInformation);
+
+    // Use fixed buffer size = 0x68 (104) bytes matching kernel32
+    UCHAR FileInfoBuf[0x68]{};
+    Status = ZwQueryInformationFile(hFile, &IoStatusBlock, FileInfoBuf, 0x68, FileAllInformation);
     if (!NT_SUCCESS(Status)) {
         BaseSetLastNTError(Status);
         return FALSE;
     }
+    PFILE_ALL_INFORMATION FileInfo = reinterpret_cast<PFILE_ALL_INFORMATION>(FileInfoBuf);
+    lpFileInformation->dwFileAttributes = FileInfo->BasicInformation.FileAttributes;
 
-    lpFileInformation->dwFileAttributes = FileInfo.BasicInformation.FileAttributes;
-    lpFileInformation->ftCreationTime.dwLowDateTime   = FileInfo.BasicInformation.CreationTime.LowPart;
-    lpFileInformation->ftCreationTime.dwHighDateTime  = FileInfo.BasicInformation.CreationTime.HighPart;
-    lpFileInformation->ftLastAccessTime.dwLowDateTime  = FileInfo.BasicInformation.LastAccessTime.LowPart;
-    lpFileInformation->ftLastAccessTime.dwHighDateTime = FileInfo.BasicInformation.LastAccessTime.HighPart;
-    lpFileInformation->ftLastWriteTime.dwLowDateTime   = FileInfo.BasicInformation.LastWriteTime.LowPart;
-    lpFileInformation->ftLastWriteTime.dwHighDateTime  = FileInfo.BasicInformation.LastWriteTime.HighPart;
+    lpFileInformation->ftCreationTime.dwLowDateTime   = FileInfo->BasicInformation.CreationTime.LowPart;
+    lpFileInformation->ftCreationTime.dwHighDateTime  = FileInfo->BasicInformation.CreationTime.HighPart;
+    lpFileInformation->ftLastAccessTime.dwLowDateTime  = FileInfo->BasicInformation.LastAccessTime.LowPart;
+    lpFileInformation->ftLastAccessTime.dwHighDateTime = FileInfo->BasicInformation.LastAccessTime.HighPart;
+    lpFileInformation->ftLastWriteTime.dwLowDateTime   = FileInfo->BasicInformation.LastWriteTime.LowPart;
+    lpFileInformation->ftLastWriteTime.dwHighDateTime  = FileInfo->BasicInformation.LastWriteTime.HighPart;
     lpFileInformation->dwVolumeSerialNumber = VolSerial;
-    lpFileInformation->nFileSizeHigh    = FileInfo.StandardInformation.EndOfFile.HighPart;
-    lpFileInformation->nFileSizeLow     = FileInfo.StandardInformation.EndOfFile.LowPart;
-    lpFileInformation->nNumberOfLinks   = FileInfo.StandardInformation.NumberOfLinks;
-    lpFileInformation->nFileIndexHigh   = FileInfo.InternalInformation.IndexNumber.HighPart;
-    lpFileInformation->nFileIndexLow    = FileInfo.InternalInformation.IndexNumber.LowPart;
+    lpFileInformation->nFileSizeHigh    = FileInfo->StandardInformation.EndOfFile.HighPart;
+    lpFileInformation->nFileSizeLow     = FileInfo->StandardInformation.EndOfFile.LowPart;
+    lpFileInformation->nNumberOfLinks   = FileInfo->StandardInformation.NumberOfLinks;
+    lpFileInformation->nFileIndexHigh   = FileInfo->InternalInformation.IndexNumber.HighPart;
+    lpFileInformation->nFileIndexLow    = FileInfo->InternalInformation.IndexNumber.LowPart;
     return TRUE;
 }
 
