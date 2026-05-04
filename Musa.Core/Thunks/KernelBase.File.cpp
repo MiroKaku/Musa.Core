@@ -1277,56 +1277,30 @@ BOOL WINAPI MUSA_NAME(GetFileInformationByHandle)(
 
     IO_STATUS_BLOCK IoStatusBlock{};
 
-    UCHAR VolInfoBuf[0x18]{};
-    NTSTATUS Status = ZwQueryVolumeInformationFile(hFile, &IoStatusBlock, VolInfoBuf, 0x18, FileFsVolumeInformation);
-    DWORD VolSerial = NT_SUCCESS(Status) ? reinterpret_cast<PFILE_FS_VOLUME_INFORMATION>(VolInfoBuf)->VolumeSerialNumber : 0;
+    FILE_FS_VOLUME_INFORMATION VolInfo{};
+    NTSTATUS Status = ZwQueryVolumeInformationFile(hFile, &IoStatusBlock, &VolInfo, sizeof(VolInfo), FileFsVolumeInformation);
+    DWORD VolSerial = NT_SUCCESS(Status) ? VolInfo.VolumeSerialNumber : 0;
 
-
-    // Use fixed buffer size = 0x68 matching kernel32
-    UCHAR FileInfoBuf[0x68]{};
-    Status = ZwQueryInformationFile(hFile, &IoStatusBlock, FileInfoBuf, 0x68, FileAllInformation);
-    MusaLOG("[GetFileInformationByHandle] Status=0x%08X, Info=%zu", Status, IoStatusBlock.Information);
-    // Dump first 32 bytes of buffer
-    MusaLOG("[GetFileInformationByHandle] Buf[0..7]: %02X %02X %02X %02X %02X %02X %02X %02X",
-        FileInfoBuf[0], FileInfoBuf[1], FileInfoBuf[2], FileInfoBuf[3],
-        FileInfoBuf[4], FileInfoBuf[5], FileInfoBuf[6], FileInfoBuf[7]);
-    MusaLOG("[GetFileInformationByHandle] Buf[8..15]: %02X %02X %02X %02X %02X %02X %02X %02X",
-        FileInfoBuf[8], FileInfoBuf[9], FileInfoBuf[10], FileInfoBuf[11],
-        FileInfoBuf[12], FileInfoBuf[13], FileInfoBuf[14], FileInfoBuf[15]);
-    MusaLOG("[GetFileInformationByHandle] Buf[0x20]: %02X %02X %02X %02X",
-        FileInfoBuf[0x20], FileInfoBuf[0x21], FileInfoBuf[0x22], FileInfoBuf[0x23]);
-    MusaLOG("[GetFileInformationByHandle] Buf[0x30..0x37]: %02X %02X %02X %02X %02X %02X %02X %02X",
-        FileInfoBuf[0x30], FileInfoBuf[0x31], FileInfoBuf[0x32], FileInfoBuf[0x33],
-        FileInfoBuf[0x34], FileInfoBuf[0x35], FileInfoBuf[0x36], FileInfoBuf[0x37]);
+    FILE_ALL_INFORMATION FileInfo{};
+    Status = ZwQueryInformationFile(hFile, &IoStatusBlock, &FileInfo, sizeof(FileInfo), FileAllInformation);
+    MusaLOG("[GetFileInformationByHandle] Status=0x%08X, sizeof=%zu", Status, sizeof(FileInfo));
     if (!NT_SUCCESS(Status)) {
         BaseSetLastNTError(Status);
         return FALSE;
     }
 
-    auto GetQword = [](PUCHAR Buf, ULONG Off) { return *reinterpret_cast<PLARGE_INTEGER>(Buf + Off); };
-    auto GetDword = [](PUCHAR Buf, ULONG Off) { return *reinterpret_cast<PDWORD>(Buf + Off); };
-
-    LARGE_INTEGER Ct = GetQword(FileInfoBuf, 0x00);
-    LARGE_INTEGER La = GetQword(FileInfoBuf, 0x08);
-    LARGE_INTEGER Lw = GetQword(FileInfoBuf, 0x10);
-    LARGE_INTEGER Sz = GetQword(FileInfoBuf, 0x30);
-    LARGE_INTEGER Id = GetQword(FileInfoBuf, 0x60);
-
-    lpFileInformation->dwFileAttributes    = GetDword(FileInfoBuf, 0x20);
-
+    lpFileInformation->dwFileAttributes = FileInfo.BasicInformation.FileAttributes;
+    lpFileInformation->ftCreationTime   = *reinterpret_cast<const FILETIME*>(&FileInfo.BasicInformation.CreationTime);
+    lpFileInformation->ftLastAccessTime = *reinterpret_cast<const FILETIME*>(&FileInfo.BasicInformation.LastAccessTime);
+    lpFileInformation->ftLastWriteTime  = *reinterpret_cast<const FILETIME*>(&FileInfo.BasicInformation.LastWriteTime);
     lpFileInformation->dwVolumeSerialNumber = VolSerial;
-    lpFileInformation->ftCreationTime.dwLowDateTime   = Ct.LowPart;
-    lpFileInformation->ftCreationTime.dwHighDateTime  = Ct.HighPart;
-    lpFileInformation->ftLastAccessTime.dwLowDateTime  = La.LowPart;
-    lpFileInformation->ftLastAccessTime.dwHighDateTime = La.HighPart;
-    lpFileInformation->ftLastWriteTime.dwLowDateTime   = Lw.LowPart;
-    lpFileInformation->ftLastWriteTime.dwHighDateTime  = Lw.HighPart;
-    lpFileInformation->nFileSizeHigh    = Sz.HighPart;
-    lpFileInformation->nFileSizeLow     = Sz.LowPart;
-    lpFileInformation->nNumberOfLinks   = GetDword(FileInfoBuf, 0x40);
-    lpFileInformation->nFileIndexHigh   = Id.HighPart;
-    lpFileInformation->nFileIndexLow    = Id.LowPart;
+    lpFileInformation->nFileSizeHigh    = FileInfo.StandardInformation.EndOfFile.HighPart;
+    lpFileInformation->nFileSizeLow     = FileInfo.StandardInformation.EndOfFile.LowPart;
+    lpFileInformation->nNumberOfLinks   = FileInfo.StandardInformation.NumberOfLinks;
+    lpFileInformation->nFileIndexHigh   = FileInfo.InternalInformation.IndexNumber.HighPart;
+    lpFileInformation->nFileIndexLow    = FileInfo.InternalInformation.IndexNumber.LowPart;
     return TRUE;
+
 }
 
 MUSA_IAT_SYMBOL(GetFileInformationByHandle, 8);
