@@ -1131,6 +1131,38 @@ namespace Main
                 CloseHandle(hFile);
             }
         }
+
+
+
+        // PeekNamedPipe
+        {
+            DWORD TotalAvail = 0;
+            SetLastError(ERROR_SUCCESS);
+            BOOL Result = PeekNamedPipe(INVALID_HANDLE_VALUE, nullptr, 0, nullptr, &TotalAvail, nullptr);
+            KTEST_EXPECT(!Result,
+                "Pipe_PeekNamedPipe_InvalidHandle_Fails");
+        }
+        // SystemTimeToTzSpecificLocalTime
+        {
+            SYSTEMTIME Utc{};
+            GetSystemTime(&Utc);
+            SYSTEMTIME Local{};
+            BOOL Result = SystemTimeToTzSpecificLocalTime(nullptr, &Utc, &Local);
+            KTEST_EXPECT(Result,
+                "Time_SystemTimeToTzSpecificLocalTime_Succeeds");
+            KTEST_EXPECT(Local.wYear == Utc.wYear && Local.wMonth == Utc.wMonth &&
+                         Local.wDay == Utc.wDay && Local.wHour == Utc.wHour,
+                "Time_SystemTimeToTzSpecificLocalTime_PassThrough");
+        }
+
+        {
+            SYSTEMTIME Local{};
+            BOOL Result = SystemTimeToTzSpecificLocalTime(nullptr, nullptr, &Local);
+            KTEST_EXPECT(Result,
+                "Time_SystemTimeToTzSpecificLocalTime_NullTime_UsesCurrent");
+            KTEST_EXPECT(Local.wYear >= 2026,
+                "Time_SystemTimeToTzSpecificLocalTime_NullTime_PlausibleYear");
+        }
         // --- Results ---
 
         MusaLOG("=== Results: %lu/%lu passed ===",
