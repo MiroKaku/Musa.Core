@@ -153,4 +153,15 @@ BOOL WINAPI MUSA_NAME(GetFileInformationByHandle)(
     _Out_ LPBY_HANDLE_FILE_INFORMATION lpFileInformation
     );
 
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(PeekNamedPipe)(
+    _In_ HANDLE hNamedPipe,
+    _Out_writes_bytes_to_opt_(nBufferSize, *lpBytesRead) LPVOID lpBuffer,
+    _In_ DWORD nBufferSize,
+    _Out_opt_ LPDWORD lpBytesRead,
+    _Out_opt_ LPDWORD lpTotalBytesAvail,
+    _Out_opt_ LPDWORD lpBytesLeftThisMessage
+    );
+
 EXTERN_C_END

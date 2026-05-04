@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 EXTERN_C_START
 
@@ -127,5 +127,13 @@ DWORD WINAPI MUSA_NAME(ExpandEnvironmentStringsW)(
     _In_ LPCWSTR lpSrc,
     _Out_writes_to_opt_(nSize, return + 1) LPWSTR lpDst,
     _In_ DWORD nSize
+    );
+
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(SystemTimeToTzSpecificLocalTime)(
+    _In_opt_ const TIME_ZONE_INFORMATION* lpTimeZoneInformation,
+    _In_opt_ const SYSTEMTIME* lpUniversalTime,
+    _Out_ LPSYSTEMTIME lpLocalTime
     );
 EXTERN_C_END

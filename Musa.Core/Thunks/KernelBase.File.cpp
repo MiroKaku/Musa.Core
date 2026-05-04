@@ -20,6 +20,8 @@
 
 #pragma alloc_text(PAGE, MUSA_NAME(GetFullPathNameW))
 
+#pragma alloc_text(PAGE, MUSA_NAME(PeekNamedPipe))
+
 #pragma alloc_text(PAGE, MUSA_NAME(SetEndOfFile))
 #pragma alloc_text(PAGE, MUSA_NAME(GetFileSizeEx))
 #pragma alloc_text(PAGE, MUSA_NAME(GetFileInformationByHandle))
@@ -1302,6 +1304,71 @@ BOOL WINAPI MUSA_NAME(GetFileInformationByHandle)(
 }
 
 MUSA_IAT_SYMBOL(GetFileInformationByHandle, 8);
+
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(PeekNamedPipe)(
+    _In_ HANDLE hNamedPipe,
+    _Out_writes_bytes_to_opt_(nBufferSize, *lpBytesRead) LPVOID lpBuffer,
+    _In_ DWORD nBufferSize,
+    _Out_opt_ LPDWORD lpBytesRead,
+    _Out_opt_ LPDWORD lpTotalBytesAvail,
+    _Out_opt_ LPDWORD lpBytesLeftThisMessage
+)
+{
+    PAGED_CODE();
+
+    ULONG OutLen = nBufferSize + 16;
+    auto OutBuf = static_cast<PBYTE>(RtlAllocateHeap(RtlProcessHeap(), 0, OutLen));
+    if (!OutBuf) {
+        BaseSetLastNTError(STATUS_NO_MEMORY);
+        return FALSE;
+    }
+
+    OBJECT_ATTRIBUTES ObjAttr = RTL_CONSTANT_OBJECT_ATTRIBUTES(nullptr, OBJ_KERNEL_HANDLE);
+    HANDLE EventHandle = nullptr;
+    NTSTATUS Status = ZwCreateEvent(&EventHandle, EVENT_ALL_ACCESS, &ObjAttr, NotificationEvent, FALSE);
+    if (!NT_SUCCESS(Status)) {
+        RtlFreeHeap(RtlProcessHeap(), 0, OutBuf);
+        BaseSetLastNTError(Status);
+        return FALSE;
+    }
+
+    IO_STATUS_BLOCK IoStatusBlock{};
+    Status = ZwFsControlFile(hNamedPipe, EventHandle, nullptr, nullptr,
+        &IoStatusBlock, 0x11400C, nullptr, 0, OutBuf, OutLen);
+
+    if (Status == STATUS_PENDING) {
+        Status = ZwWaitForSingleObject(EventHandle, FALSE, nullptr);
+        if (NT_SUCCESS(Status))
+            Status = IoStatusBlock.Status;
+    }
+
+    if (NT_SUCCESS(Status)) {
+        DWORD DataLen = *reinterpret_cast<PDWORD>(OutBuf);
+        DWORD TotalAvail = *reinterpret_cast<PDWORD>(OutBuf + 4);
+        DWORD LeftMsg = *reinterpret_cast<PDWORD>(OutBuf + 8);
+
+        if (DataLen > nBufferSize) DataLen = nBufferSize;
+
+        if (lpBytesRead) *lpBytesRead = DataLen;
+        if (lpTotalBytesAvail) *lpTotalBytesAvail = TotalAvail;
+        if (lpBytesLeftThisMessage) *lpBytesLeftThisMessage = LeftMsg;
+        if (lpBuffer && DataLen > 0)
+            memcpy(lpBuffer, OutBuf + 12, DataLen);
+    }
+
+    RtlFreeHeap(RtlProcessHeap(), 0, OutBuf);
+    ZwClose(EventHandle);
+
+    if (!NT_SUCCESS(Status)) {
+        BaseSetLastNTError(Status);
+        return FALSE;
+    }
+    return TRUE;
+}
+
+MUSA_IAT_SYMBOL(PeekNamedPipe, 24);
 
 MUSA_IAT_SYMBOL(GetFullPathNameW, 16);
 EXTERN_C_END

@@ -1,4 +1,4 @@
-#include "KernelBase.Private.h"
+﻿#include "KernelBase.Private.h"
 #include "Internal/KernelBase.System.h"
 
 #ifdef ALLOC_PRAGMA
@@ -387,4 +387,27 @@ DWORD WINAPI MUSA_NAME(GetDynamicTimeZoneInformation)(
 }
 
 MUSA_IAT_SYMBOL(GetDynamicTimeZoneInformation, 4);
+
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(SystemTimeToTzSpecificLocalTime)(
+    _In_opt_ const TIME_ZONE_INFORMATION* lpTimeZoneInformation,
+    _In_opt_ const SYSTEMTIME* lpUniversalTime,
+    _Out_ LPSYSTEMTIME lpLocalTime
+)
+{
+    PAGED_CODE();
+
+    UNREFERENCED_PARAMETER(lpTimeZoneInformation);
+
+    // Kernel mode: no timezone conversion. Copy input as-is.
+    if (lpUniversalTime) {
+        *lpLocalTime = *lpUniversalTime;
+    } else {
+        MUSA_NAME(GetSystemTime)(lpLocalTime);
+    }
+    return TRUE;
+}
+
+MUSA_IAT_SYMBOL(SystemTimeToTzSpecificLocalTime, 12);
 EXTERN_C_END
