@@ -1276,9 +1276,9 @@ BOOL WINAPI MUSA_NAME(GetFileInformationByHandle)(
 
     IO_STATUS_BLOCK IoStatusBlock{};
 
-    FILE_FS_VOLUME_INFORMATION VolInfo{};
-    NTSTATUS Status = ZwQueryVolumeInformationFile(hFile, &IoStatusBlock, &VolInfo, sizeof(VolInfo), FileFsVolumeInformation);
-    DWORD VolSerial = NT_SUCCESS(Status) ? VolInfo.VolumeSerialNumber : 0;
+    UCHAR VolInfoBuf[0x18]{};
+    NTSTATUS Status = ZwQueryVolumeInformationFile(hFile, &IoStatusBlock, VolInfoBuf, 0x18, FileFsVolumeInformation);
+    DWORD VolSerial = NT_SUCCESS(Status) ? reinterpret_cast<PFILE_FS_VOLUME_INFORMATION>(VolInfoBuf)->VolumeSerialNumber : 0;
 
 
     // Use fixed buffer size = 0x68 (104) bytes matching kernel32
@@ -1347,18 +1347,20 @@ BOOL WINAPI MUSA_NAME(PeekNamedPipe)(
             Status = IoStatusBlock.Status;
     }
 
-    if (NT_SUCCESS(Status)) {
-        DWORD DataLen = *reinterpret_cast<PDWORD>(OutBuf);
+    if (NT_SUCCESS(Status) || Status == STATUS_BUFFER_OVERFLOW) {
+        Status = STATUS_SUCCESS;
+        DWORD DataLen = static_cast<DWORD>(IoStatusBlock.Information) - 16;
         DWORD TotalAvail = *reinterpret_cast<PDWORD>(OutBuf + 4);
-        DWORD LeftMsg = *reinterpret_cast<PDWORD>(OutBuf + 8);
+        DWORD LeftMsg = *reinterpret_cast<PDWORD>(OutBuf + 12);
 
         if (DataLen > nBufferSize) DataLen = nBufferSize;
 
         if (lpBytesRead) *lpBytesRead = DataLen;
         if (lpTotalBytesAvail) *lpTotalBytesAvail = TotalAvail;
-        if (lpBytesLeftThisMessage) *lpBytesLeftThisMessage = LeftMsg;
+        if (lpBytesLeftThisMessage) *lpBytesLeftThisMessage = LeftMsg - DataLen;
         if (lpBuffer && DataLen > 0)
-            memcpy(lpBuffer, OutBuf + 12, DataLen);
+            memcpy(lpBuffer, OutBuf + 16, DataLen);
+
     }
 
     RtlFreeHeap(RtlProcessHeap(), 0, OutBuf);
