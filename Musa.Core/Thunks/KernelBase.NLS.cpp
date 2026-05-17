@@ -1,4 +1,4 @@
-﻿//
+//
 // National Language Support
 //
 
@@ -39,8 +39,15 @@ int WINAPI MUSA_NAME(MultiByteToWideChar)(
         ULONG BytesInUnicodeString = 0ul;
 
         if (CodePage == CP_ACP) {
-            Status = RtlMultiByteToUnicodeSize(&BytesInUnicodeString, MultiByteStr, CountOfMultiByte);
-            if (!Status) {
+            // user-mode MultiByteToWideChar treats -1 as "null-terminated":
+            // length = strlen(s) + 1 (includes terminator). Match that.
+            const int AcpByteCount = (CountOfMultiByte == -1)
+                ? static_cast<int>(strlen(MultiByteStr) + 1)
+                : CountOfMultiByte;
+
+            Status = RtlMultiByteToUnicodeSize(&BytesInUnicodeString, MultiByteStr,
+                static_cast<ULONG>(AcpByteCount));
+            if (!NT_SUCCESS(Status)) {
                 break;
             }
 
@@ -56,8 +63,8 @@ int WINAPI MUSA_NAME(MultiByteToWideChar)(
             }
 
             Status = RtlMultiByteToUnicodeN(WideCharStr, static_cast<ULONG>(CountOfWideChar * sizeof(wchar_t)),
-                &BytesInUnicodeString, MultiByteStr, CountOfMultiByte);
-            if (!Status) {
+                &BytesInUnicodeString, MultiByteStr, static_cast<ULONG>(AcpByteCount));
+            if (!NT_SUCCESS(Status)) {
                 ReturnLength = 0;
                 break;
             }
@@ -67,8 +74,13 @@ int WINAPI MUSA_NAME(MultiByteToWideChar)(
         }
 
         if (CodePage == CP_OEMCP) {
-            Status = RtlMultiByteToUnicodeSize(&BytesInUnicodeString, MultiByteStr, CountOfMultiByte);
-            if (!Status) {
+            const int OemByteCount = (CountOfMultiByte == -1)
+                ? static_cast<int>(strlen(MultiByteStr) + 1)
+                : CountOfMultiByte;
+
+            Status = RtlMultiByteToUnicodeSize(&BytesInUnicodeString, MultiByteStr,
+                static_cast<ULONG>(OemByteCount));
+            if (!NT_SUCCESS(Status)) {
                 break;
             }
 
@@ -84,8 +96,8 @@ int WINAPI MUSA_NAME(MultiByteToWideChar)(
             }
 
             Status = RtlOemToUnicodeN(WideCharStr, static_cast<ULONG>(CountOfWideChar * sizeof(wchar_t)),
-                &BytesInUnicodeString, MultiByteStr, CountOfMultiByte);
-            if (!Status) {
+                &BytesInUnicodeString, MultiByteStr, static_cast<ULONG>(OemByteCount));
+            if (!NT_SUCCESS(Status)) {
                 ReturnLength = 0;
                 break;
             }
@@ -95,11 +107,13 @@ int WINAPI MUSA_NAME(MultiByteToWideChar)(
         }
 
         if (CodePage == CP_UTF8) {
-            if (Flags) {
-                if (Flags != MB_ERR_INVALID_CHARS) {
-                    Status = STATUS_INVALID_PARAMETER;
-                    break;
-                }
+            // For UTF-8, MS docs say only 0 or MB_ERR_INVALID_CHARS is valid,
+            // but UCRT/CRT internals routinely pass MB_PRECOMPOSED|MB_ERR_INVALID_CHARS.
+            // MB_PRECOMPOSED is the implicit default for UTF-8; silently accept it.
+            const DWORD AllowedFlags = MB_ERR_INVALID_CHARS | MB_PRECOMPOSED;
+            if (Flags & ~AllowedFlags) {
+                Status = STATUS_INVALID_PARAMETER;
+                break;
             }
 
             const auto ByteCount = (CountOfMultiByte == -1)
@@ -182,9 +196,14 @@ int WINAPI MUSA_NAME(WideCharToMultiByte)(
         ULONG BytesInMultiByteString = 0ul;
 
         if (CodePage == CP_ACP) {
+            // -1 means null-terminated wide string; convert to char count.
+            const int AcpCharCount = (CountOfWideChar == -1)
+                ? static_cast<int>(wcslen(WideCharStr) + 1)
+                : CountOfWideChar;
+
             Status = RtlUnicodeToMultiByteSize(&BytesInMultiByteString, WideCharStr,
-                CountOfWideChar * sizeof(wchar_t));
-            if (!Status) {
+                AcpCharCount * sizeof(wchar_t));
+            if (!NT_SUCCESS(Status)) {
                 break;
             }
 
@@ -200,8 +219,8 @@ int WINAPI MUSA_NAME(WideCharToMultiByte)(
             }
 
             Status = RtlUnicodeToMultiByteN(MultiByteStr, CountOfMultiByte,
-                &BytesInMultiByteString, WideCharStr, CountOfWideChar * sizeof(wchar_t));
-            if (!Status) {
+                &BytesInMultiByteString, WideCharStr, AcpCharCount * sizeof(wchar_t));
+            if (!NT_SUCCESS(Status)) {
                 ReturnLength = 0;
                 break;
             }
@@ -211,9 +230,13 @@ int WINAPI MUSA_NAME(WideCharToMultiByte)(
         }
 
         if (CodePage == CP_OEMCP) {
+            const int OemCharCount = (CountOfWideChar == -1)
+                ? static_cast<int>(wcslen(WideCharStr) + 1)
+                : CountOfWideChar;
+
             Status = RtlUnicodeToMultiByteSize(&BytesInMultiByteString, WideCharStr,
-                CountOfWideChar * sizeof(wchar_t));
-            if (!Status) {
+                OemCharCount * sizeof(wchar_t));
+            if (!NT_SUCCESS(Status)) {
                 break;
             }
 
@@ -229,8 +252,8 @@ int WINAPI MUSA_NAME(WideCharToMultiByte)(
             }
 
             Status = RtlUnicodeToOemN(MultiByteStr, CountOfMultiByte,
-                &BytesInMultiByteString, WideCharStr, CountOfWideChar * sizeof(wchar_t));
-            if (!Status) {
+                &BytesInMultiByteString, WideCharStr, OemCharCount * sizeof(wchar_t));
+            if (!NT_SUCCESS(Status)) {
                 ReturnLength = 0;
                 break;
             }

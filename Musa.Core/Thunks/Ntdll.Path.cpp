@@ -1,4 +1,4 @@
-﻿#include "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h"
+#include "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h"
 #include "Internal/Ntdll.Path.h"
 #include "Internal/Ntdll.Heap.h"
 #ifdef ALLOC_PRAGMA
@@ -128,10 +128,10 @@ NTSTATUS NTAPI MUSA_NAME(RtlDosPathNameToNtPathName_U_WithStatus)(
         return STATUS_OBJECT_PATH_SYNTAX_BAD;
 
     case MUSA_RTL_PATH_UNC: {
-        // Always allocate a copy so caller can safely RtlFreeUnicodeString
+        // Allocate pool memory so the caller can safely RtlFreeUnicodeString.
         const size_t AllocSize = (InputLen + 1) * sizeof(WCHAR);
         PWSTR Buffer = static_cast<PWSTR>(
-            RtlAllocateHeap(RtlProcessHeap(), 0, AllocSize));
+            ExAllocatePoolZero(PagedPool, AllocSize, 'auSM'));
         if (Buffer == nullptr)
             return STATUS_INSUFFICIENT_RESOURCES;
         memcpy(Buffer, DosPathName, InputLen * sizeof(WCHAR));
@@ -162,10 +162,10 @@ NTSTATUS NTAPI MUSA_NAME(RtlDosPathNameToNtPathName_U_WithStatus)(
     if (TotalLen >= MaxPathChars)
         return STATUS_NAME_TOO_LONG;
 
-    // Allocate via RtlAllocateHeap (matching ntdll.dll behavior)
+    // Allocate pool memory so the caller can safely RtlFreeUnicodeString.
     const size_t AllocSize = (TotalLen + 1) * sizeof(WCHAR);
     PWSTR Buffer = static_cast<PWSTR>(
-        RtlAllocateHeap(RtlProcessHeap(), HEAP_ZERO_MEMORY, AllocSize));
+        ExAllocatePoolZero(PagedPool, AllocSize, 'auSM'));
     if (Buffer == nullptr)
         return STATUS_INSUFFICIENT_RESOURCES;
 

@@ -1,4 +1,4 @@
-﻿// Phase 2: CreateFileW, SetFilePointerEx, GetFileAttributesExW, DeleteFileW, SetFileAttributesW
+// Phase 2: CreateFileW, SetFilePointerEx, GetFileAttributesExW, DeleteFileW, SetFileAttributesW
 // Iteration 1-2: 2026-05-02 -- GetFileType, ReadFile, WriteFile, FlushFileBuffers
 // Build: PASS (x64/ARM64, Debug/Release) -- 0 errors
 #include "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h"
@@ -419,9 +419,13 @@ HANDLE WINAPI MUSA_NAME(CreateFileW)(
 
     if (dwFlagsAndAttributes & FILE_FLAG_WRITE_THROUGH)
         CreateOptions |= FILE_WRITE_THROUGH;
-    // Kernel-mode: default to synchronous unless OVERLAPPED is requested
+    // Kernel-mode: default to synchronous unless OVERLAPPED is requested.
+    // ZwCreateFile requires SYNCHRONIZE in DesiredAccess when using
+    // FILE_SYNCHRONOUS_IO_*; user-mode kernelbase!CreateFileW does this
+    // translation implicitly, so we must do it explicitly here.
     if (!(dwFlagsAndAttributes & FILE_FLAG_OVERLAPPED)) {
         CreateOptions |= FILE_SYNCHRONOUS_IO_NONALERT;
+        dwDesiredAccess |= SYNCHRONIZE;
     }
     if (dwFlagsAndAttributes & FILE_FLAG_NO_BUFFERING) {
         CreateOptions |= FILE_NO_INTERMEDIATE_BUFFERING;
