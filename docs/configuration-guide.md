@@ -13,7 +13,7 @@ graph TD
     A[global.json] -->|SDK 版本| B[Directory.Build.props]
     B -->|import SDK| C[Mile.Project.Build.props]
     B -->|ForceImportBeforeCppProps| D[Directory.Packages.Cpp.props]
-    D -->|PackageReference| E[Musa.CoreLite 1.1.1]
+    D -->|PackageReference| E[Musa.CoreLite 1.2.1]
     F[Musa.Core.NuGet/Musa.Core.props] -->|NuGetImportAfterCppProps| G[Musa.Core.Config.props]
     G -->|NuGetImportBeforeCppTargets| H[Musa.Core.Config.targets]
 ```
@@ -66,11 +66,11 @@ MSBuild SDK 版本锁定：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Musa.CoreLite" Version="1.1.1" />
+  <PackageReference Include="Musa.CoreLite" Version="1.2.1" />
 </ItemGroup>
 ```
 
-当前仅管理一个依赖：`Musa.CoreLite` v1.1.1。
+当前仅管理一个依赖：`Musa.CoreLite` v1.2.1。
 
 ### .editorconfig
 
@@ -233,7 +233,7 @@ constexpr unsigned long MUSA_TAG = '-iM-';          // 池标记
   <description>Musa.Core - 用 ntoskrnl 实现 Kernel32、Advapi32 等API（内核态）。</description>
   <releaseNotes>$releaseNotes$</releaseNotes>
   <dependencies>
-    <dependency id="Musa.CoreLite" version="1.1.1" />
+    <dependency id="Musa.CoreLite" version="1.2.1" />
   </dependencies>
 </metadata>
 ```

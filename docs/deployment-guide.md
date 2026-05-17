@@ -129,7 +129,7 @@ Musa.Core.nupkg
 │       └── Library/             # 静态库 (按 Config/Platform)
 └── nuspec metadata
     ├── id: Musa.Core
-    ├── dependency: Musa.CoreLite ≥ 1.1.1
+    ├── dependency: Musa.CoreLite ≥ 1.2.1
     └── license: MIT
 ```
 
@@ -138,7 +138,7 @@ Musa.Core.nupkg
 ```xml
 <ItemGroup>
   <PackageReference Include="Musa.Core">
-    <Version>1.1.1</Version>
+    <Version>1.2.1</Version>
   </PackageReference>
 </ItemGroup>
 ```

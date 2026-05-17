@@ -49,7 +49,7 @@
 ### Build（构建）
 
 - 升级 `Mile.Project.Configurations` 至 1.0.1917，`Musa.CoreLite` 至 1.1.0
-- 更新 `Musa.CoreLite` 至 1.1.1
+- 更新 `Musa.CoreLite` 至 1.2.1
 - 更新 `Musa.Veil` 1.4.1 → 1.5.0，`Musa.CoreLite` 1.0.1 → 1.0.3
 - 统一 vcxproj 和 filters 文件中的路径格式
 - 从跟踪中移除 `Publish/Include/Musa.Core.h`

@@ -33,7 +33,7 @@ graph TB
     end
 
     subgraph Deps["依赖"]
-        CoreLite["Musa.CoreLite<br/>v1.1.1<br/>Lite 启动/关闭"]
+        CoreLite["Musa.CoreLite<br/>v1.2.1<br/>Lite 启动/关闭"]
         Veil["Musa.Veil<br/>Veil.h<br/>NT 内部声明"]
     end
 
