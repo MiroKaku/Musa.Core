@@ -2,7 +2,8 @@
 
 > [系统架构](./system-architecture.md) ｜ [部署指南](./deployment-guide.md) ｜ [构建配置](./configuration-guide.md)
 
-## v* — 最新
+## v0.6.0 — 2026-05-17
+
 
 ### Feat（新功能）
 
@@ -78,6 +79,9 @@
 - 分离 `Musa.CoreLite` 为独立依赖
 - 更新 `Musa.Veil` 1.3.2
 - 更新 `Musa.CoreLite` 1.0.1
+
+
+## v* — 最新
 
 ## 历史版本
 
