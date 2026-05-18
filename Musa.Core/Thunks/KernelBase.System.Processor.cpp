@@ -1,4 +1,4 @@
-#include "KernelBase.Private.h"
+﻿#include "KernelBase.Private.h"
 #include "Internal/KernelBase.System.h"
 
 #ifdef ALLOC_PRAGMA
@@ -132,5 +132,97 @@ DWORD WINAPI MUSA_NAME(GetMaximumProcessorCount)(
 }
 
 MUSA_IAT_SYMBOL(GetMaximumProcessorCount, 4);
+
+
+_Success_(return != NULL)
+PVOID WINAPI MUSA_NAME(LocateXStateFeature)(
+    _In_ PCONTEXT Context,
+    _In_ DWORD FeatureId,
+    _Out_opt_ PDWORD Length
+)
+{
+    /*
+     * ContextFlags architecture bits: CONTEXT_i386   (0x10000)
+     *                                  CONTEXT_AMD64  (0x100000)
+     *                                  CONTEXT_ARM64  (0x400000)
+     *
+     * The XSTATE sub-flag (0x40 on i386, 0x40 on AMD64, 0x20 on ARM64)
+     * indicates that extended processor state is present in the context.
+     */
+    ULONG ContextFlags = Context->ContextFlags;
+    PCONTEXT_EX ContextEx = nullptr;
+
+
+    if (ContextFlags & 0x10000) {  // CONTEXT_i386
+        // ── Path 1: XSTATE compact context (x86 / WOW64) ──
+        // Offsets are x86-CONTEXT-specific; sizeof(CONTEXT)/offsetof
+        // resolve to the build arch (e.g. AMD64), so raw hex is used.
+        ContextEx = reinterpret_cast<PCONTEXT_EX>(
+            reinterpret_cast<PUCHAR>(Context) + 0x2CC);
+        if ((ContextFlags & 0x10040) != 0x10040)  // CONTEXT_i386 | CONTEXT_XSTATE
+            ContextEx = nullptr;
+
+        if (FeatureId == 0) {
+            if (Length) *Length = 0xA0;   // X87 save area size
+            return reinterpret_cast<PUCHAR>(Context) + 0xCC;
+        }
+        if (FeatureId == 1) {
+            if (Length) *Length = 0x80;   // SSE save area size
+            return reinterpret_cast<PUCHAR>(Context) + 0x16C;
+        }
+
+    } else if (ContextFlags & 0x100000) {  // CONTEXT_AMD64
+        // ── Path 2: AMD64 native context ──
+        ContextEx = reinterpret_cast<PCONTEXT_EX>(
+            reinterpret_cast<PUCHAR>(Context) + sizeof(CONTEXT));
+        if ((ContextFlags & 0x100040) != 0x100040)  // CONTEXT_XSTATE (AMD64)
+            ContextEx = nullptr;
+
+        if (FeatureId == 0) {
+            if (Length) *Length = 0xA0;
+            return reinterpret_cast<PUCHAR>(Context) + 0x100;  // &Context->FltSave
+        }
+        if (FeatureId == 1) {
+            if (Length) *Length = 0x100;
+            return reinterpret_cast<PUCHAR>(Context) + 0x1A0;  // &Context->Xmm0
+        }
+    } else {
+        // ── Path 3: ARM64 ──
+        if ((ContextFlags & 0x400020) != 0x400020 ||  // CONTEXT_ARM64_XSTATE
+            (ContextFlags & 0x400000) == 0)           // CONTEXT_ARM64
+            return nullptr;
+        ContextEx = reinterpret_cast<PCONTEXT_EX>(
+            reinterpret_cast<PUCHAR>(Context) + 0x390);  // ARM64 CONTEXT XState offset
+    }
+
+    if (!ContextEx)
+        return nullptr;
+
+    PULONG NtLength = nullptr;
+    ULONG NtLengthValue = 0;
+    if (Length)
+        NtLength = &NtLengthValue;
+
+    PVOID Result = RtlLocateExtendedFeature(
+        ContextEx, static_cast<ULONG>(FeatureId), NtLength);
+
+    if (Length && Result)
+        *Length = static_cast<DWORD>(NtLengthValue);
+
+    return Result;
+}
+
+MUSA_IAT_SYMBOL(LocateXStateFeature, 12);
+_VEIL_DECLARE_ALTERNATE_NAME(LocateXStateFeature, _VEIL_DEFINE_IAT_SYMBOL_MAKE_NAME(LocateXStateFeature))
+
+DWORD64 WINAPI MUSA_NAME(GetEnabledXStateFeatures)(VOID)
+{
+    DWORD64 Features = RtlGetEnabledExtendedFeatures(~0ui64);
+    if (Features)
+        return Features;
+    return 3;  // X87 | SSE always enabled
+}
+
+MUSA_IAT_SYMBOL(GetEnabledXStateFeatures, 0);
 
 EXTERN_C_END
