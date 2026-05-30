@@ -51,15 +51,13 @@ LONG WINAPI MUSA_NAME(UnhandledExceptionFilter)(
 
 MUSA_IAT_SYMBOL(UnhandledExceptionFilter, 4);
 
-volatile static LPTOP_LEVEL_EXCEPTION_FILTER MUSA_NAME(TopLevelExceptionFilter) = MUSA_NAME(
-    UnhandledExceptionFilter);
+extern LPTOP_LEVEL_EXCEPTION_FILTER MUSA_NAME(TopLevelExceptionFilter);
 
 LPTOP_LEVEL_EXCEPTION_FILTER WINAPI MUSA_NAME(SetUnhandledExceptionFilter)(
     _In_opt_ LPTOP_LEVEL_EXCEPTION_FILTER TopLevelExceptionFilter
 )
 {
-    const auto PreviousExceptionFilter = InterlockedExchangePointer(
-        reinterpret_cast<PVOID volatile*>(&MUSA_NAME(TopLevelExceptionFilter)), TopLevelExceptionFilter);
+    const auto PreviousExceptionFilter = MUSA_NAME(TopLevelExceptionFilter);
 
     RtlSetUnhandledExceptionFilter(TopLevelExceptionFilter);
 
@@ -127,45 +125,5 @@ BOOL WINAPI MUSA_NAME(SetThreadErrorMode)(
 }
 
 MUSA_IAT_SYMBOL(SetThreadErrorMode, 8);
-
-_Ret_maybenull_
-PVOID WINAPI MUSA_NAME(AddVectoredExceptionHandler)(
-    _In_ ULONG                       First,
-    _In_ PVECTORED_EXCEPTION_HANDLER Handler
-)
-{
-    return RtlAddVectoredExceptionHandler(First, Handler);
-}
-
-MUSA_IAT_SYMBOL(AddVectoredExceptionHandler, 8);
-
-ULONG WINAPI MUSA_NAME(RemoveVectoredExceptionHandler)(
-    _In_ PVOID Handle
-)
-{
-    return RtlRemoveVectoredExceptionHandler(Handle);
-}
-
-MUSA_IAT_SYMBOL(RemoveVectoredExceptionHandler, 4);
-
-_Ret_maybenull_
-PVOID WINAPI MUSA_NAME(AddVectoredContinueHandler)(
-    _In_ ULONG                       First,
-    _In_ PVECTORED_EXCEPTION_HANDLER Handler
-)
-{
-    return RtlAddVectoredContinueHandler(First, Handler);
-}
-
-MUSA_IAT_SYMBOL(AddVectoredContinueHandler, 8);
-
-ULONG WINAPI MUSA_NAME(RemoveVectoredContinueHandler)(
-    _In_ PVOID Handle
-)
-{
-    return RtlRemoveVectoredContinueHandler(Handle);
-}
-
-MUSA_IAT_SYMBOL(RemoveVectoredContinueHandler, 4);
 
 EXTERN_C_END

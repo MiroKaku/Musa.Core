@@ -173,7 +173,7 @@ NTSTATUS MUSA_API MUSA_NAME_PRIVATE(ProcessEnvironmentBlockTeardown)()
         }
 
         // Clear global pointer only after all PEB consumers are done.
-        // RtlDestroyHeap → RtlRemoveHeap → RtlAcquirePebLockExclusive
+        // RtlDestroyHeap -> RtlRemoveHeap -> RtlAcquirePebLockExclusive
         // reads MusaCoreProcessEnvironmentBlock, so it must remain valid
         // until all heaps are destroyed and the lock is no longer needed.
         InterlockedExchangePointer(

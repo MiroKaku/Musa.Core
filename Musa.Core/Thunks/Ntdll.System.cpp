@@ -1,4 +1,4 @@
-﻿EXTERN_C_START
+EXTERN_C_START
 
 _IRQL_requires_max_(PASSIVE_LEVEL) BOOLEAN WINAPI MUSA_NAME(RtlIsProcessorFeaturePresent)(
     _In_ ULONG ProcessorFeature
@@ -78,7 +78,7 @@ PVOID NTAPI MUSA_NAME(RtlLocateExtendedFeature2)(
         return XStateChunk + XStateConfig.Features[FeatureId].Offset - sizeof(XSAVE_FORMAT);
     }
 
-    // ── Compacted path (XSAVEC) ──
+    // -- Compacted path (XSAVEC) --
     const ULONG64 CompactionMask =
         reinterpret_cast<const XSAVE_AREA_HEADER*>(XStateChunk)->CompactionMask;
     if ((FeatureBit & CompactionMask) == 0) {

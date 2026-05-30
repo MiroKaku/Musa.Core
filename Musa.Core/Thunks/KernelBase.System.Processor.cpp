@@ -1,4 +1,4 @@
-﻿#include "KernelBase.Private.h"
+#include "KernelBase.Private.h"
 #include "Internal/KernelBase.System.h"
 
 #ifdef ALLOC_PRAGMA
@@ -154,7 +154,7 @@ PVOID WINAPI MUSA_NAME(LocateXStateFeature)(
 
 
     if (ContextFlags & 0x10000) {  // CONTEXT_i386
-        // ── Path 1: XSTATE compact context (x86 / WOW64) ──
+        // -- Path 1: XSTATE compact context (x86 / WOW64) --
         // Offsets are x86-CONTEXT-specific; sizeof(CONTEXT)/offsetof
         // resolve to the build arch (e.g. AMD64), so raw hex is used.
         ContextEx = reinterpret_cast<PCONTEXT_EX>(
@@ -172,7 +172,7 @@ PVOID WINAPI MUSA_NAME(LocateXStateFeature)(
         }
 
     } else if (ContextFlags & 0x100000) {  // CONTEXT_AMD64
-        // ── Path 2: AMD64 native context ──
+        // -- Path 2: AMD64 native context --
         ContextEx = reinterpret_cast<PCONTEXT_EX>(
             reinterpret_cast<PUCHAR>(Context) + sizeof(CONTEXT));
         if ((ContextFlags & 0x100040) != 0x100040)  // CONTEXT_XSTATE (AMD64)
@@ -187,7 +187,7 @@ PVOID WINAPI MUSA_NAME(LocateXStateFeature)(
             return reinterpret_cast<PUCHAR>(Context) + 0x1A0;  // &Context->Xmm0
         }
     } else {
-        // ── Path 3: ARM64 ──
+        // -- Path 3: ARM64 --
         if ((ContextFlags & 0x400020) != 0x400020 ||  // CONTEXT_ARM64_XSTATE
             (ContextFlags & 0x400000) == 0)           // CONTEXT_ARM64
             return nullptr;

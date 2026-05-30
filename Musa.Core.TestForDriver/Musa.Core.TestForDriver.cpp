@@ -841,7 +841,7 @@ namespace Main
         // --- New APIs (missing from docs/missing-apis.md) ---
 
 
-        // GetSystemTimeAsFileTime — compare with SystemTimeToFileTime
+        // GetSystemTimeAsFileTime -- compare with SystemTimeToFileTime
         {
             FILETIME Ft1{};
             GetSystemTimeAsFileTime(&Ft1);
@@ -936,7 +936,7 @@ namespace Main
         }
 
 
-        // Date/Time Formatting — verify against GetLocalTime
+        // Date/Time Formatting -- verify against GetLocalTime
         {
             SYSTEMTIME Now{};
             GetLocalTime(&Now);
@@ -970,7 +970,7 @@ namespace Main
                 "NLS_GetTimeFormatEx_MatchesGetLocalTime");
         }
 
-        // Date/Time Formatting — null time (uses current time internally)
+        // Date/Time Formatting -- null time (uses current time internally)
         {
             WCHAR Buf[32] = {};
             int Ret = GetDateFormatEx(nullptr, 0, nullptr, nullptr, Buf, _countof(Buf), nullptr);
@@ -1004,7 +1004,7 @@ namespace Main
             KTEST_EXPECT(FilePart != nullptr && wcscmp(FilePart, L"System32") == 0,
                 "Path_GetFullPathNameW_Absolute_FilePart");
 
-            // Relative path — prepends current directory (kernel default: C:\Windows)
+            // Relative path -- prepends current directory (kernel default: C:\Windows)
             Len = GetFullPathNameW(L"System32", _countof(Buf), Buf, &FilePart);
             KTEST_EXPECT(Len > 0,
                 "Path_GetFullPathNameW_Relative_Succeeds");
@@ -1048,7 +1048,7 @@ namespace Main
                     "FileIO_SetEndOfFile_Truncated");
 
 
-                // GetFileInformationByHandle — cross-validate with GetFileSizeEx & GetFileAttributesExW
+                // GetFileInformationByHandle -- cross-validate with GetFileSizeEx & GetFileAttributesExW
                 BY_HANDLE_FILE_INFORMATION FileInfo{};
                 KTEST_EXPECT(GetFileInformationByHandle(hFile, &FileInfo),
                     "FileIO_GetFileInformationByHandle_Succeeds");

@@ -73,11 +73,14 @@ VOID NTAPI MUSA_NAME(RtlSetLastWin32ErrorAndNtStatusFromNtStatus)(
 
 MUSA_IAT_SYMBOL(RtlSetLastWin32ErrorAndNtStatusFromNtStatus, 4);
 
+LPTOP_LEVEL_EXCEPTION_FILTER MUSA_NAME(TopLevelExceptionFilter) = nullptr;
+
 VOID NTAPI MUSA_NAME(RtlSetUnhandledExceptionFilter)(
     _In_opt_ PTOP_LEVEL_EXCEPTION_FILTER UnhandledExceptionFilter
 )
 {
-    UNREFERENCED_PARAMETER(UnhandledExceptionFilter);
+    InterlockedExchangePointer(
+        reinterpret_cast<PVOID volatile*>(&MUSA_NAME(TopLevelExceptionFilter)), UnhandledExceptionFilter);
 }
 
 MUSA_IAT_SYMBOL(RtlSetUnhandledExceptionFilter, 4);
@@ -86,7 +89,13 @@ LONG NTAPI MUSA_NAME(RtlUnhandledExceptionFilter)(
     _In_ PEXCEPTION_POINTERS ExceptionPointers
 )
 {
-    UNREFERENCED_PARAMETER(ExceptionPointers);
+    auto Filter = MUSA_NAME(TopLevelExceptionFilter);
+    if (Filter) {
+        LONG Result = Filter(ExceptionPointers);
+        if (Result == EXCEPTION_EXECUTE_HANDLER) {
+            return Result;
+        }
+    }
 
     return ExSystemExceptionFilter();
 }
@@ -125,47 +134,5 @@ NTSTATUS NTAPI MUSA_NAME(RtlSetThreadErrorMode)(
 }
 
 MUSA_IAT_SYMBOL(RtlSetThreadErrorMode, 8);
-
-PVOID NTAPI MUSA_NAME(RtlAddVectoredExceptionHandler)(
-    _In_ ULONG                       First,
-    _In_ PVECTORED_EXCEPTION_HANDLER Handler
-)
-{
-    UNREFERENCED_PARAMETER(First);
-
-    return RtlEncodePointer(Handler);
-}
-
-MUSA_IAT_SYMBOL(RtlAddVectoredExceptionHandler, 8);
-
-ULONG NTAPI MUSA_NAME(RtlRemoveVectoredExceptionHandler)(
-    _In_ PVOID Handle
-)
-{
-    return static_cast<ULONG>(reinterpret_cast<ULONG_PTR>(RtlDecodePointer(Handle)));
-}
-
-MUSA_IAT_SYMBOL(RtlRemoveVectoredExceptionHandler, 4);
-
-PVOID NTAPI MUSA_NAME(RtlAddVectoredContinueHandler)(
-    _In_ ULONG                       First,
-    _In_ PVECTORED_EXCEPTION_HANDLER Handler
-)
-{
-    UNREFERENCED_PARAMETER(First);
-
-    return RtlEncodePointer(Handler);
-}
-
-MUSA_IAT_SYMBOL(RtlAddVectoredContinueHandler, 8);
-
-ULONG NTAPI MUSA_NAME(RtlRemoveVectoredContinueHandler)(
-    _In_ PVOID Handle
-)
-{
-    return static_cast<ULONG>(reinterpret_cast<ULONG_PTR>(RtlDecodePointer(Handle)));
-}
-
-MUSA_IAT_SYMBOL(RtlRemoveVectoredContinueHandler, 4);
 
 EXTERN_C_END
