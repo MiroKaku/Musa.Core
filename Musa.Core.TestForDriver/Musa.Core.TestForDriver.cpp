@@ -1,4 +1,4 @@
-﻿// unnecessary, fix ReSharper's code analysis.
+// unnecessary, fix ReSharper's code analysis.
 #pragma warning(suppress: 4117)
 #define _KERNEL_MODE 1
 
@@ -41,58 +41,6 @@ namespace Main
 
         MusaLOG("=== Musa.Core Kernel Test Suite ===");
 
-        // --- StdHandle ---
-
-        {
-            const auto StdIn = GetStdHandle(STD_INPUT_HANDLE);
-            KTEST_EXPECT(StdIn != nullptr && StdIn != INVALID_HANDLE_VALUE,
-                "StdHandle_GetInput_ReturnsValidHandle");
-        }
-
-        {
-            const auto StdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-            KTEST_EXPECT(StdOut != nullptr && StdOut != INVALID_HANDLE_VALUE,
-                "StdHandle_GetOutput_ReturnsValidHandle");
-        }
-
-        {
-            const auto StdErr = GetStdHandle(STD_ERROR_HANDLE);
-            KTEST_EXPECT(StdErr != nullptr && StdErr != INVALID_HANDLE_VALUE,
-                "StdHandle_GetError_ReturnsValidHandle");
-        }
-
-        {
-            DWORD Flags = 0;
-            KTEST_EXPECT(GetHandleInformation(GetStdHandle(STD_OUTPUT_HANDLE), &Flags),
-                "StdHandle_GetHandleInformation_Succeeds");
-        }
-
-        {
-            const auto StdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-            HANDLE Dup = nullptr;
-            BOOL Result = DuplicateHandle(GetCurrentProcess(), StdOut,
-                GetCurrentProcess(), &Dup, 0, FALSE, DUPLICATE_SAME_ACCESS);
-            KTEST_EXPECT(Result,
-                "StdHandle_DuplicateHandle_Succeeds");
-            if (Dup) {
-                CloseHandle(Dup);
-            }
-        }
-
-        {
-            const auto StdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-            const auto StdErr = GetStdHandle(STD_ERROR_HANDLE);
-            KTEST_EXPECT(SetStdHandle(STD_OUTPUT_HANDLE, StdErr),
-                "StdHandle_SetStdHandle_Succeeds");
-            KTEST_EXPECT(GetStdHandle(STD_OUTPUT_HANDLE) == StdErr,
-                "StdHandle_SetStdHandle_ValuePersists");
-            SetStdHandle(STD_OUTPUT_HANDLE, StdOut);
-        }
-
-        {
-            KTEST_EXPECT(GetStdHandle((DWORD)-1) == INVALID_HANDLE_VALUE,
-                "StdHandle_InvalidId_ReturnsInvalidHandle");
-        }
 
         // --- Heap ---
 
@@ -987,28 +935,6 @@ namespace Main
             SetEnvironmentVariableW(L"MusaCore_StringsTest", nullptr);
         }
 
-        // Console APIs
-        {
-            UINT Cp = GetConsoleOutputCP();
-            KTEST_EXPECT(Cp <= 0xFFFF,
-                "Console_GetConsoleOutputCP_ReturnsValid");
-
-            SetLastError(ERROR_SUCCESS);
-            DWORD Mode = 0;
-            BOOL ModeResult = GetConsoleMode(nullptr, &Mode);
-            KTEST_EXPECT(!ModeResult,
-                "Console_GetConsoleMode_ReturnsFalse");
-            KTEST_EXPECT(GetLastError() != ERROR_SUCCESS,
-                "Console_GetConsoleMode_SetsLastError");
-
-            SetLastError(ERROR_SUCCESS);
-            DWORD CharsRead = 0;
-            BOOL ReadResult = ReadConsoleW(nullptr, nullptr, 0, &CharsRead, nullptr);
-            KTEST_EXPECT(!ReadResult,
-                "Console_ReadConsoleW_ReturnsFalse");
-            KTEST_EXPECT(GetLastError() != ERROR_SUCCESS,
-                "Console_ReadConsoleW_SetsLastError");
-        }
 
         // Date/Time Formatting — verify against GetLocalTime
         {

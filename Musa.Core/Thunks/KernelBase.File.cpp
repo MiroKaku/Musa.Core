@@ -1,4 +1,3 @@
-// Phase 2: CreateFileW, SetFilePointerEx, GetFileAttributesExW, DeleteFileW, SetFileAttributesW
 // Iteration 1-2: 2026-05-02 -- GetFileType, ReadFile, WriteFile, FlushFileBuffers
 // Build: PASS (x64/ARM64, Debug/Release) -- 0 errors
 #include "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h"
@@ -35,28 +34,6 @@
 
 
 EXTERN_C_START
-// Resolve standard I/O pseudo-handles from PEB
-static HANDLE MusaCoreResolveStdHandle(HANDLE hFile)
-{
-    switch (HandleToULong(hFile)) {
-        case STD_INPUT_HANDLE:
-        case STD_OUTPUT_HANDLE:
-        case STD_ERROR_HANDLE: {
-            const auto Peb = static_cast<Musa::Core::KPEB*>(MUSA_NAME_PRIVATE(RtlGetCurrentPeb)());
-            if (Peb == nullptr) {
-                return INVALID_HANDLE_VALUE;
-            }
-            switch (HandleToULong(hFile)) {
-                case STD_INPUT_HANDLE:  hFile = Peb->StandardInput;  break;
-                case STD_OUTPUT_HANDLE: hFile = Peb->StandardOutput; break;
-                case STD_ERROR_HANDLE:  hFile = Peb->StandardError;  break;
-            }
-            return hFile;
-        }
-    }
-    return hFile;
-}
-
 /**
  * GetFileType - Determines the type of the specified file.
  *
@@ -72,10 +49,6 @@ DWORD WINAPI MUSA_NAME(GetFileType)(
 {
     PAGED_CODE();
 
-    hFile = MusaCoreResolveStdHandle(hFile);
-    if (hFile == INVALID_HANDLE_VALUE) {
-        return FILE_TYPE_UNKNOWN;
-    }
 
     FILE_FS_DEVICE_INFORMATION FsInfo{};
     IO_STATUS_BLOCK Iosb{};
@@ -141,10 +114,6 @@ BOOL WINAPI MUSA_NAME(ReadFile)(
     _Inout_opt_ LPOVERLAPPED lpOverlapped
 )
 {
-    hFile = MusaCoreResolveStdHandle(hFile);
-    if (hFile == INVALID_HANDLE_VALUE) {
-        return FALSE;
-    }
     if (lpBuffer == nullptr) {
         BaseSetLastNTError(STATUS_INVALID_PARAMETER);
         return FALSE;
@@ -248,10 +217,6 @@ BOOL WINAPI MUSA_NAME(WriteFile)(
     _Inout_opt_ LPOVERLAPPED lpOverlapped
 )
 {
-    hFile = MusaCoreResolveStdHandle(hFile);
-    if (hFile == INVALID_HANDLE_VALUE) {
-        return FALSE;
-    }
 
     if (lpOverlapped) {
         // Overlapped I/O path
@@ -339,10 +304,6 @@ BOOL WINAPI MUSA_NAME(FlushFileBuffers)(
     _In_ HANDLE hFile
 )
 {
-    hFile = MusaCoreResolveStdHandle(hFile);
-    if (hFile == INVALID_HANDLE_VALUE) {
-        return FALSE;
-    }
 
     IO_STATUS_BLOCK Iosb{};
     NTSTATUS Status = ZwFlushBuffersFile(hFile, &Iosb);

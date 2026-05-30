@@ -177,14 +177,7 @@ VOID WINAPI MUSA_NAME(GetStartupInfoW)(
 {
     RtlZeroMemory(StartupInfo, sizeof(*StartupInfo));
     StartupInfo->cb = sizeof(*StartupInfo);
-
-    const auto Peb = static_cast<Musa::Core::KPEB*>(MUSA_NAME_PRIVATE(RtlGetCurrentPeb)());
-    if (Peb) {
-        StartupInfo->hStdInput  = Peb->StandardInput;
-        StartupInfo->hStdOutput = Peb->StandardOutput;
-        StartupInfo->hStdError  = Peb->StandardError;
-        StartupInfo->dwFlags    = STARTF_USESTDHANDLES;
-    }
+    // Standard handles removed from KPEB; hStd* fields remain zero.
 }
 
 MUSA_IAT_SYMBOL(GetStartupInfoW, 4);

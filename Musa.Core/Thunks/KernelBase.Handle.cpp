@@ -1,4 +1,3 @@
-#include "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h"
 #include "KernelBase.Private.h"
 #include "Internal/KernelBase.Handle.h"
 
@@ -8,71 +7,9 @@
 #pragma alloc_text(PAGE, MUSA_NAME(CompareObjectHandles))
 #pragma alloc_text(PAGE, MUSA_NAME(GetHandleInformation))
 #pragma alloc_text(PAGE, MUSA_NAME(SetHandleInformation))
-#pragma alloc_text(PAGE, MUSA_NAME(GetStdHandle))
-#pragma alloc_text(PAGE, MUSA_NAME(SetStdHandle))
 #endif
 
 EXTERN_C_START
-
-_IRQL_requires_max_(PASSIVE_LEVEL)
-HANDLE WINAPI MUSA_NAME(GetStdHandle)(
-    _In_ DWORD StdHandle
-)
-{
-    PAGED_CODE();
-
-    const auto Peb = static_cast<Musa::Core::KPEB*>(MUSA_NAME_PRIVATE(RtlGetCurrentPeb)());
-    if (Peb == nullptr) {
-        BaseSetLastNTError(STATUS_UNSUCCESSFUL);
-        return INVALID_HANDLE_VALUE;
-    }
-
-    switch (StdHandle) {
-        case STD_INPUT_HANDLE:
-            return Peb->StandardInput;
-        case STD_OUTPUT_HANDLE:
-            return Peb->StandardOutput;
-        case STD_ERROR_HANDLE:
-            return Peb->StandardError;
-        default:
-            BaseSetLastNTError(STATUS_INVALID_PARAMETER);
-            return INVALID_HANDLE_VALUE;
-    }
-}
-
-MUSA_IAT_SYMBOL(GetStdHandle, 4);
-
-_IRQL_requires_max_(PASSIVE_LEVEL)
-BOOL WINAPI MUSA_NAME(SetStdHandle)(
-    _In_ DWORD  StdHandle,
-    _In_ HANDLE Handle
-)
-{
-    PAGED_CODE();
-
-    const auto Peb = static_cast<Musa::Core::KPEB*>(MUSA_NAME_PRIVATE(RtlGetCurrentPeb)());
-    if (Peb == nullptr) {
-        BaseSetLastNTError(STATUS_UNSUCCESSFUL);
-        return FALSE;
-    }
-
-    switch (StdHandle) {
-        case STD_INPUT_HANDLE:
-            Peb->StandardInput = Handle;
-            return TRUE;
-        case STD_OUTPUT_HANDLE:
-            Peb->StandardOutput = Handle;
-            return TRUE;
-        case STD_ERROR_HANDLE:
-            Peb->StandardError = Handle;
-            return TRUE;
-        default:
-            BaseSetLastNTError(STATUS_INVALID_PARAMETER);
-            return FALSE;
-    }
-}
-
-MUSA_IAT_SYMBOL(SetStdHandle, 8);
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
 BOOL WINAPI MUSA_NAME(CloseHandle)(
@@ -107,18 +44,6 @@ BOOL WINAPI MUSA_NAME(DuplicateHandle)(
 {
     PAGED_CODE();
 
-    switch (HandleToULong(SourceHandle)) {
-        case STD_INPUT_HANDLE:
-        case STD_OUTPUT_HANDLE:
-        case STD_ERROR_HANDLE:
-            SourceHandle = GetStdHandle(HandleToULong(SourceHandle));
-            if (SourceHandle == INVALID_HANDLE_VALUE) {
-                return FALSE;
-            }
-            break;
-        default:
-            break;
-    }
 
     ULONG HandleAttributes = 0;
 
@@ -173,18 +98,6 @@ BOOL WINAPI MUSA_NAME(GetHandleInformation)(
 
     *Flags = 0;
 
-    switch (HandleToULong(Handle)) {
-        case STD_INPUT_HANDLE:
-        case STD_OUTPUT_HANDLE:
-        case STD_ERROR_HANDLE:
-            Handle = GetStdHandle(HandleToULong(Handle));
-            if (Handle == INVALID_HANDLE_VALUE) {
-                return FALSE;
-            }
-            break;
-        default:
-            break;
-    }
 
     OBJECT_HANDLE_FLAG_INFORMATION HandleInfo{};
     const auto Status = ZwQueryObject(Handle, ObjectHandleFlagInformation,
@@ -216,18 +129,6 @@ BOOL WINAPI MUSA_NAME(SetHandleInformation)(
 {
     PAGED_CODE();
 
-    switch (HandleToULong(Handle)) {
-        case STD_INPUT_HANDLE:
-        case STD_OUTPUT_HANDLE:
-        case STD_ERROR_HANDLE:
-            Handle = GetStdHandle(HandleToULong(Handle));
-            if (Handle == INVALID_HANDLE_VALUE) {
-                return FALSE;
-            }
-            break;
-        default:
-            break;
-    }
 
     OBJECT_HANDLE_FLAG_INFORMATION HandleInfo{};
     NTSTATUS Status = ZwQueryObject(Handle, ObjectHandleFlagInformation,

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 namespace Musa::Core
 {
@@ -32,13 +32,6 @@ using PENVIRONMENT_VARIABLE_ENTRY = ENVIRONMENT_VARIABLE_ENTRY*;
 
         ULONG           HardErrorMode;
 
-        HANDLE          StandardInput;
-        HANDLE          StandardOutput;
-        HANDLE          StandardError;
-
-        HANDLE          DefaultStandardInput;
-        HANDLE          DefaultStandardOutput;
-        HANDLE          DefaultStandardError;
 
 
         WCHAR           CurrentDirectory[MAX_PATH];
