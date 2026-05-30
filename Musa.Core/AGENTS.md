@@ -26,12 +26,12 @@ Everything here is shared infrastructure consumed by `Thunks/`.
 ## INIT SEQUENCE
 
 1. `MusaCoreStartup()` — kernel-mode entry point
-2. Calls `MusaCoreLiteStartup()` (from Musa.CoreLite v1.2.1 dependency)
+2. Calls `MusaCoreLiteStartup()` (from Musa.CoreLite v1.2.2 dependency)
 3. Calls `EnvironmentBlockSetup()` — kernel-mode only: creates fake PEB/TEB
 4. Logs result via `MusaLOG`
 5. Shutdown reverses: `EnvironmentBlockTeardown()` → `MusaCoreLiteShutdown()`
 
-**Note:** Musa.CoreLite v1.2.1 exposes `MusaCoreLiteGetNtdllBase()` function instead of the previous `MusaCoreLiteNtdllBase` global variable. All call sites must use the function form.
+**Note:** Musa.CoreLite v1.2.2 exposes `MusaCoreLiteGetNtdllBase()` function instead of the previous `MusaCoreLiteNtdllBase` global variable. All call sites must use the function form.
 
 ## SYSTEM ENVIRONMENT BLOCK (kernel-mode)
 

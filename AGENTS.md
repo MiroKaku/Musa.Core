@@ -26,7 +26,7 @@ docs/                       Comprehensive project documentation
 ## KEY DEPENDENCIES
 
 - `Mile.Project.Windows` MSBuild SDK via `Mile.Project.Configurations` v1.0.1917
-- `Musa.CoreLite` NuGet v1.2.1 — lightweight core subset (exposes `MusaCoreLiteGetNtdllBase()` function)
+- `Musa.CoreLite` NuGet v1.2.2 — lightweight core subset (exposes `MusaCoreLiteGetNtdllBase()` function)
 - `Musa.Veil` — header-only NT internals (Veil.h), git submodule or NuGet
 
 ## BUILD

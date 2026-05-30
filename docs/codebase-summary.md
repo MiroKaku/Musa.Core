@@ -183,7 +183,7 @@ Musa.Core/
 | `Musa.Core.NuGet/Musa.Core.props` | MSBuild 属性（链接器 /INTEGRITYCHECK 强制、头/库路径） |
 | `Musa.Core.NuGet/Musa.Core.Config.props/targets` | 配置属性/目标注入 |
 | `Directory.Build.props` | 全局 MSBuild 属性（Sources/Publish/Output 路径、SDK 导入） |
-| `Directory.Packages.Cpp.props` | 集中包管理：`Musa.CoreLite v1.2.1` |
+| `Directory.Packages.Cpp.props` | 集中包管理：`Musa.CoreLite v1.2.2` |
 | `BuildAllTargets.cmd` | 构建入口：初始化 VS 环境 → MSBuild |
 | `BuildAllTargets.proj` | MSBuild 元项目，协调所有子项目构建 |
 | `Musa.Core.slnx` | VS2022 XML 解决方案格式 |
@@ -197,14 +197,14 @@ Musa.Core/
 | 包名 | 版本 | 用途 | 类型 |
 |---|---|---|---|
 | **Mile.Project.Configurations** | MSBuild SDK (隐式) | MSBuild 构建 SDK，提供 6 种配置 (Debug/Release × x86/x64/ARM64) 的统一构建基础设施 | 编译时 (SDK) |
-| **Musa.CoreLite** | 1.2.1 | 轻量级核心子集，暴露 `MusaCoreLiteStartup()`、`MusaCoreLiteShutdown()`、`MusaCoreLiteGetNtdllBase()` 等基础函数 | 运行时 + 编译时 (NuGet) |
+| **Musa.CoreLite** | 1.2.2 | 轻量级核心子集，暴露 `MusaCoreLiteStartup()`、`MusaCoreLiteShutdown()`、`MusaCoreLiteGetNtdllBase()` 等基础函数 | 运行时 + 编译时 (NuGet) |
 | **Musa.Veil** | git submodule / NuGet | 纯头文件 NT 内部 API 声明库 (`Veil.h`)，提供 `Zw*`/`Rtl*` 声明、结构体定义、宏 | 编译时 (Header-only) |
 
 ### 依赖说明
 
 - **Mile.Project.Configurations**：通过 `<Import Sdk="Mile.Project.Configurations" Project="Mile.Project.Build.props" />` 引入，是 Mile.Project.Windows 生态的 MSBuild SDK 分发形式。提供跨配置、跨平台的编译管道、输出目录管理和 NuGet 打包基础设施。
 
-- **Musa.CoreLite**：Musa.Core 的轻量级上游依赖，提供最小化的核心启动/关闭能力和 Ntdll 基址获取。版本锁定为 `1.2.1`（`Directory.Packages.Cpp.props`）。NuGet 包中声明为 `<dependency id="Musa.CoreLite" version="1.2.1" />`。
+- **Musa.CoreLite**：Musa.Core 的轻量级上游依赖，提供最小化的核心启动/关闭能力和 Ntdll 基址获取。版本锁定为 `1.2.2`（`Directory.Packages.Cpp.props`）。NuGet 包中声明为 `<dependency id="Musa.CoreLite" version="1.2.2" />`。
 
 - **Musa.Veil**：header-only 的 NT 内部 API 声明集合。通过 `universal.h` 中的 `#include <Veil.h>` 引入。可作为 git submodule 或 NuGet 包获取。提供 `VEIL_DECLARE_STRUCT`、`VEIL_DECLARE_STRUCT_ALIGN` 等结构体声明宏。
 

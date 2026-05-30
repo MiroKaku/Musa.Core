@@ -30,7 +30,7 @@ NTSTATUS MUSA_API MusaCoreStartup(
 **返回值：** `STATUS_SUCCESS` 或失败 NTSTATUS
 
 **初始化序列：**
-1. 调用 `MusaCoreLiteStartup()`（依赖 Musa.CoreLite v1.2.1）
+1. 调用 `MusaCoreLiteStartup()`（依赖 Musa.CoreLite v1.2.2）
 2. 调用 `EnvironmentBlockSetup()` 创建内核态 PEB/TEB 伪造环境
 3. 通过 `MusaLOG` 记录结果
 

@@ -1,0 +1,6534 @@
+{
+  "version": "1.0.0",
+  "gitCommitHash": "beb7bb6c25b0daf3e794f8011ede8eba894f1fad",
+  "generatedAt": "2026-05-30T08:38:20.886Z",
+  "files": {
+    ".github/ISSUE_TEMPLATE/bug_report.md": {
+      "filePath": ".github/ISSUE_TEMPLATE/bug_report.md",
+      "contentHash": "691b01a36041040a06566bf4b6830c47d7fe7b4c2e36a41f5afcc51daa57d2b7",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 35,
+      "hasStructuralAnalysis": true
+    },
+    ".github/ISSUE_TEMPLATE/feature_request.md": {
+      "filePath": ".github/ISSUE_TEMPLATE/feature_request.md",
+      "contentHash": "1f48c52f209a971b8e7eae4120144d28fcf8ee38a7778a7b4d8cf1ab356617d2",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 21,
+      "hasStructuralAnalysis": true
+    },
+    ".github/workflows/CI.yaml": {
+      "filePath": ".github/workflows/CI.yaml",
+      "contentHash": "68aa29baefe8a259179cd2ca5d7d0198505b4aeb32659fa99b3251fc6b19e2bd",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 174,
+      "hasStructuralAnalysis": true
+    },
+    ".github/workflows/EnableX86AndARM.ps1": {
+      "filePath": ".github/workflows/EnableX86AndARM.ps1",
+      "contentHash": "4d1fe945bd4c7ee192ed4ef6753f5765e495a5953f4bb4b8722178d3a61c8c49",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 32,
+      "hasStructuralAnalysis": false
+    },
+    "AGENTS.md": {
+      "filePath": "AGENTS.md",
+      "contentHash": "3e62a636f25b5564fde4a3459ccf5bf2caf932f05510d01b50421cc6c61d6f64",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 113,
+      "hasStructuralAnalysis": true
+    },
+    "BuildAllTargets.cmd": {
+      "filePath": "BuildAllTargets.cmd",
+      "contentHash": "13f772953f8a9081b67675b1139730a785c6a064103911d6f8838973cd49754c",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 18,
+      "hasStructuralAnalysis": false
+    },
+    "BuildAllTargets.proj": {
+      "filePath": "BuildAllTargets.proj",
+      "contentHash": "27499eec24b1090d9d126a22f9dd83ed44ac490981f7315e907bec50356b2b94",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 43,
+      "hasStructuralAnalysis": false
+    },
+    "CODE_OF_CONDUCT.md": {
+      "filePath": "CODE_OF_CONDUCT.md",
+      "contentHash": "89ff22a2029af60e8f4be532ca2cd9d0c7883af209a65f41c3469bcac6b63acb",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 135,
+      "hasStructuralAnalysis": true
+    },
+    "Directory.Build.props": {
+      "filePath": "Directory.Build.props",
+      "contentHash": "a5ebadf524b3eb9fe1adea7cf632ef811102296c6788115a0b6cc8b642adfc63",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 29,
+      "hasStructuralAnalysis": false
+    },
+    "Directory.Build.targets": {
+      "filePath": "Directory.Build.targets",
+      "contentHash": "190b9de0662cec3c1b19e8492354a80db08a3127f24d201f07754d057a9b4134",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 10,
+      "hasStructuralAnalysis": false
+    },
+    "Directory.Packages.Cpp.props": {
+      "filePath": "Directory.Packages.Cpp.props",
+      "contentHash": "250bd9177408bf7c854f5ed57d691ddc4a936a30cb113a989a61a8c4f988f1cd",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 18,
+      "hasStructuralAnalysis": false
+    },
+    "docs/api-reference.md": {
+      "filePath": "docs/api-reference.md",
+      "contentHash": "6f3b1f7526e966f646f862ca88cb187eda88cad4d3735bf2137419d66bc72ea4",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 348,
+      "hasStructuralAnalysis": true
+    },
+    "docs/changelog.md": {
+      "filePath": "docs/changelog.md",
+      "contentHash": "434a965fffb3c13c41337a06fa9c2544f2342b37b35c98b3fbc43e8d26e0e1b9",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 91,
+      "hasStructuralAnalysis": true
+    },
+    "docs/code-standards.md": {
+      "filePath": "docs/code-standards.md",
+      "contentHash": "ae3030edfbddbf6735eb6473701754875189ece42f2621fd6f054130dd05c0d9",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 181,
+      "hasStructuralAnalysis": true
+    },
+    "docs/codebase-summary.md": {
+      "filePath": "docs/codebase-summary.md",
+      "contentHash": "105909b7e98268ebee708fa4185031bd2fd1f714fa1d4f65206f47060593bb9b",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 267,
+      "hasStructuralAnalysis": true
+    },
+    "docs/configuration-guide.md": {
+      "filePath": "docs/configuration-guide.md",
+      "contentHash": "bf0099707217b84bb53780c2d9330efea48753a2b2104deec3e073d0e687d551",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 243,
+      "hasStructuralAnalysis": true
+    },
+    "docs/deployment-guide.md": {
+      "filePath": "docs/deployment-guide.md",
+      "contentHash": "a0d90889ab784f50071d9a0973115ab45de1b009d818ae9cd33cd15f74156dac",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 171,
+      "hasStructuralAnalysis": true
+    },
+    "docs/project-overview-pdr.md": {
+      "filePath": "docs/project-overview-pdr.md",
+      "contentHash": "67364f209e73f1a28f9403630934cdcf5753808b7ef66390108a60e5a439c23e",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 135,
+      "hasStructuralAnalysis": true
+    },
+    "docs/system-architecture.md": {
+      "filePath": "docs/system-architecture.md",
+      "contentHash": "3dd989366dbfe2caf93bd101c446843a53d294cb8a2c0fa983d789843793e131",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 368,
+      "hasStructuralAnalysis": true
+    },
+    "docs/testing-guide.md": {
+      "filePath": "docs/testing-guide.md",
+      "contentHash": "ce27e528fb472014b29c33b696c09bfcd6a44188d2dd77bc315c5b87839b2251",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 227,
+      "hasStructuralAnalysis": true
+    },
+    "exclusion.txt": {
+      "filePath": "exclusion.txt",
+      "contentHash": "4fe3227bad49fac8c11931d7fcbe8b55e218e3a504ecbbc7a28254c7edda39c3",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 2,
+      "hasStructuralAnalysis": false
+    },
+    "global.json": {
+      "filePath": "global.json",
+      "contentHash": "f73086591766345f9fe638d14b52efb2a4b875db71d28f8abbae5110e24ff88b",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 5,
+      "hasStructuralAnalysis": true
+    },
+    "InitializeVisualStudioEnvironment.cmd": {
+      "filePath": "InitializeVisualStudioEnvironment.cmd",
+      "contentHash": "167ba55cd14772f19be09e575dedb818b31fdb58e5ecf1ce26dbfacbea0a1dfd",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 23,
+      "hasStructuralAnalysis": false
+    },
+    "Musa.Core.NuGet/Musa.Core.Config.props": {
+      "filePath": "Musa.Core.NuGet/Musa.Core.Config.props",
+      "contentHash": "c38c32f847346a1ad6e2e9b6ef983e867add5c2a0527d0cfb013573b614bba61",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 23,
+      "hasStructuralAnalysis": false
+    },
+    "Musa.Core.NuGet/Musa.Core.Config.targets": {
+      "filePath": "Musa.Core.NuGet/Musa.Core.Config.targets",
+      "contentHash": "8022bde3d7814d18d841c4eb5555b2024c2101217d3c6748369e35e158a18416",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 17,
+      "hasStructuralAnalysis": false
+    },
+    "Musa.Core.NuGet/Musa.Core.nuspec": {
+      "filePath": "Musa.Core.NuGet/Musa.Core.nuspec",
+      "contentHash": "c95c2421d5f868055707e2d065a94c30b1730b82c60d32ec828c70c2aca548bb",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 28,
+      "hasStructuralAnalysis": false
+    },
+    "Musa.Core.NuGet/Musa.Core.props": {
+      "filePath": "Musa.Core.NuGet/Musa.Core.props",
+      "contentHash": "7bb03f2377d8eb19de95539c64d652c2bf6696e369c4485ddf056ee551ebbf07",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 9,
+      "hasStructuralAnalysis": false
+    },
+    "Musa.Core.slnx": {
+      "filePath": "Musa.Core.slnx",
+      "contentHash": "7cce7695cb9cd0186e2b1d8c78217de0696ab8dd3f403b90a12a457d2fc35718",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 19,
+      "hasStructuralAnalysis": false
+    },
+    "Musa.Core.StaticLibraryForDriver/Musa.Core.StaticLibraryForDriver.vcxproj": {
+      "filePath": "Musa.Core.StaticLibraryForDriver/Musa.Core.StaticLibraryForDriver.vcxproj",
+      "contentHash": "5bd79c672f647e1553d46612c8adaed96c050425352c167470339b51b28f4842",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 138,
+      "hasStructuralAnalysis": false
+    },
+    "Musa.Core.StaticLibraryForDriver/Musa.Core.StaticLibraryForDriver.vcxproj.filters": {
+      "filePath": "Musa.Core.StaticLibraryForDriver/Musa.Core.StaticLibraryForDriver.vcxproj.filters",
+      "contentHash": "be7f45c8c36b90e3e037fc6610ba586f6ba4dd864548b5c208398929580dc4b0",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 270,
+      "hasStructuralAnalysis": false
+    },
+    "Musa.Core.StaticLibraryForDriver/universal.h": {
+      "filePath": "Musa.Core.StaticLibraryForDriver/universal.h",
+      "contentHash": "63de480c73943b87878189b44b740147f3f6d5f529520de1aa56541e386fbd1d",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "Veil.h",
+          "specifiers": [
+            "Veil.h"
+          ]
+        },
+        {
+          "source": "stddef.h",
+          "specifiers": [
+            "stddef.h"
+          ]
+        },
+        {
+          "source": "stdlib.h",
+          "specifiers": [
+            "stdlib.h"
+          ]
+        },
+        {
+          "source": "string.h",
+          "specifiers": [
+            "string.h"
+          ]
+        },
+        {
+          "source": "Musa.CoreLite.h",
+          "specifiers": [
+            "Musa.CoreLite.h"
+          ]
+        },
+        {
+          "source": "Musa.Core/Musa.Core.h",
+          "specifiers": [
+            "Musa.Core/Musa.Core.h"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 48,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core.TestForDriver/Musa.Core.TestForDriver.cpp": {
+      "filePath": "Musa.Core.TestForDriver/Musa.Core.TestForDriver.cpp",
+      "contentHash": "6f4f04a4eb5673c3a7ff0659d77d756a1fc152c95d94cb39bf2d472a2310d81d",
+      "functions": [
+        {
+          "name": "RunTests",
+          "params": [],
+          "returnType": "void",
+          "exported": false,
+          "lineCount": 1184
+        },
+        {
+          "name": "DriverUnload",
+          "params": [
+            "DriverObject"
+          ],
+          "returnType": "EXTERN_C",
+          "exported": true,
+          "lineCount": 14
+        },
+        {
+          "name": "BootDriverReinitialize",
+          "params": [
+            "DriverObject",
+            "Context",
+            "ULONG"
+          ],
+          "returnType": "VOID",
+          "exported": false,
+          "lineCount": 23
+        },
+        {
+          "name": "DriverEntry",
+          "params": [
+            "DriverObject",
+            "RegistryPath"
+          ],
+          "returnType": "EXTERN_C",
+          "exported": true,
+          "lineCount": 45
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "Veil.h",
+          "specifiers": [
+            "Veil.h"
+          ]
+        },
+        {
+          "source": "Musa.Core/Musa.Core.h",
+          "specifiers": [
+            "Musa.Core/Musa.Core.h"
+          ]
+        }
+      ],
+      "exports": [
+        "DriverUnload",
+        "DriverEntry"
+      ],
+      "totalLines": 1307,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core.TestForDriver/Musa.Core.TestForDriver.inf": {
+      "filePath": "Musa.Core.TestForDriver/Musa.Core.TestForDriver.inf",
+      "contentHash": "0d2ed9b6ad99534cdf185700761524aa4c0ad8e735c3772d1e6c9bc2dfa758b5",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 114,
+      "hasStructuralAnalysis": false
+    },
+    "Musa.Core.TestForDriver/Musa.Core.TestForDriver.vcxproj": {
+      "filePath": "Musa.Core.TestForDriver/Musa.Core.TestForDriver.vcxproj",
+      "contentHash": "2f0571d1565d4a1f6b21c63dc3a39e5506c10283590dbd6c7957847ad809e868",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 43,
+      "hasStructuralAnalysis": false
+    },
+    "Musa.Core.TestForDriver/Musa.Core.TestForDriver.vcxproj.filters": {
+      "filePath": "Musa.Core.TestForDriver/Musa.Core.TestForDriver.vcxproj.filters",
+      "contentHash": "a82a906c88cf6179eab4365a5734d5b9438b7e11ff1244ae40802561335802fd",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 18,
+      "hasStructuralAnalysis": false
+    },
+    "Musa.Core/AGENTS.md": {
+      "filePath": "Musa.Core/AGENTS.md",
+      "contentHash": "62879970e5c89537178e33cb284d42db78fd678a48394693277be8df54557d68",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 65,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Musa.Core.cpp": {
+      "filePath": "Musa.Core/Musa.Core.cpp",
+      "contentHash": "e6006230c2f3e48784c1a4c49328272dc923b06663ff7069af57b5adb7e80133",
+      "functions": [
+        {
+          "name": "MusaCoreStartup",
+          "params": [
+            "DriverObject",
+            "RegistryPath",
+            "TLSWithThreadNotifyCallback"
+          ],
+          "returnType": "NTSTATUS",
+          "exported": true,
+          "lineCount": 36
+        },
+        {
+          "name": "MusaCoreShutdown",
+          "params": [],
+          "returnType": "NTSTATUS",
+          "exported": true,
+          "lineCount": 24
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "Musa.Core.h",
+          "specifiers": [
+            "Musa.Core.h"
+          ]
+        },
+        {
+          "source": "Musa.Core.SystemEnvironmentBlock.h",
+          "specifiers": [
+            "Musa.Core.SystemEnvironmentBlock.h"
+          ]
+        }
+      ],
+      "exports": [
+        "MusaCoreStartup",
+        "MusaCoreShutdown"
+      ],
+      "totalLines": 77,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Musa.Core.def": {
+      "filePath": "Musa.Core/Musa.Core.def",
+      "contentHash": "f4e7b689f61fe27c5c9c69834ce7a0ead294701f1dd44d7dcbeee24ee04aab64",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 491,
+      "hasStructuralAnalysis": false
+    },
+    "Musa.Core/Musa.Core.h": {
+      "filePath": "Musa.Core/Musa.Core.h",
+      "contentHash": "86d7a000e76202bd37e7f228582afe9ecd3604bbfc2dd608574b34c616374263",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 32,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Musa.Core.Nothing.cpp": {
+      "filePath": "Musa.Core/Musa.Core.Nothing.cpp",
+      "contentHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 1,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Musa.Core.SystemEnvironmentBlock.cpp": {
+      "filePath": "Musa.Core/Musa.Core.SystemEnvironmentBlock.cpp",
+      "contentHash": "76eac51fd6ff64d1c10304ef851e9ddc9621f278c51e0515c11f494a03163485",
+      "functions": [
+        {
+          "name": "ThreadNotifyCallback",
+          "params": [
+            "ProcessId",
+            "ThreadId",
+            "Create"
+          ],
+          "returnType": "void",
+          "exported": false,
+          "lineCount": 13
+        },
+        {
+          "name": "MUSA_API MUSA_NAME_PRIVATE(EnvironmentBlockSetup)",
+          "params": [
+            "DriverObject",
+            "RegistryPath"
+          ],
+          "returnType": "NTSTATUS",
+          "exported": true,
+          "lineCount": 67
+        },
+        {
+          "name": "MUSA_API MUSA_NAME_PRIVATE(EnvironmentBlockTeardown)",
+          "params": [],
+          "returnType": "NTSTATUS",
+          "exported": true,
+          "lineCount": 32
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "Musa.Core.SystemEnvironmentBlock.h",
+          "specifiers": [
+            "Musa.Core.SystemEnvironmentBlock.h"
+          ]
+        },
+        {
+          "source": "Musa.Core.SystemEnvironmentBlock.Process.h",
+          "specifiers": [
+            "Musa.Core.SystemEnvironmentBlock.Process.h"
+          ]
+        }
+      ],
+      "exports": [
+        "MUSA_API MUSA_NAME_PRIVATE(EnvironmentBlockSetup)",
+        "MUSA_API MUSA_NAME_PRIVATE(EnvironmentBlockTeardown)"
+      ],
+      "totalLines": 138,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Musa.Core.SystemEnvironmentBlock.Fls.cpp": {
+      "filePath": "Musa.Core/Musa.Core.SystemEnvironmentBlock.Fls.cpp",
+      "contentHash": "cab0d4e92e2902bb17d25a7de295c8e7822d022ebbf85a77509cc505ba4707b5",
+      "functions": [
+        {
+          "name": "MUSA_NAME_PRIVATE(FlsCreate)",
+          "params": [],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "MUSA_NAME_PRIVATE(FlsCleanup)",
+          "params": [],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 31
+        },
+        {
+          "name": "MUSA_NAME_PRIVATE(FlsDataCleanup)",
+          "params": [
+            "FlsData",
+            "ULONG"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 43
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "Musa.Core.SystemEnvironmentBlock.Fls.h",
+          "specifiers": [
+            "Musa.Core.SystemEnvironmentBlock.Fls.h"
+          ]
+        }
+      ],
+      "exports": [
+        "MUSA_NAME_PRIVATE(FlsCreate)",
+        "MUSA_NAME_PRIVATE(FlsCleanup)",
+        "MUSA_NAME_PRIVATE(FlsDataCleanup)"
+      ],
+      "totalLines": 109,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Musa.Core.SystemEnvironmentBlock.Fls.h": {
+      "filePath": "Musa.Core/Musa.Core.SystemEnvironmentBlock.Fls.h",
+      "contentHash": "6833aab64c12fb21953e9690a64fe57310a37b25eb9dd4d9dd280e2110cbd8de",
+      "functions": [
+        {
+          "name": "VEIL_DECLARE_STRUCT",
+          "params": [],
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "VEIL_DECLARE_STRUCT",
+          "params": [],
+          "exported": true,
+          "lineCount": 9
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "VEIL_DECLARE_STRUCT",
+        "VEIL_DECLARE_STRUCT"
+      ],
+      "totalLines": 44,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Musa.Core.SystemEnvironmentBlock.h": {
+      "filePath": "Musa.Core/Musa.Core.SystemEnvironmentBlock.h",
+      "contentHash": "3c56f0c7f37588da7ee0a333a850e39f4dc8f01fd129bb221667856c97f3e3e6",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 17,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.cpp": {
+      "filePath": "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.cpp",
+      "contentHash": "932de0892d6518d7b7b98a6b23f14cee299fb5a5f8ed7940e34f8bd6b2afea50",
+      "functions": [
+        {
+          "name": "MUSA_API MUSA_NAME_PRIVATE(ProcessEnvironmentBlockSetup)",
+          "params": [
+            "DriverObject",
+            "RegistryPath"
+          ],
+          "returnType": "NTSTATUS",
+          "exported": true,
+          "lineCount": 148
+        },
+        {
+          "name": "MUSA_API MUSA_NAME_PRIVATE(ProcessEnvironmentBlockTeardown)",
+          "params": [],
+          "returnType": "NTSTATUS",
+          "exported": true,
+          "lineCount": 68
+        },
+        {
+          "name": "MUSA_NAME_PRIVATE(RtlGetCurrentPeb)",
+          "params": [],
+          "returnType": "MUSA_API",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "MUSA_NAME_PRIVATE(RtlAcquirePebLockExclusive)",
+          "params": [],
+          "returnType": "MUSA_API",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "MUSA_NAME_PRIVATE(RtlReleasePebLockExclusive)",
+          "params": [],
+          "returnType": "MUSA_API",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "MUSA_NAME_PRIVATE(RtlAcquirePebLockShared)",
+          "params": [],
+          "returnType": "MUSA_API",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "MUSA_NAME_PRIVATE(RtlReleasePebLockShared)",
+          "params": [],
+          "returnType": "MUSA_API",
+          "exported": true,
+          "lineCount": 6
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "Musa.Core.SystemEnvironmentBlock.Fls.h",
+          "specifiers": [
+            "Musa.Core.SystemEnvironmentBlock.Fls.h"
+          ]
+        },
+        {
+          "source": "Musa.Core.SystemEnvironmentBlock.Thread.h",
+          "specifiers": [
+            "Musa.Core.SystemEnvironmentBlock.Thread.h"
+          ]
+        },
+        {
+          "source": "Musa.Core.SystemEnvironmentBlock.Process.h",
+          "specifiers": [
+            "Musa.Core.SystemEnvironmentBlock.Process.h"
+          ]
+        }
+      ],
+      "exports": [
+        "MUSA_API MUSA_NAME_PRIVATE(ProcessEnvironmentBlockSetup)",
+        "MUSA_API MUSA_NAME_PRIVATE(ProcessEnvironmentBlockTeardown)",
+        "MUSA_NAME_PRIVATE(RtlGetCurrentPeb)",
+        "MUSA_NAME_PRIVATE(RtlAcquirePebLockExclusive)",
+        "MUSA_NAME_PRIVATE(RtlReleasePebLockExclusive)",
+        "MUSA_NAME_PRIVATE(RtlAcquirePebLockShared)",
+        "MUSA_NAME_PRIVATE(RtlReleasePebLockShared)"
+      ],
+      "totalLines": 282,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h": {
+      "filePath": "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h",
+      "contentHash": "5ebeefbb07e2f6990d7b416b38007a1beabd6583c8d22d186425cbd0c20b0229",
+      "functions": [],
+      "classes": [
+        {
+          "name": "ENVIRONMENT_VARIABLE_ENTRY",
+          "methods": [],
+          "properties": [
+            "Link",
+            "Name",
+            "Value"
+          ],
+          "exported": true,
+          "lineCount": 6
+        }
+      ],
+      "imports": [],
+      "exports": [
+        "ENVIRONMENT_VARIABLE_ENTRY"
+      ],
+      "totalLines": 84,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Musa.Core.SystemEnvironmentBlock.Thread.cpp": {
+      "filePath": "Musa.Core/Musa.Core.SystemEnvironmentBlock.Thread.cpp",
+      "contentHash": "45b466908087dc9c521dc2f3ebc66cf49a6b6e67aade8198b51d53c00449cece",
+      "functions": [
+        {
+          "name": "Compare",
+          "params": [
+            "PVOID",
+            "Second"
+          ],
+          "returnType": "RTL_GENERIC_COMPARE_RESULTS",
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "Allocate",
+          "params": [
+            "ULONG"
+          ],
+          "returnType": "PVOID",
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "Free",
+          "params": [
+            "__drv_freesMem"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "MUSA_NAME_PRIVATE(ThreadNotifyCallbackForTeb)",
+          "params": [
+            "CallbackContext",
+            "ThreadId",
+            "Create"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 46
+        },
+        {
+          "name": "MUSA_API MUSA_NAME_PRIVATE(ThreadEnvironmentBlockSetup)",
+          "params": [
+            "DriverObject",
+            "RegistryPath"
+          ],
+          "returnType": "NTSTATUS",
+          "exported": true,
+          "lineCount": 38
+        },
+        {
+          "name": "MUSA_API MUSA_NAME_PRIVATE(ThreadEnvironmentBlockTeardown)",
+          "params": [],
+          "returnType": "NTSTATUS",
+          "exported": true,
+          "lineCount": 25
+        },
+        {
+          "name": "MUSA_NAME_PRIVATE(RtlGetCurrentTeb)",
+          "params": [],
+          "returnType": "MUSA_API",
+          "exported": true,
+          "lineCount": 51
+        },
+        {
+          "name": "MUSA_API MUSA_NAME_PRIVATE(RtlAcquireTebLockExclusive)",
+          "params": [],
+          "returnType": "KIRQL",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "MUSA_NAME_PRIVATE(RtlReleaseTebLockExclusive)",
+          "params": [
+            "_IRQL_restores_"
+          ],
+          "returnType": "MUSA_API",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "MUSA_API MUSA_NAME_PRIVATE(RtlAcquireTebLockShared)",
+          "params": [],
+          "returnType": "KIRQL",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "MUSA_NAME_PRIVATE(RtlReleaseTebLockShared)",
+          "params": [
+            "_IRQL_restores_"
+          ],
+          "returnType": "MUSA_API",
+          "exported": true,
+          "lineCount": 4
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "Musa.Utilities.h",
+          "specifiers": [
+            "Musa.Utilities.h"
+          ]
+        },
+        {
+          "source": "Musa.Core.SystemEnvironmentBlock.Fls.h",
+          "specifiers": [
+            "Musa.Core.SystemEnvironmentBlock.Fls.h"
+          ]
+        },
+        {
+          "source": "Musa.Core.SystemEnvironmentBlock.Process.h",
+          "specifiers": [
+            "Musa.Core.SystemEnvironmentBlock.Process.h"
+          ]
+        },
+        {
+          "source": "Musa.Core.SystemEnvironmentBlock.Thread.h",
+          "specifiers": [
+            "Musa.Core.SystemEnvironmentBlock.Thread.h"
+          ]
+        }
+      ],
+      "exports": [
+        "Compare",
+        "Allocate",
+        "Free",
+        "MUSA_NAME_PRIVATE(ThreadNotifyCallbackForTeb)",
+        "MUSA_API MUSA_NAME_PRIVATE(ThreadEnvironmentBlockSetup)",
+        "MUSA_API MUSA_NAME_PRIVATE(ThreadEnvironmentBlockTeardown)",
+        "MUSA_NAME_PRIVATE(RtlGetCurrentTeb)",
+        "MUSA_API MUSA_NAME_PRIVATE(RtlAcquireTebLockExclusive)",
+        "MUSA_NAME_PRIVATE(RtlReleaseTebLockExclusive)",
+        "MUSA_API MUSA_NAME_PRIVATE(RtlAcquireTebLockShared)",
+        "MUSA_NAME_PRIVATE(RtlReleaseTebLockShared)"
+      ],
+      "totalLines": 276,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Musa.Core.SystemEnvironmentBlock.Thread.h": {
+      "filePath": "Musa.Core/Musa.Core.SystemEnvironmentBlock.Thread.h",
+      "contentHash": "18e9798b202b1c3e86e07fcdb696d6b97e99ec2e0d9321d642f8b2f8948aa366",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 57,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Musa.Utilities.h": {
+      "filePath": "Musa.Core/Musa.Utilities.h",
+      "contentHash": "1cc68ddca9128448349d263a0c9659edd6fed623fa04e4e7556cff61b7896813",
+      "functions": [
+        {
+          "name": "RotatePointerValue",
+          "params": [
+            "Value",
+            "Shift"
+          ],
+          "returnType": "uintptr_t",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "Fnv1aHash",
+          "params": [
+            "Buffer",
+            "size_t"
+          ],
+          "returnType": "size_t",
+          "exported": true,
+          "lineCount": 17
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "RotatePointerValue",
+        "Fnv1aHash"
+      ],
+      "totalLines": 98,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Musa.Utilities.Overlay.cpp": {
+      "filePath": "Musa.Core/Musa.Utilities.Overlay.cpp",
+      "contentHash": "7d51167b934bd3ba713b9d9ac7a6565fa15c860279b034d4fb33800808a4acbd",
+      "functions": [
+        {
+          "name": "RunTaskOnLowIrql",
+          "params": [
+            "DriverObject",
+            "PCTASK_FUNCTION",
+            "Context"
+          ],
+          "returnType": "NTSTATUS",
+          "exported": true,
+          "lineCount": 95
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "Musa.Utilities.h",
+          "specifiers": [
+            "Musa.Utilities.h"
+          ]
+        }
+      ],
+      "exports": [
+        "RunTaskOnLowIrql"
+      ],
+      "totalLines": 101,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Musa.Utilities.PEParser.h": {
+      "filePath": "Musa.Core/Musa.Utilities.PEParser.h",
+      "contentHash": "e09827ae0d2ea2cb74ba6a14449c9d5cfe2acb08bcd6f9dcc317627458965020",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 19,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/AGENTS.md": {
+      "filePath": "Musa.Core/Thunks/AGENTS.md",
+      "contentHash": "7f3535c6fb2b38b3d6ddad04a19c514b4b4c76851b275682224011e5b8c7d0d0",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 89,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Internal/KernelBase.Console.h": {
+      "filePath": "Musa.Core/Thunks/Internal/KernelBase.Console.h",
+      "contentHash": "e0ba400f9b828adacf06a8943216ffbfb3805dd7316c78d72c341d03bd6e0760",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 26,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Internal/KernelBase.File.h": {
+      "filePath": "Musa.Core/Thunks/Internal/KernelBase.File.h",
+      "contentHash": "314a0084fb5fbba4ae43bf8746d065af5272972a09d56029d063e47d58a34e49",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 181,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Internal/KernelBase.FileVersion.h": {
+      "filePath": "Musa.Core/Thunks/Internal/KernelBase.FileVersion.h",
+      "contentHash": "af45f6132ff8f4556bfb6f51229c9a5a5fcef85715f73b3458f35256a61dc4ca",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 20,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Internal/KernelBase.Handle.h": {
+      "filePath": "Musa.Core/Thunks/Internal/KernelBase.Handle.h",
+      "contentHash": "4e9f7fdbe91729eb22435f326af068f4f08e63335f75e8dc4adfd782fb2c8845",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 52,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Internal/KernelBase.LibraryLoader.h": {
+      "filePath": "Musa.Core/Thunks/Internal/KernelBase.LibraryLoader.h",
+      "contentHash": "7c86dc5b8a7f4b7441e1cbf688c5a23fa757cecaf96944352f70a72119d643d6",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 47,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Internal/KernelBase.NLS.h": {
+      "filePath": "Musa.Core/Thunks/Internal/KernelBase.NLS.h",
+      "contentHash": "7b6bfc76c831a1b4da90161335f1220209ffa9d3f8ca21e43ead6d773774c62f",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 54,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Internal/KernelBase.NLS.Table.cpp": {
+      "filePath": "Musa.Core/Thunks/Internal/KernelBase.NLS.Table.cpp",
+      "contentHash": "33874e3899f73eab774f51364f91fd77c2d4cc1e2210277d4fa4ef3f1ea733d8",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 145,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Internal/KernelBase.Process.h": {
+      "filePath": "Musa.Core/Thunks/Internal/KernelBase.Process.h",
+      "contentHash": "be6935eca314cc3d40bddcc36d20de5532817528c9c42841751cf9dfffbb3398",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 123,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Internal/KernelBase.Synchronize.h": {
+      "filePath": "Musa.Core/Thunks/Internal/KernelBase.Synchronize.h",
+      "contentHash": "e57526ad546ac8f7900c999f72a1d4e96e686e1ce1aba99e8fd1035a8a7e9c35",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 280,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Internal/KernelBase.System.h": {
+      "filePath": "Musa.Core/Thunks/Internal/KernelBase.System.h",
+      "contentHash": "3bdd0c53e6488ed6bbd0c7e6a919b83ccc886cfce113cfb3a196f204249ce023",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 140,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Internal/KernelBase.Thread.h": {
+      "filePath": "Musa.Core/Thunks/Internal/KernelBase.Thread.h",
+      "contentHash": "e1594f0cb8ccade6faf1dc2ab6ecde50c934f5a66117b8cc26837207d142f7ad",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 198,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Internal/KernelBase.Utility.h": {
+      "filePath": "Musa.Core/Thunks/Internal/KernelBase.Utility.h",
+      "contentHash": "c1c5e9fef7f94e5f037cdb5e5c1ef26ba6c2ebe0554a1d0cbb0419deed60b997",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 21,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Internal/Ntdll.FiberLocalStorage.h": {
+      "filePath": "Musa.Core/Thunks/Internal/Ntdll.FiberLocalStorage.h",
+      "contentHash": "c29a23ce762931899a65e079c25cd370ef175d14110541852c68bb0abb14518d",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 12,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Internal/Ntdll.Heap.h": {
+      "filePath": "Musa.Core/Thunks/Internal/Ntdll.Heap.h",
+      "contentHash": "e0d2a858e2c2ebea119a8d302b88fcfb829823848943b898ec4ec0351ee7664c",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 201,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Internal/Ntdll.Image.h": {
+      "filePath": "Musa.Core/Thunks/Internal/Ntdll.Image.h",
+      "contentHash": "12ebb189c35db2e18a238c099ec52eb3a0e327331da084ad73896aca950d5261",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 34,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Internal/Ntdll.LibraryLoader.h": {
+      "filePath": "Musa.Core/Thunks/Internal/Ntdll.LibraryLoader.h",
+      "contentHash": "433d65665ecdc551f5dd99206cd2b5c14173948075794b6b2f0abec6fe0f942e",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 98,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Internal/Ntdll.Path.h": {
+      "filePath": "Musa.Core/Thunks/Internal/Ntdll.Path.h",
+      "contentHash": "651a13680691116491bef2f685b05ff40ec32c75ec3c0c05f73d61eb001bc5a4",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 42,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Internal/Ntdll.Synchronize.h": {
+      "filePath": "Musa.Core/Thunks/Internal/Ntdll.Synchronize.h",
+      "contentHash": "08feec58c64b9d1386e112b12bb6f868488f519eaf86908670c66a476f4830d6",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 97,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Internal/Ntdll.Thread.h": {
+      "filePath": "Musa.Core/Thunks/Internal/Ntdll.Thread.h",
+      "contentHash": "7f22425fcd6fcac5d25318d407d25c52a3e5208dcadd0e18eb81817f7aa55dc9",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 9,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Internal/Ntdll.Utility.h": {
+      "filePath": "Musa.Core/Thunks/Internal/Ntdll.Utility.h",
+      "contentHash": "fc324c93e9e77d21b32be7c2bb7d88f5ff749a9fa7cab5d1a103567ee1513656",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 20,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/KernelBase.Console.cpp": {
+      "filePath": "Musa.Core/Thunks/KernelBase.Console.cpp",
+      "contentHash": "10887d4ef3aceca47099c3ea5c6fa2a67f002e105693321efa81d141443ffb02",
+      "functions": [
+        {
+          "name": "WINAPI MUSA_NAME(GetConsoleOutputCP)",
+          "params": [],
+          "returnType": "UINT",
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "MUSA_NAME(GetConsoleMode)",
+          "params": [
+            "hConsoleHandle",
+            "lpMode"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 14
+        },
+        {
+          "name": "MUSA_NAME(ReadConsoleW)",
+          "params": [
+            "hConsoleInput",
+            "lpBuffer",
+            "nNumberOfCharsToRead",
+            "lpNumberOfCharsRead",
+            "pInputControl"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 20
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "KernelBase.Private.h",
+          "specifiers": [
+            "KernelBase.Private.h"
+          ]
+        },
+        {
+          "source": "Internal/KernelBase.Console.h",
+          "specifiers": [
+            "Internal/KernelBase.Console.h"
+          ]
+        }
+      ],
+      "exports": [
+        "WINAPI MUSA_NAME(GetConsoleOutputCP)",
+        "MUSA_NAME(GetConsoleMode)",
+        "MUSA_NAME(ReadConsoleW)"
+      ],
+      "totalLines": 74,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/KernelBase.Debug.cpp": {
+      "filePath": "Musa.Core/Thunks/KernelBase.Debug.cpp",
+      "contentHash": "b84ecc45d323f721cebd945c6feda1546d7bf29345f5e3c4fe32796c9fd6bbf6",
+      "functions": [
+        {
+          "name": "WINAPI MUSA_NAME(IsDebuggerPresent)",
+          "params": [],
+          "returnType": "BOOL",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "WINAPI MUSA_NAME(DebugBreak)",
+          "params": [],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "WINAPI MUSA_NAME(OutputDebugStringA)",
+          "params": [
+            "OutputString"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "WINAPI MUSA_NAME(OutputDebugStringW)",
+          "params": [
+            "OutputString"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 7
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "KernelBase.Private.h",
+          "specifiers": [
+            "KernelBase.Private.h"
+          ]
+        }
+      ],
+      "exports": [
+        "WINAPI MUSA_NAME(IsDebuggerPresent)",
+        "WINAPI MUSA_NAME(DebugBreak)",
+        "WINAPI MUSA_NAME(OutputDebugStringA)",
+        "WINAPI MUSA_NAME(OutputDebugStringW)"
+      ],
+      "totalLines": 221,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/KernelBase.Error.cpp": {
+      "filePath": "Musa.Core/Thunks/KernelBase.Error.cpp",
+      "contentHash": "db0b675263241dde69437b4ada8c46427e65cbe57a79039300bfab3d6f5d1cdf",
+      "functions": [
+        {
+          "name": "MUSA_NAME(RaiseException)",
+          "params": [
+            "ExceptionCode",
+            "ExceptionFlags",
+            "NumberOfArguments",
+            "Arguments"
+          ],
+          "returnType": "EXTERN_C_START",
+          "exported": true,
+          "lineCount": 35
+        },
+        {
+          "name": "MUSA_NAME(UnhandledExceptionFilter)",
+          "params": [
+            "ExceptionInfo"
+          ],
+          "returnType": "__callback",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "WINAPI MUSA_NAME(SetUnhandledExceptionFilter)",
+          "params": [
+            "TopLevelExceptionFilter"
+          ],
+          "returnType": "LPTOP_LEVEL_EXCEPTION_FILTER",
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "MUSA_NAME(GetLastError)",
+          "params": [],
+          "returnType": "_Check_return_",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "WINAPI MUSA_NAME(SetLastError)",
+          "params": [
+            "Win32Error"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "WINAPI MUSA_NAME(GetErrorMode)",
+          "params": [],
+          "returnType": "UINT",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "WINAPI MUSA_NAME(SetErrorMode)",
+          "params": [
+            "UINT"
+          ],
+          "returnType": "UINT",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "WINAPI MUSA_NAME(GetThreadErrorMode)",
+          "params": [],
+          "returnType": "DWORD",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "WINAPI MUSA_NAME(SetThreadErrorMode)",
+          "params": [
+            "NewMode",
+            "OldMode"
+          ],
+          "returnType": "BOOL",
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "MUSA_NAME(AddVectoredExceptionHandler)",
+          "params": [
+            "ULONG",
+            "Handler"
+          ],
+          "returnType": "_Ret_maybenull_",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "WINAPI MUSA_NAME(RemoveVectoredExceptionHandler)",
+          "params": [
+            "Handle"
+          ],
+          "returnType": "ULONG",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "MUSA_NAME(AddVectoredContinueHandler)",
+          "params": [
+            "ULONG",
+            "Handler"
+          ],
+          "returnType": "_Ret_maybenull_",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "WINAPI MUSA_NAME(RemoveVectoredContinueHandler)",
+          "params": [
+            "Handle"
+          ],
+          "returnType": "ULONG",
+          "exported": true,
+          "lineCount": 6
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "KernelBase.Private.h",
+          "specifiers": [
+            "KernelBase.Private.h"
+          ]
+        },
+        {
+          "source": "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h",
+          "specifiers": [
+            "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h"
+          ]
+        }
+      ],
+      "exports": [
+        "MUSA_NAME(RaiseException)",
+        "MUSA_NAME(UnhandledExceptionFilter)",
+        "WINAPI MUSA_NAME(SetUnhandledExceptionFilter)",
+        "MUSA_NAME(GetLastError)",
+        "WINAPI MUSA_NAME(SetLastError)",
+        "WINAPI MUSA_NAME(GetErrorMode)",
+        "WINAPI MUSA_NAME(SetErrorMode)",
+        "WINAPI MUSA_NAME(GetThreadErrorMode)",
+        "WINAPI MUSA_NAME(SetThreadErrorMode)",
+        "MUSA_NAME(AddVectoredExceptionHandler)",
+        "WINAPI MUSA_NAME(RemoveVectoredExceptionHandler)",
+        "MUSA_NAME(AddVectoredContinueHandler)",
+        "WINAPI MUSA_NAME(RemoveVectoredContinueHandler)"
+      ],
+      "totalLines": 172,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/KernelBase.FiberLocalStorage.cpp": {
+      "filePath": "Musa.Core/Thunks/KernelBase.FiberLocalStorage.cpp",
+      "contentHash": "73fbe87d0de67c5ce445522383e0623ea64e091b5a6f064c64fd44b448012d0f",
+      "functions": [
+        {
+          "name": "MUSA_NAME(FlsAlloc)",
+          "params": [
+            "Callback"
+          ],
+          "returnType": "_Must_inspect_result_",
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "MUSA_NAME(FlsGetValue)",
+          "params": [
+            "FlsIndex"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "MUSA_NAME(FlsSetValue)",
+          "params": [
+            "FlsIndex",
+            "FlsData"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 14
+        },
+        {
+          "name": "MUSA_NAME(FlsFree)",
+          "params": [
+            "FlsIndex"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 12
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "KernelBase.Private.h",
+          "specifiers": [
+            "KernelBase.Private.h"
+          ]
+        }
+      ],
+      "exports": [
+        "MUSA_NAME(FlsAlloc)",
+        "MUSA_NAME(FlsGetValue)",
+        "MUSA_NAME(FlsSetValue)",
+        "MUSA_NAME(FlsFree)"
+      ],
+      "totalLines": 88,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/KernelBase.File.cpp": {
+      "filePath": "Musa.Core/Thunks/KernelBase.File.cpp",
+      "contentHash": "411b5795fb892ab925fc2bf7e0be00ded0db761a4a172c91b92f36d21f3fc392",
+      "functions": [
+        {
+          "name": "MusaCoreResolveStdHandle",
+          "params": [
+            "hFile"
+          ],
+          "returnType": "EXTERN_C_START",
+          "exported": false,
+          "lineCount": 22
+        },
+        {
+          "name": "MUSA_NAME(GetFileType)",
+          "params": [
+            "HANDLE"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 51
+        },
+        {
+          "name": "MUSA_NAME(ReadFile)",
+          "params": [
+            "HANDLE",
+            "lpBuffer",
+            "nNumberOfBytesToRead",
+            "lpNumberOfBytesRead",
+            "lpOverlapped"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 91
+        },
+        {
+          "name": "MUSA_NAME(WriteFile)",
+          "params": [
+            "HANDLE",
+            "nNumberOfBytesToWrite",
+            "lpNumberOfBytesWritten",
+            "lpOverlapped"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 82
+        },
+        {
+          "name": "MUSA_NAME(FlushFileBuffers)",
+          "params": [
+            "HANDLE"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 18
+        },
+        {
+          "name": "MUSA_NAME(CreateFileW)",
+          "params": [
+            "lpFileName",
+            "dwDesiredAccess",
+            "dwShareMode",
+            "lpSecurityAttributes",
+            "dwCreationDisposition",
+            "dwFlagsAndAttributes",
+            "hTemplateFile"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 126
+        },
+        {
+          "name": "MUSA_NAME(SetFilePointerEx)",
+          "params": [
+            "HANDLE",
+            "liDistanceToMove",
+            "lpNewFilePointer",
+            "dwMoveMethod"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 52
+        },
+        {
+          "name": "MUSA_NAME(SetFilePointer)",
+          "params": [
+            "HANDLE",
+            "lDistanceToMove",
+            "lpDistanceToMoveHigh",
+            "dwMoveMethod"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 23
+        },
+        {
+          "name": "MUSA_NAME(GetFileAttributesExW)",
+          "params": [
+            "lpFileName",
+            "fInfoLevelId",
+            "lpFileInformation"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 45
+        },
+        {
+          "name": "MUSA_NAME(DeleteFileW)",
+          "params": [
+            "lpFileName"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 32
+        },
+        {
+          "name": "MUSA_NAME(SetFileAttributesW)",
+          "params": [
+            "lpFileName",
+            "dwFileAttributes"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 52
+        },
+        {
+          "name": "MUSA_NAME(GetTempPathW)",
+          "params": [
+            "nBufferLength"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 34
+        },
+        {
+          "name": "MUSA_NAME(CreateDirectoryW)",
+          "params": [
+            "lpPathName",
+            "lpSecurityAttributes"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 39
+        },
+        {
+          "name": "MUSA_NAME(RemoveDirectoryW)",
+          "params": [
+            "lpPathName"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 45
+        },
+        {
+          "name": "MUSA_NAME(MoveFileExW)",
+          "params": [
+            "lpExistingFileName",
+            "lpNewFileName",
+            "dwFlags"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 73
+        },
+        {
+          "name": "MUSA_NAME(GetDriveTypeW)",
+          "params": [
+            "lpRootPathName"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 71
+        },
+        {
+          "name": "MUSA_NAME(FindFirstFileExW)",
+          "params": [
+            "lpFileName",
+            "fInfoLevelId",
+            "lpFindFileData",
+            "fSearchOp",
+            "lpSearchFilter",
+            "dwAdditionalFlags"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 101
+        },
+        {
+          "name": "MUSA_NAME(FindNextFileW)",
+          "params": [
+            "hFindFile",
+            "lpFindFileData"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 37
+        },
+        {
+          "name": "MUSA_NAME(FindClose)",
+          "params": [
+            "hFindFile"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 18
+        },
+        {
+          "name": "MUSA_NAME(GetFullPathNameW)",
+          "params": [
+            "lpFileName",
+            "nBufferLength"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 26
+        },
+        {
+          "name": "MUSA_NAME(SetEndOfFile)",
+          "params": [
+            "HANDLE"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 27
+        },
+        {
+          "name": "MUSA_NAME(GetFileSizeEx)",
+          "params": [
+            "HANDLE",
+            "lpFileSize"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 18
+        },
+        {
+          "name": "MUSA_NAME(GetFileInformationByHandle)",
+          "params": [
+            "HANDLE",
+            "lpFileInformation"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 36
+        },
+        {
+          "name": "MUSA_NAME(PeekNamedPipe)",
+          "params": [
+            "hNamedPipe",
+            "nBufferSize",
+            "lpBytesRead",
+            "lpTotalBytesAvail",
+            "lpBytesLeftThisMessage"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 62
+        },
+        {
+          "name": "MUSA_NAME(CreateNamedPipeW)",
+          "params": [
+            "lpName",
+            "dwOpenMode",
+            "dwPipeMode",
+            "nMaxInstances",
+            "nOutBufferSize",
+            "nInBufferSize",
+            "nDefaultTimeOut",
+            "lpSecurityAttributes"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 74
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h",
+          "specifiers": [
+            "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h"
+          ]
+        },
+        {
+          "source": "KernelBase.Private.h",
+          "specifiers": [
+            "KernelBase.Private.h"
+          ]
+        },
+        {
+          "source": "Internal/KernelBase.File.h",
+          "specifiers": [
+            "Internal/KernelBase.File.h"
+          ]
+        },
+        {
+          "source": "Internal/KernelBase.System.h",
+          "specifiers": [
+            "Internal/KernelBase.System.h"
+          ]
+        },
+        {
+          "source": "Internal/Ntdll.Path.h",
+          "specifiers": [
+            "Internal/Ntdll.Path.h"
+          ]
+        }
+      ],
+      "exports": [
+        "MUSA_NAME(GetFileType)",
+        "MUSA_NAME(ReadFile)",
+        "MUSA_NAME(WriteFile)",
+        "MUSA_NAME(FlushFileBuffers)",
+        "MUSA_NAME(CreateFileW)",
+        "MUSA_NAME(SetFilePointerEx)",
+        "MUSA_NAME(SetFilePointer)",
+        "MUSA_NAME(GetFileAttributesExW)",
+        "MUSA_NAME(DeleteFileW)",
+        "MUSA_NAME(SetFileAttributesW)",
+        "MUSA_NAME(GetTempPathW)",
+        "MUSA_NAME(CreateDirectoryW)",
+        "MUSA_NAME(RemoveDirectoryW)",
+        "MUSA_NAME(MoveFileExW)",
+        "MUSA_NAME(GetDriveTypeW)",
+        "MUSA_NAME(FindFirstFileExW)",
+        "MUSA_NAME(FindNextFileW)",
+        "MUSA_NAME(FindClose)",
+        "MUSA_NAME(GetFullPathNameW)",
+        "MUSA_NAME(SetEndOfFile)",
+        "MUSA_NAME(GetFileSizeEx)",
+        "MUSA_NAME(GetFileInformationByHandle)",
+        "MUSA_NAME(PeekNamedPipe)",
+        "MUSA_NAME(CreateNamedPipeW)"
+      ],
+      "totalLines": 1465,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/KernelBase.FileVersion.cpp": {
+      "filePath": "Musa.Core/Thunks/KernelBase.FileVersion.cpp",
+      "contentHash": "ea0cd322365e6f6d275cb4c1f3ca411d1924dfa53de2397d21fb447a60ee2525",
+      "functions": [
+        {
+          "name": "APIENTRY MUSA_NAME(GetFileVersionInfoW)",
+          "params": [
+            "FileName",
+            "Handle",
+            "Length"
+          ],
+          "returnType": "BOOL",
+          "exported": true,
+          "lineCount": 62
+        },
+        {
+          "name": "MUSA_NAME(GetFileVersionInfoSizeW)",
+          "params": [
+            "FileName",
+            "Handle"
+          ],
+          "returnType": "APIENTRY",
+          "exported": true,
+          "lineCount": 51
+        },
+        {
+          "name": "APIENTRY MUSA_NAME_PRIVATE(VerFindNextBlock)",
+          "params": [
+            "PVS_VERSIONINFO_BLOCK",
+            "SubBlock",
+            "Length"
+          ],
+          "returnType": "PVS_VERSIONINFO_BLOCK",
+          "exported": false,
+          "lineCount": 27
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "KernelBase.Private.h",
+          "specifiers": [
+            "KernelBase.Private.h"
+          ]
+        },
+        {
+          "source": "Internal/KernelBase.FileVersion.h",
+          "specifiers": [
+            "Internal/KernelBase.FileVersion.h"
+          ]
+        }
+      ],
+      "exports": [
+        "APIENTRY MUSA_NAME(GetFileVersionInfoW)",
+        "MUSA_NAME(GetFileVersionInfoSizeW)"
+      ],
+      "totalLines": 210,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/KernelBase.Handle.cpp": {
+      "filePath": "Musa.Core/Thunks/KernelBase.Handle.cpp",
+      "contentHash": "ad89e97071ec7961e3cc3c34bd083b5e1528893083a72cdfde68f483c636e3ba",
+      "functions": [
+        {
+          "name": "WINAPI MUSA_NAME(GetStdHandle)",
+          "params": [
+            "StdHandle"
+          ],
+          "returnType": "HANDLE",
+          "exported": true,
+          "lineCount": 24
+        },
+        {
+          "name": "MUSA_NAME(SetStdHandle)",
+          "params": [
+            "StdHandle",
+            "Handle"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 28
+        },
+        {
+          "name": "MUSA_NAME(CloseHandle)",
+          "params": [
+            "_Post_ptr_invalid_"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 14
+        },
+        {
+          "name": "MUSA_NAME(DuplicateHandle)",
+          "params": [
+            "SourceProcessHandle",
+            "SourceHandle",
+            "TargetProcessHandle",
+            "TargetHandle",
+            "DesiredAccess",
+            "InheritHandle",
+            "Options"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 45
+        },
+        {
+          "name": "MUSA_NAME(CompareObjectHandles)",
+          "params": [
+            "FirstHandle",
+            "SecondHandle"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "MUSA_NAME(GetHandleInformation)",
+          "params": [
+            "Handle",
+            "LPDWORD"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 40
+        },
+        {
+          "name": "MUSA_NAME(SetHandleInformation)",
+          "params": [
+            "Handle",
+            "DWORD",
+            "DWORD"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 43
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h",
+          "specifiers": [
+            "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h"
+          ]
+        },
+        {
+          "source": "KernelBase.Private.h",
+          "specifiers": [
+            "KernelBase.Private.h"
+          ]
+        },
+        {
+          "source": "Internal/KernelBase.Handle.h",
+          "specifiers": [
+            "Internal/KernelBase.Handle.h"
+          ]
+        }
+      ],
+      "exports": [
+        "WINAPI MUSA_NAME(GetStdHandle)",
+        "MUSA_NAME(SetStdHandle)",
+        "MUSA_NAME(CloseHandle)",
+        "MUSA_NAME(DuplicateHandle)",
+        "MUSA_NAME(CompareObjectHandles)",
+        "MUSA_NAME(GetHandleInformation)",
+        "MUSA_NAME(SetHandleInformation)"
+      ],
+      "totalLines": 258,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/KernelBase.Heap.cpp": {
+      "filePath": "Musa.Core/Thunks/KernelBase.Heap.cpp",
+      "contentHash": "c816340f644d5a58742b0e5baafc3c847d929aba9e14c47d3e81426de3085a8d",
+      "functions": [
+        {
+          "name": "WINAPI MUSA_NAME(GetProcessHeap)",
+          "params": [],
+          "returnType": "HANDLE",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "MUSA_NAME(GetProcessHeaps)",
+          "params": [
+            "NumberOfHeaps"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "WINAPI MUSA_NAME(HeapCreate)",
+          "params": [
+            "Options",
+            "InitialSize",
+            "MaximumSize"
+          ],
+          "returnType": "HANDLE",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "MUSA_NAME(HeapDestroy)",
+          "params": [
+            "HeapHandle"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "MUSA_NAME(HeapAlloc)",
+          "params": [
+            "HeapHandle",
+            "DWORD",
+            "SIZE_T"
+          ],
+          "returnType": "DECLSPEC_ALLOCATOR",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "MUSA_NAME(HeapReAlloc)",
+          "params": [
+            "HeapHandle",
+            "DWORD",
+            "LPVOID",
+            "SIZE_T"
+          ],
+          "returnType": "DECLSPEC_ALLOCATOR",
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "MUSA_NAME(HeapFree)",
+          "params": [
+            "HeapHandle",
+            "DWORD",
+            "Mem"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "MUSA_NAME(HeapSize)",
+          "params": [
+            "HeapHandle",
+            "DWORD",
+            "LPCVOID"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "WINAPI MUSA_NAME(HeapCompact)",
+          "params": [
+            "HeapHandle",
+            "DWORD"
+          ],
+          "returnType": "SIZE_T",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "WINAPI MUSA_NAME(HeapLock)",
+          "params": [
+            "HeapHandle"
+          ],
+          "returnType": "BOOL",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "WINAPI MUSA_NAME(HeapUnlock)",
+          "params": [
+            "HeapHandle"
+          ],
+          "returnType": "BOOL",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "WINAPI MUSA_NAME(HeapValidate)",
+          "params": [
+            "HeapHandle",
+            "DWORD",
+            "LPCVOID"
+          ],
+          "returnType": "BOOL",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "HeapSummaryWorkerRoutine",
+          "params": [
+            "Information",
+            "Context"
+          ],
+          "returnType": "NTSTATUS",
+          "exported": true,
+          "lineCount": 33
+        },
+        {
+          "name": "WINAPI MUSA_NAME(HeapSummary)",
+          "params": [
+            "HeapHandle",
+            "DWORD",
+            "Summary"
+          ],
+          "returnType": "BOOL",
+          "exported": true,
+          "lineCount": 34
+        },
+        {
+          "name": "WINAPI MUSA_NAME(HeapWalk)",
+          "params": [
+            "HeapHandle",
+            "LPPROCESS_HEAP_ENTRY"
+          ],
+          "returnType": "BOOL",
+          "exported": true,
+          "lineCount": 14
+        },
+        {
+          "name": "WINAPI MUSA_NAME(HeapSetInformation)",
+          "params": [
+            "HeapHandle",
+            "HeapInformationClass",
+            "HeapInformation",
+            "HeapInformationLength"
+          ],
+          "returnType": "BOOL",
+          "exported": true,
+          "lineCount": 16
+        },
+        {
+          "name": "WINAPI MUSA_NAME(HeapQueryInformation)",
+          "params": [
+            "HeapHandle",
+            "HeapInformationClass",
+            "HeapInformationLength",
+            "ReturnLength"
+          ],
+          "returnType": "BOOL",
+          "exported": true,
+          "lineCount": 17
+        },
+        {
+          "name": "WINAPI MUSA_NAME(LocalAlloc)",
+          "params": [
+            "Flags",
+            "SIZE_T"
+          ],
+          "returnType": "HLOCAL",
+          "exported": true,
+          "lineCount": 18
+        },
+        {
+          "name": "WINAPI MUSA_NAME(LocalReAlloc)",
+          "params": [
+            "HLOCAL",
+            "SIZE_T",
+            "Flags"
+          ],
+          "returnType": "HLOCAL",
+          "exported": true,
+          "lineCount": 19
+        },
+        {
+          "name": "WINAPI MUSA_NAME(LocalFree)",
+          "params": [
+            "HLOCAL"
+          ],
+          "returnType": "HLOCAL",
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "WINAPI MUSA_NAME(LocalLock)",
+          "params": [
+            "HLOCAL"
+          ],
+          "returnType": "LPVOID",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "WINAPI MUSA_NAME(LocalUnlock)",
+          "params": [
+            "HLOCAL"
+          ],
+          "returnType": "BOOL",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "WINAPI MUSA_NAME(LocalHandle)",
+          "params": [
+            "LPCVOID"
+          ],
+          "returnType": "HLOCAL",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "WINAPI MUSA_NAME(LocalSize)",
+          "params": [
+            "HLOCAL"
+          ],
+          "returnType": "SIZE_T",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "WINAPI MUSA_NAME(LocalFlags)",
+          "params": [
+            "HLOCAL"
+          ],
+          "returnType": "UINT",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "WINAPI MUSA_NAME(GlobalAlloc)",
+          "params": [
+            "Flags",
+            "SIZE_T"
+          ],
+          "returnType": "HGLOBAL",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "WINAPI MUSA_NAME(GlobalReAlloc)",
+          "params": [
+            "HGLOBAL",
+            "SIZE_T",
+            "Flags"
+          ],
+          "returnType": "HGLOBAL",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "WINAPI MUSA_NAME(GlobalFree)",
+          "params": [
+            "HGLOBAL"
+          ],
+          "returnType": "HGLOBAL",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "WINAPI MUSA_NAME(GlobalLock)",
+          "params": [
+            "HGLOBAL"
+          ],
+          "returnType": "LPVOID",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "WINAPI MUSA_NAME(GlobalUnlock)",
+          "params": [
+            "HGLOBAL"
+          ],
+          "returnType": "BOOL",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "WINAPI MUSA_NAME(GlobalHandle)",
+          "params": [
+            "LPCVOID"
+          ],
+          "returnType": "HGLOBAL",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "WINAPI MUSA_NAME(GlobalSize)",
+          "params": [
+            "HGLOBAL"
+          ],
+          "returnType": "SIZE_T",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "WINAPI MUSA_NAME(GlobalFlags)",
+          "params": [
+            "HGLOBAL"
+          ],
+          "returnType": "UINT",
+          "exported": true,
+          "lineCount": 6
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "KernelBase.Private.h",
+          "specifiers": [
+            "KernelBase.Private.h"
+          ]
+        }
+      ],
+      "exports": [
+        "WINAPI MUSA_NAME(GetProcessHeap)",
+        "MUSA_NAME(GetProcessHeaps)",
+        "WINAPI MUSA_NAME(HeapCreate)",
+        "MUSA_NAME(HeapDestroy)",
+        "MUSA_NAME(HeapAlloc)",
+        "MUSA_NAME(HeapReAlloc)",
+        "MUSA_NAME(HeapFree)",
+        "MUSA_NAME(HeapSize)",
+        "WINAPI MUSA_NAME(HeapCompact)",
+        "WINAPI MUSA_NAME(HeapLock)",
+        "WINAPI MUSA_NAME(HeapUnlock)",
+        "WINAPI MUSA_NAME(HeapValidate)",
+        "HeapSummaryWorkerRoutine",
+        "WINAPI MUSA_NAME(HeapSummary)",
+        "WINAPI MUSA_NAME(HeapWalk)",
+        "WINAPI MUSA_NAME(HeapSetInformation)",
+        "WINAPI MUSA_NAME(HeapQueryInformation)",
+        "WINAPI MUSA_NAME(LocalAlloc)",
+        "WINAPI MUSA_NAME(LocalReAlloc)",
+        "WINAPI MUSA_NAME(LocalFree)",
+        "WINAPI MUSA_NAME(LocalLock)",
+        "WINAPI MUSA_NAME(LocalUnlock)",
+        "WINAPI MUSA_NAME(LocalHandle)",
+        "WINAPI MUSA_NAME(LocalSize)",
+        "WINAPI MUSA_NAME(LocalFlags)",
+        "WINAPI MUSA_NAME(GlobalAlloc)",
+        "WINAPI MUSA_NAME(GlobalReAlloc)",
+        "WINAPI MUSA_NAME(GlobalFree)",
+        "WINAPI MUSA_NAME(GlobalLock)",
+        "WINAPI MUSA_NAME(GlobalUnlock)",
+        "WINAPI MUSA_NAME(GlobalHandle)",
+        "WINAPI MUSA_NAME(GlobalSize)",
+        "WINAPI MUSA_NAME(GlobalFlags)"
+      ],
+      "totalLines": 464,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/KernelBase.LibraryLoader.cpp": {
+      "filePath": "Musa.Core/Thunks/KernelBase.LibraryLoader.cpp",
+      "contentHash": "58c1a084b6192920cdcad7a3f0e1326ba12f8bd30e4ade2fa9478cae48d7b2b8",
+      "functions": [
+        {
+          "name": "WINAPI MUSA_NAME(FreeLibrary)",
+          "params": [
+            "DllHandle"
+          ],
+          "returnType": "BOOL",
+          "exported": true,
+          "lineCount": 16
+        },
+        {
+          "name": "MUSA_NAME(GetModuleFileNameW)",
+          "params": [
+            "DllHandle"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 46
+        },
+        {
+          "name": "MUSA_NAME(GetModuleHandleW)",
+          "params": [
+            "ModuleName"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 17
+        },
+        {
+          "name": "MUSA_NAME(GetModuleHandleExW)",
+          "params": [
+            "DWORD",
+            "ModuleName"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 76
+        },
+        {
+          "name": "MUSA_NAME(GetProcAddress)",
+          "params": [
+            "Module",
+            "ProcedureName"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 50
+        },
+        {
+          "name": "MUSA_NAME(LoadLibraryExA)",
+          "params": [
+            "lpLibFileName",
+            "HANDLE",
+            "dwFlags"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 13
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "KernelBase.Private.h",
+          "specifiers": [
+            "KernelBase.Private.h"
+          ]
+        },
+        {
+          "source": "Internal/KernelBase.LibraryLoader.h",
+          "specifiers": [
+            "Internal/KernelBase.LibraryLoader.h"
+          ]
+        }
+      ],
+      "exports": [
+        "WINAPI MUSA_NAME(FreeLibrary)",
+        "MUSA_NAME(GetModuleFileNameW)",
+        "MUSA_NAME(GetModuleHandleW)",
+        "MUSA_NAME(GetModuleHandleExW)",
+        "MUSA_NAME(GetProcAddress)",
+        "MUSA_NAME(LoadLibraryExA)"
+      ],
+      "totalLines": 267,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/KernelBase.NLS.cpp": {
+      "filePath": "Musa.Core/Thunks/KernelBase.NLS.cpp",
+      "contentHash": "fc2495098cc8b85b9e9f16cc149c49132626b06a7482d48dfcf322477a66f740",
+      "functions": [
+        {
+          "name": "MUSA_NAME(MultiByteToWideChar)",
+          "params": [
+            "CodePage",
+            "DWORD",
+            "MultiByteStr",
+            "CountOfMultiByte",
+            "CountOfWideChar"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 145
+        },
+        {
+          "name": "MUSA_NAME(WideCharToMultiByte)",
+          "params": [
+            "CodePage",
+            "DWORD",
+            "WideCharStr",
+            "CountOfWideChar",
+            "CountOfMultiByte",
+            "DefaultChar",
+            "UsedDefaultChar"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 153
+        },
+        {
+          "name": "WINAPI MUSA_NAME(GetACP)",
+          "params": [],
+          "returnType": "UINT",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "WINAPI MUSA_NAME(GetOEMCP)",
+          "params": [],
+          "returnType": "UINT",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "WINAPI MUSA_NAME(GetCPInfo)",
+          "params": [
+            "CodePage",
+            "CPInfo"
+          ],
+          "returnType": "BOOL",
+          "exported": true,
+          "lineCount": 37
+        },
+        {
+          "name": "WINAPI MUSA_NAME(GetCPInfoExW)",
+          "params": [
+            "CodePage",
+            "DWORD",
+            "CPInfoEx"
+          ],
+          "returnType": "BOOL",
+          "exported": true,
+          "lineCount": 43
+        },
+        {
+          "name": "MUSA_NAME(GetDateFormatEx)",
+          "params": [
+            "lpLocaleName",
+            "dwFlags",
+            "lpFormat",
+            "lpDateStr",
+            "cchDate",
+            "lpCalendar"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 53
+        },
+        {
+          "name": "MUSA_NAME(GetTimeFormatEx)",
+          "params": [
+            "lpLocaleName",
+            "dwFlags",
+            "lpFormat",
+            "lpTimeStr",
+            "cchTime"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 51
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "KernelBase.Private.h",
+          "specifiers": [
+            "KernelBase.Private.h"
+          ]
+        },
+        {
+          "source": "Internal/KernelBase.NLS.h",
+          "specifiers": [
+            "Internal/KernelBase.NLS.h"
+          ]
+        },
+        {
+          "source": "Internal/KernelBase.System.h",
+          "specifiers": [
+            "Internal/KernelBase.System.h"
+          ]
+        },
+        {
+          "source": "Internal/KernelBase.NLS.Table.cpp",
+          "specifiers": [
+            "Internal/KernelBase.NLS.Table.cpp"
+          ]
+        }
+      ],
+      "exports": [
+        "MUSA_NAME(MultiByteToWideChar)",
+        "MUSA_NAME(WideCharToMultiByte)",
+        "WINAPI MUSA_NAME(GetACP)",
+        "WINAPI MUSA_NAME(GetOEMCP)",
+        "WINAPI MUSA_NAME(GetCPInfo)",
+        "WINAPI MUSA_NAME(GetCPInfoExW)",
+        "MUSA_NAME(GetDateFormatEx)",
+        "MUSA_NAME(GetTimeFormatEx)"
+      ],
+      "totalLines": 546,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/KernelBase.PerformanceCounter.cpp": {
+      "filePath": "Musa.Core/Thunks/KernelBase.PerformanceCounter.cpp",
+      "contentHash": "06b2fbe0917a58294382c8e4fae60eeea1c3c794be101e8bf1f848981bb6feaa",
+      "functions": [
+        {
+          "name": "MUSA_NAME(QueryPerformanceCounter)",
+          "params": [
+            "PerformanceCount"
+          ],
+          "returnType": "EXTERN_C_START",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "WINAPI MUSA_NAME(QueryPerformanceFrequency)",
+          "params": [
+            "Frequency"
+          ],
+          "returnType": "BOOL",
+          "exported": true,
+          "lineCount": 6
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "MUSA_NAME(QueryPerformanceCounter)",
+        "WINAPI MUSA_NAME(QueryPerformanceFrequency)"
+      ],
+      "totalLines": 22,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/KernelBase.Private.cpp": {
+      "filePath": "Musa.Core/Thunks/KernelBase.Private.cpp",
+      "contentHash": "289140e01c182322e16b288907c02c4b62477d9fa47a1f7e0ca3ac9b3d33b224",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "KernelBase.Private.h",
+          "specifiers": [
+            "KernelBase.Private.h"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 8,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/KernelBase.Private.h": {
+      "filePath": "Musa.Core/Thunks/KernelBase.Private.h",
+      "contentHash": "7c2d83c7e506a3a8eab30618c17222337988d99605fa5a833447078c38f2c169",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 13,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/KernelBase.Process.cpp": {
+      "filePath": "Musa.Core/Thunks/KernelBase.Process.cpp",
+      "contentHash": "035155bd3cef86f6a18ce614f19e1d61a347d3f4492120479fd9531f18fc4a5f",
+      "functions": [
+        {
+          "name": "WINAPI MUSA_NAME(GetProcessTimes)",
+          "params": [
+            "ProcessHandle",
+            "CreationTime",
+            "ExitTime",
+            "KernelTime",
+            "UserTime"
+          ],
+          "returnType": "BOOL",
+          "exported": true,
+          "lineCount": 26
+        },
+        {
+          "name": "WINAPI MUSA_NAME(GetCurrentProcess)",
+          "params": [],
+          "returnType": "HANDLE",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "WINAPI MUSA_NAME(GetCurrentProcessId)",
+          "params": [],
+          "returnType": "DWORD",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "WINAPI MUSA_NAME(ExitProcess)",
+          "params": [
+            "ExitCode"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "MUSA_NAME(TerminateProcess)",
+          "params": [
+            "ProcessHandle",
+            "ExitCode"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 19
+        },
+        {
+          "name": "MUSA_NAME(GetExitCodeProcess)",
+          "params": [
+            "ProcessHandle",
+            "ExitCode"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 19
+        },
+        {
+          "name": "MUSA_NAME(GetProcessVersion)",
+          "params": [
+            "ProcessId"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 38
+        },
+        {
+          "name": "WINAPI MUSA_NAME(GetStartupInfoW)",
+          "params": [
+            "StartupInfo"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "MUSA_NAME(OpenProcessToken)",
+          "params": [
+            "ProcessHandle",
+            "DesiredAccess",
+            "TokenHandle"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 16
+        },
+        {
+          "name": "MUSA_NAME(SetPriorityClass)",
+          "params": [
+            "ProcessHandle",
+            "PriorityClass"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 37
+        },
+        {
+          "name": "MUSA_NAME(GetPriorityClass)",
+          "params": [
+            "ProcessHandle"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 38
+        },
+        {
+          "name": "MUSA_NAME(ProcessIdToSessionId)",
+          "params": [
+            "ProcessId"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 52
+        },
+        {
+          "name": "MUSA_NAME(GetProcessId)",
+          "params": [
+            "ProcessHandle"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 17
+        },
+        {
+          "name": "MUSA_NAME(FlushInstructionCache)",
+          "params": [
+            "ProcessHandle",
+            "BaseAddress",
+            "SIZE_T"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 16
+        },
+        {
+          "name": "MUSA_NAME(FlushProcessWriteBuffers)",
+          "params": [],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "MUSA_NAME(GetProcessIdOfThread)",
+          "params": [
+            "Thread"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 17
+        },
+        {
+          "name": "MUSA_NAME(OpenProcess)",
+          "params": [
+            "DesiredAccess",
+            "InheritHandle",
+            "ProcessId"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 23
+        },
+        {
+          "name": "MUSA_NAME(GetProcessHandleCount)",
+          "params": [
+            "ProcessHandle",
+            "HandleCount"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 16
+        },
+        {
+          "name": "MUSA_NAME(GetProcessPriorityBoost)",
+          "params": [
+            "ProcessHandle",
+            "DisablePriorityBoost"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 20
+        },
+        {
+          "name": "MUSA_NAME(SetProcessPriorityBoost)",
+          "params": [
+            "ProcessHandle",
+            "DisablePriorityBoost"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 18
+        },
+        {
+          "name": "MUSA_NAME(IsProcessCritical)",
+          "params": [
+            "ProcessHandle",
+            "Critical"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 18
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h",
+          "specifiers": [
+            "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h"
+          ]
+        },
+        {
+          "source": "KernelBase.Private.h",
+          "specifiers": [
+            "KernelBase.Private.h"
+          ]
+        },
+        {
+          "source": "Internal/KernelBase.Process.h",
+          "specifiers": [
+            "Internal/KernelBase.Process.h"
+          ]
+        }
+      ],
+      "exports": [
+        "WINAPI MUSA_NAME(GetProcessTimes)",
+        "WINAPI MUSA_NAME(GetCurrentProcess)",
+        "WINAPI MUSA_NAME(GetCurrentProcessId)",
+        "WINAPI MUSA_NAME(ExitProcess)",
+        "MUSA_NAME(TerminateProcess)",
+        "MUSA_NAME(GetExitCodeProcess)",
+        "MUSA_NAME(GetProcessVersion)",
+        "WINAPI MUSA_NAME(GetStartupInfoW)",
+        "MUSA_NAME(OpenProcessToken)",
+        "MUSA_NAME(SetPriorityClass)",
+        "MUSA_NAME(GetPriorityClass)",
+        "MUSA_NAME(ProcessIdToSessionId)",
+        "MUSA_NAME(GetProcessId)",
+        "MUSA_NAME(FlushInstructionCache)",
+        "MUSA_NAME(FlushProcessWriteBuffers)",
+        "MUSA_NAME(GetProcessIdOfThread)",
+        "MUSA_NAME(OpenProcess)",
+        "MUSA_NAME(GetProcessHandleCount)",
+        "MUSA_NAME(GetProcessPriorityBoost)",
+        "MUSA_NAME(SetProcessPriorityBoost)",
+        "MUSA_NAME(IsProcessCritical)"
+      ],
+      "totalLines": 542,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/KernelBase.Process.Information.cpp": {
+      "filePath": "Musa.Core/Thunks/KernelBase.Process.Information.cpp",
+      "contentHash": "09934cafb5a93b9e8b2fc925d8e65a38cb84d5dc544d17a6e4b42e169f541596",
+      "functions": [
+        {
+          "name": "WINAPI MUSA_NAME(SetProcessInformation)",
+          "params": [
+            "ProcessHandle",
+            "ProcessInformationClass",
+            "ProcessInformation",
+            "ProcessInformationSize"
+          ],
+          "returnType": "BOOL",
+          "exported": true,
+          "lineCount": 122
+        },
+        {
+          "name": "MUSA_NAME(GetProcessInformation)",
+          "params": [
+            "ProcessHandle",
+            "ProcessInformationClass",
+            "ProcessInformation",
+            "ProcessInformationSize"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 131
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "KernelBase.Private.h",
+          "specifiers": [
+            "KernelBase.Private.h"
+          ]
+        },
+        {
+          "source": "Internal/KernelBase.Process.h",
+          "specifiers": [
+            "Internal/KernelBase.Process.h"
+          ]
+        }
+      ],
+      "exports": [
+        "WINAPI MUSA_NAME(SetProcessInformation)",
+        "MUSA_NAME(GetProcessInformation)"
+      ],
+      "totalLines": 275,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/KernelBase.RealTime.cpp": {
+      "filePath": "Musa.Core/Thunks/KernelBase.RealTime.cpp",
+      "contentHash": "d55b27bfe8ddbe147ba6d37a958ac8fb84c8c158fe94ff9e8b93708477a3d398",
+      "functions": [
+        {
+          "name": "WINAPI MUSA_NAME(GetSystemTimePreciseAsFileTime)",
+          "params": [
+            "SystemTimeAsFileTime"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "WINAPI MUSA_NAME(GetSystemTimeAsFileTime)",
+          "params": [
+            "lpSystemTimeAsFileTime"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "WINAPI MUSA_NAME(QueryInterruptTime)",
+          "params": [
+            "PerformanceCount"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "WINAPI MUSA_NAME(QueryInterruptTimePrecise)",
+          "params": [
+            "InterruptTimePrecise"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "WINAPI MUSA_NAME(QueryUnbiasedInterruptTime)",
+          "params": [
+            "UnbiasedTime"
+          ],
+          "returnType": "BOOL",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "WINAPI MUSA_NAME(QueryAuxiliaryCounterFrequency)",
+          "params": [
+            "AuxiliaryCounterFrequency"
+          ],
+          "returnType": "HRESULT",
+          "exported": true,
+          "lineCount": 16
+        },
+        {
+          "name": "WINAPI MUSA_NAME(ConvertAuxiliaryCounterToPerformanceCounter)",
+          "params": [
+            "AuxiliaryCounterValue",
+            "PerformanceCounterValue",
+            "ConversionError"
+          ],
+          "returnType": "HRESULT",
+          "exported": true,
+          "lineCount": 22
+        },
+        {
+          "name": "WINAPI MUSA_NAME(ConvertPerformanceCounterToAuxiliaryCounter)",
+          "params": [
+            "PerformanceCounterValue",
+            "AuxiliaryCounterValue",
+            "ConversionError"
+          ],
+          "returnType": "HRESULT",
+          "exported": true,
+          "lineCount": 22
+        },
+        {
+          "name": "WINAPI MUSA_NAME(GetTickCount)",
+          "params": [],
+          "returnType": "DWORD",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "WINAPI MUSA_NAME(GetTickCount64)",
+          "params": [],
+          "returnType": "ULONGLONG",
+          "exported": true,
+          "lineCount": 6
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "WINAPI MUSA_NAME(GetSystemTimePreciseAsFileTime)",
+        "WINAPI MUSA_NAME(GetSystemTimeAsFileTime)",
+        "WINAPI MUSA_NAME(QueryInterruptTime)",
+        "WINAPI MUSA_NAME(QueryInterruptTimePrecise)",
+        "WINAPI MUSA_NAME(QueryUnbiasedInterruptTime)",
+        "WINAPI MUSA_NAME(QueryAuxiliaryCounterFrequency)",
+        "WINAPI MUSA_NAME(ConvertAuxiliaryCounterToPerformanceCounter)",
+        "WINAPI MUSA_NAME(ConvertPerformanceCounterToAuxiliaryCounter)",
+        "WINAPI MUSA_NAME(GetTickCount)",
+        "WINAPI MUSA_NAME(GetTickCount64)"
+      ],
+      "totalLines": 181,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/KernelBase.Synchronize.cpp": {
+      "filePath": "Musa.Core/Thunks/KernelBase.Synchronize.cpp",
+      "contentHash": "c58fb7bbb8581633902424ca06a36b47b2151f0d5083ae2ada2267c04559b3e9",
+      "functions": [
+        {
+          "name": "WINAPI MUSA_NAME(Sleep)",
+          "params": [
+            "Milliseconds"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "MUSA_NAME(SleepEx)",
+          "params": [
+            "Milliseconds",
+            "Alertable"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 25
+        },
+        {
+          "name": "MUSA_NAME(WaitForSingleObject)",
+          "params": [
+            "Handle",
+            "Milliseconds"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "MUSA_NAME(WaitForSingleObjectEx)",
+          "params": [
+            "Handle",
+            "Milliseconds",
+            "Alertable"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 24
+        },
+        {
+          "name": "MUSA_NAME(WaitForMultipleObjects)",
+          "params": [
+            "DWORD",
+            "Handles",
+            "WaitAll",
+            "Milliseconds"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "MUSA_NAME(WaitForMultipleObjectsEx)",
+          "params": [
+            "DWORD",
+            "Handles",
+            "WaitAll",
+            "Milliseconds",
+            "Alertable"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 28
+        },
+        {
+          "name": "MUSA_NAME(InitOnceInitialize)",
+          "params": [
+            "InitOnce"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "WINAPI MUSA_NAME(InitOnceExecuteOnce)",
+          "params": [
+            "InitOnce",
+            "InitFn",
+            "Parameter"
+          ],
+          "returnType": "BOOL",
+          "exported": true,
+          "lineCount": 26
+        },
+        {
+          "name": "WINAPI MUSA_NAME(InitOnceBeginInitialize)",
+          "params": [
+            "InitOnce",
+            "DWORD",
+            "Pending"
+          ],
+          "returnType": "BOOL",
+          "exported": true,
+          "lineCount": 18
+        },
+        {
+          "name": "MUSA_NAME(InitOnceComplete)",
+          "params": [
+            "InitOnce",
+            "DWORD",
+            "Context"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 16
+        },
+        {
+          "name": "MUSA_NAME(InitializeSRWLock)",
+          "params": [
+            "SRWLock"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "WINAPI MUSA_NAME(AcquireSRWLockExclusive)",
+          "params": [
+            "SRWLock"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "WINAPI MUSA_NAME(AcquireSRWLockShared)",
+          "params": [
+            "SRWLock"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "WINAPI MUSA_NAME(ReleaseSRWLockExclusive)",
+          "params": [
+            "SRWLock"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "WINAPI MUSA_NAME(ReleaseSRWLockShared)",
+          "params": [
+            "SRWLock"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "MUSA_NAME(TryAcquireSRWLockExclusive)",
+          "params": [
+            "SRWLock"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "MUSA_NAME(TryAcquireSRWLockShared)",
+          "params": [
+            "SRWLock"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "MUSA_NAME(InitializeCriticalSection)",
+          "params": [
+            "CriticalSection"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "WINAPI MUSA_NAME(InitializeCriticalSectionAndSpinCount)",
+          "params": [
+            "CriticalSection",
+            "SpinCount"
+          ],
+          "returnType": "BOOL",
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "MUSA_NAME(InitializeCriticalSectionEx)",
+          "params": [
+            "CriticalSection",
+            "SpinCount",
+            "DWORD"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 14
+        },
+        {
+          "name": "MUSA_NAME(DeleteCriticalSection)",
+          "params": [
+            "CriticalSection"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "WINAPI MUSA_NAME(EnterCriticalSection)",
+          "params": [
+            "CriticalSection"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "WINAPI MUSA_NAME(LeaveCriticalSection)",
+          "params": [
+            "CriticalSection"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "MUSA_NAME(TryEnterCriticalSection)",
+          "params": [
+            "CriticalSection"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "MUSA_NAME(SetCriticalSectionSpinCount)",
+          "params": [
+            "CriticalSection",
+            "SpinCount"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "MUSA_NAME(InitializeConditionVariable)",
+          "params": [
+            "ConditionVariable"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "MUSA_NAME(SleepConditionVariableCS)",
+          "params": [
+            "ConditionVariable",
+            "CriticalSection",
+            "Milliseconds"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 24
+        },
+        {
+          "name": "MUSA_NAME(SleepConditionVariableSRW)",
+          "params": [
+            "ConditionVariable",
+            "SRWLock",
+            "Milliseconds",
+            "ULONG"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 25
+        },
+        {
+          "name": "MUSA_NAME(WakeConditionVariable)",
+          "params": [
+            "ConditionVariable"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "MUSA_NAME(WakeAllConditionVariable)",
+          "params": [
+            "ConditionVariable"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 7
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "KernelBase.Private.h",
+          "specifiers": [
+            "KernelBase.Private.h"
+          ]
+        },
+        {
+          "source": "Internal/KernelBase.Synchronize.h",
+          "specifiers": [
+            "Internal/KernelBase.Synchronize.h"
+          ]
+        }
+      ],
+      "exports": [
+        "WINAPI MUSA_NAME(Sleep)",
+        "MUSA_NAME(SleepEx)",
+        "MUSA_NAME(WaitForSingleObject)",
+        "MUSA_NAME(WaitForSingleObjectEx)",
+        "MUSA_NAME(WaitForMultipleObjects)",
+        "MUSA_NAME(WaitForMultipleObjectsEx)",
+        "MUSA_NAME(InitOnceInitialize)",
+        "WINAPI MUSA_NAME(InitOnceExecuteOnce)",
+        "WINAPI MUSA_NAME(InitOnceBeginInitialize)",
+        "MUSA_NAME(InitOnceComplete)",
+        "MUSA_NAME(InitializeSRWLock)",
+        "WINAPI MUSA_NAME(AcquireSRWLockExclusive)",
+        "WINAPI MUSA_NAME(AcquireSRWLockShared)",
+        "WINAPI MUSA_NAME(ReleaseSRWLockExclusive)",
+        "WINAPI MUSA_NAME(ReleaseSRWLockShared)",
+        "MUSA_NAME(TryAcquireSRWLockExclusive)",
+        "MUSA_NAME(TryAcquireSRWLockShared)",
+        "MUSA_NAME(InitializeCriticalSection)",
+        "WINAPI MUSA_NAME(InitializeCriticalSectionAndSpinCount)",
+        "MUSA_NAME(InitializeCriticalSectionEx)",
+        "MUSA_NAME(DeleteCriticalSection)",
+        "WINAPI MUSA_NAME(EnterCriticalSection)",
+        "WINAPI MUSA_NAME(LeaveCriticalSection)",
+        "MUSA_NAME(TryEnterCriticalSection)",
+        "MUSA_NAME(SetCriticalSectionSpinCount)",
+        "MUSA_NAME(InitializeConditionVariable)",
+        "MUSA_NAME(SleepConditionVariableCS)",
+        "MUSA_NAME(SleepConditionVariableSRW)",
+        "MUSA_NAME(WakeConditionVariable)",
+        "MUSA_NAME(WakeAllConditionVariable)"
+      ],
+      "totalLines": 546,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/KernelBase.Synchronize.Event.cpp": {
+      "filePath": "Musa.Core/Thunks/KernelBase.Synchronize.Event.cpp",
+      "contentHash": "65b06bdb2f2baecba24ef82ac978d50bc7b6c54b1f45a1e95a16e9c27b5cd8a9",
+      "functions": [
+        {
+          "name": "WINAPI MUSA_NAME(CreateEventW)",
+          "params": [
+            "EventAttributes",
+            "ManualReset",
+            "InitialState",
+            "LPCWSTR"
+          ],
+          "returnType": "HANDLE",
+          "exported": true,
+          "lineCount": 20
+        },
+        {
+          "name": "MUSA_NAME(CreateEventExW)",
+          "params": [
+            "EventAttributes",
+            "LPCWSTR",
+            "DWORD",
+            "DesiredAccess"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 39
+        },
+        {
+          "name": "MUSA_NAME(OpenEventW)",
+          "params": [
+            "DesiredAccess",
+            "InheritHandle",
+            "LPCWSTR"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 32
+        },
+        {
+          "name": "MUSA_NAME(SetEvent)",
+          "params": [
+            "HANDLE"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 14
+        },
+        {
+          "name": "MUSA_NAME(ResetEvent)",
+          "params": [
+            "HANDLE"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 14
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "KernelBase.Private.h",
+          "specifiers": [
+            "KernelBase.Private.h"
+          ]
+        },
+        {
+          "source": "Internal/KernelBase.Synchronize.h",
+          "specifiers": [
+            "Internal/KernelBase.Synchronize.h"
+          ]
+        }
+      ],
+      "exports": [
+        "WINAPI MUSA_NAME(CreateEventW)",
+        "MUSA_NAME(CreateEventExW)",
+        "MUSA_NAME(OpenEventW)",
+        "MUSA_NAME(SetEvent)",
+        "MUSA_NAME(ResetEvent)"
+      ],
+      "totalLines": 158,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/KernelBase.Synchronize.Mutex.cpp": {
+      "filePath": "Musa.Core/Thunks/KernelBase.Synchronize.Mutex.cpp",
+      "contentHash": "8634a292e13bdedec08b771ec72dec5c2c22a58d36450d06d954b0cdf56e565d",
+      "functions": [
+        {
+          "name": "WINAPI MUSA_NAME(CreateMutexW)",
+          "params": [
+            "MutexAttributes",
+            "InitialOwner",
+            "LPCWSTR"
+          ],
+          "returnType": "HANDLE",
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "MUSA_NAME(CreateMutexExW)",
+          "params": [
+            "MutexAttributes",
+            "LPCWSTR",
+            "DWORD",
+            "DesiredAccess"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 38
+        },
+        {
+          "name": "MUSA_NAME(OpenMutexW)",
+          "params": [
+            "DesiredAccess",
+            "InheritHandle",
+            "LPCWSTR"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 32
+        },
+        {
+          "name": "MUSA_NAME(ReleaseMutex)",
+          "params": [
+            "HANDLE"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 14
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "KernelBase.Private.h",
+          "specifiers": [
+            "KernelBase.Private.h"
+          ]
+        },
+        {
+          "source": "Internal/KernelBase.Synchronize.h",
+          "specifiers": [
+            "Internal/KernelBase.Synchronize.h"
+          ]
+        }
+      ],
+      "exports": [
+        "WINAPI MUSA_NAME(CreateMutexW)",
+        "MUSA_NAME(CreateMutexExW)",
+        "MUSA_NAME(OpenMutexW)",
+        "MUSA_NAME(ReleaseMutex)"
+      ],
+      "totalLines": 128,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/KernelBase.Synchronize.Semaphore.cpp": {
+      "filePath": "Musa.Core/Thunks/KernelBase.Synchronize.Semaphore.cpp",
+      "contentHash": "ff723805e1f806f5a83689b30ba21d9ed4ec5f50d96f9be90a14a01b80b572a6",
+      "functions": [
+        {
+          "name": "WINAPI MUSA_NAME(CreateSemaphoreW)",
+          "params": [
+            "SemaphoreAttributes",
+            "InitialCount",
+            "MaximumCount",
+            "LPCWSTR"
+          ],
+          "returnType": "HANDLE",
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "MUSA_NAME(CreateSemaphoreExW)",
+          "params": [
+            "SemaphoreAttributes",
+            "InitialCount",
+            "MaximumCount",
+            "LPCWSTR",
+            "DWORD",
+            "DesiredAccess"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 40
+        },
+        {
+          "name": "MUSA_NAME(OpenSemaphoreW)",
+          "params": [
+            "DesiredAccess",
+            "InheritHandle",
+            "LPCWSTR"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 32
+        },
+        {
+          "name": "MUSA_NAME(ReleaseSemaphore)",
+          "params": [
+            "Semaphore",
+            "ReleaseCount",
+            "PreviousCount"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 16
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "KernelBase.Private.h",
+          "specifiers": [
+            "KernelBase.Private.h"
+          ]
+        },
+        {
+          "source": "Internal/KernelBase.Synchronize.h",
+          "specifiers": [
+            "Internal/KernelBase.Synchronize.h"
+          ]
+        }
+      ],
+      "exports": [
+        "WINAPI MUSA_NAME(CreateSemaphoreW)",
+        "MUSA_NAME(CreateSemaphoreExW)",
+        "MUSA_NAME(OpenSemaphoreW)",
+        "MUSA_NAME(ReleaseSemaphore)"
+      ],
+      "totalLines": 134,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/KernelBase.System.cpp": {
+      "filePath": "Musa.Core/Thunks/KernelBase.System.cpp",
+      "contentHash": "065e193c240b6511d59650b1b156ddb5872b920a9b51ea348239690280d2c566",
+      "functions": [
+        {
+          "name": "GetSystemInfoInternal",
+          "params": [
+            "BasicInfo",
+            "ProcessorInfo",
+            "lpSystemInfo"
+          ],
+          "returnType": "EXTERN_C_START",
+          "exported": false,
+          "lineCount": 42
+        },
+        {
+          "name": "MUSA_NAME(GetNativeSystemInfo)",
+          "params": [
+            "SystemInfo"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 31
+        },
+        {
+          "name": "MUSA_NAME(GetSystemInfo)",
+          "params": [
+            "SystemInfo"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "MUSA_NAME(VerifyVersionInfoW)",
+          "params": [
+            "lpVersionInformation",
+            "dwTypeMask",
+            "dwlConditionMask"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "MUSA_NAME(GetCommandLineW)",
+          "params": [],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "MUSA_NAME(GetEnvironmentVariableW)",
+          "params": [
+            "lpName",
+            "DWORD"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 122
+        },
+        {
+          "name": "MUSA_NAME(SetEnvironmentVariableW)",
+          "params": [
+            "lpName",
+            "lpValue"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 89
+        },
+        {
+          "name": "MUSA_NAME(GetEnvironmentStringsW)",
+          "params": [],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 148
+        },
+        {
+          "name": "MUSA_NAME(FreeEnvironmentStringsW)",
+          "params": [
+            "lpszEnvironmentBlock"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "MUSA_NAME(GetCurrentDirectoryW)",
+          "params": [
+            "nBufferLength"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "MUSA_NAME(SetCurrentDirectoryW)",
+          "params": [
+            "lpPathName"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 20
+        },
+        {
+          "name": "MUSA_NAME(ExpandEnvironmentStringsW)",
+          "params": [
+            "LPCWSTR",
+            "DWORD"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 67
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "KernelBase.Private.h",
+          "specifiers": [
+            "KernelBase.Private.h"
+          ]
+        },
+        {
+          "source": "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h",
+          "specifiers": [
+            "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h"
+          ]
+        },
+        {
+          "source": "Internal/KernelBase.System.h",
+          "specifiers": [
+            "Internal/KernelBase.System.h"
+          ]
+        }
+      ],
+      "exports": [
+        "MUSA_NAME(GetNativeSystemInfo)",
+        "MUSA_NAME(GetSystemInfo)",
+        "MUSA_NAME(VerifyVersionInfoW)",
+        "MUSA_NAME(GetCommandLineW)",
+        "MUSA_NAME(GetEnvironmentVariableW)",
+        "MUSA_NAME(SetEnvironmentVariableW)",
+        "MUSA_NAME(GetEnvironmentStringsW)",
+        "MUSA_NAME(FreeEnvironmentStringsW)",
+        "MUSA_NAME(GetCurrentDirectoryW)",
+        "MUSA_NAME(SetCurrentDirectoryW)",
+        "MUSA_NAME(ExpandEnvironmentStringsW)"
+      ],
+      "totalLines": 649,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/KernelBase.System.Processor.cpp": {
+      "filePath": "Musa.Core/Thunks/KernelBase.System.Processor.cpp",
+      "contentHash": "9e670aac341149591fea3db341b8e4bab5896e506cb30f95f2376a63b2755761",
+      "functions": [
+        {
+          "name": "MUSA_NAME(IsProcessorFeaturePresent)",
+          "params": [
+            "ProcessorFeature"
+          ],
+          "returnType": "EXTERN_C_START",
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "WINAPI MUSA_NAME(GetCurrentProcessorNumber)",
+          "params": [],
+          "returnType": "DWORD",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "WINAPI MUSA_NAME(GetCurrentProcessorNumberEx)",
+          "params": [
+            "ProcNumber"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "MUSA_NAME(GetLogicalProcessorInformation)",
+          "params": [
+            "Buffer",
+            "ReturnedLength"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 25
+        },
+        {
+          "name": "MUSA_NAME(GetLogicalProcessorInformationEx)",
+          "params": [
+            "RelationshipType",
+            "ReturnedLength"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 27
+        },
+        {
+          "name": "WINAPI MUSA_NAME(GetActiveProcessorGroupCount)",
+          "params": [],
+          "returnType": "WORD",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "WINAPI MUSA_NAME(GetMaximumProcessorGroupCount)",
+          "params": [],
+          "returnType": "WORD",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "WINAPI MUSA_NAME(GetActiveProcessorCount)",
+          "params": [
+            "GroupNumber"
+          ],
+          "returnType": "DWORD",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "WINAPI MUSA_NAME(GetMaximumProcessorCount)",
+          "params": [
+            "GroupNumber"
+          ],
+          "returnType": "DWORD",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "MUSA_NAME(LocateXStateFeature)",
+          "params": [
+            "Context",
+            "FeatureId",
+            "Length"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 76
+        },
+        {
+          "name": "WINAPI MUSA_NAME(GetEnabledXStateFeatures)",
+          "params": [],
+          "returnType": "DWORD64",
+          "exported": true,
+          "lineCount": 7
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "KernelBase.Private.h",
+          "specifiers": [
+            "KernelBase.Private.h"
+          ]
+        },
+        {
+          "source": "Internal/KernelBase.System.h",
+          "specifiers": [
+            "Internal/KernelBase.System.h"
+          ]
+        }
+      ],
+      "exports": [
+        "MUSA_NAME(IsProcessorFeaturePresent)",
+        "WINAPI MUSA_NAME(GetCurrentProcessorNumber)",
+        "WINAPI MUSA_NAME(GetCurrentProcessorNumberEx)",
+        "MUSA_NAME(GetLogicalProcessorInformation)",
+        "MUSA_NAME(GetLogicalProcessorInformationEx)",
+        "WINAPI MUSA_NAME(GetActiveProcessorGroupCount)",
+        "WINAPI MUSA_NAME(GetMaximumProcessorGroupCount)",
+        "WINAPI MUSA_NAME(GetActiveProcessorCount)",
+        "WINAPI MUSA_NAME(GetMaximumProcessorCount)",
+        "MUSA_NAME(LocateXStateFeature)",
+        "WINAPI MUSA_NAME(GetEnabledXStateFeatures)"
+      ],
+      "totalLines": 229,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/KernelBase.System.Times.cpp": {
+      "filePath": "Musa.Core/Thunks/KernelBase.System.Times.cpp",
+      "contentHash": "4ba69adace492bd7cb6f6c72e1ade1efebb9df49f313638c481b3850ed6ee50a",
+      "functions": [
+        {
+          "name": "WINAPI MUSA_NAME(GetSystemTimes)",
+          "params": [
+            "IdleTime",
+            "KernelTime",
+            "UserTime"
+          ],
+          "returnType": "BOOL",
+          "exported": true,
+          "lineCount": 76
+        },
+        {
+          "name": "MUSA_NAME(GetSystemTime)",
+          "params": [
+            "lpSystemTime"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 21
+        },
+        {
+          "name": "MUSA_NAME(GetLocalTime)",
+          "params": [
+            "lpSystemTime"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 23
+        },
+        {
+          "name": "MUSA_NAME(FileTimeToSystemTime)",
+          "params": [
+            "lpSystemTime"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 25
+        },
+        {
+          "name": "MUSA_NAME(SystemTimeToFileTime)",
+          "params": [
+            "lpFileTime"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 28
+        },
+        {
+          "name": "MUSA_NAME(FileTimeToLocalFileTime)",
+          "params": [
+            "lpLocalFileTime"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 19
+        },
+        {
+          "name": "MUSA_NAME(LocalFileTimeToFileTime)",
+          "params": [
+            "lpFileTime"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 19
+        },
+        {
+          "name": "MUSA_NAME(GetTimeZoneInformation)",
+          "params": [
+            "lpTimeZoneInformation"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 99
+        },
+        {
+          "name": "MUSA_NAME(GetDynamicTimeZoneInformation)",
+          "params": [
+            "pTimeZoneInformation"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 19
+        },
+        {
+          "name": "MUSA_NAME(SystemTimeToTzSpecificLocalTime)",
+          "params": [
+            "lpLocalTime"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 18
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "KernelBase.Private.h",
+          "specifiers": [
+            "KernelBase.Private.h"
+          ]
+        },
+        {
+          "source": "Internal/KernelBase.System.h",
+          "specifiers": [
+            "Internal/KernelBase.System.h"
+          ]
+        }
+      ],
+      "exports": [
+        "WINAPI MUSA_NAME(GetSystemTimes)",
+        "MUSA_NAME(GetSystemTime)",
+        "MUSA_NAME(GetLocalTime)",
+        "MUSA_NAME(FileTimeToSystemTime)",
+        "MUSA_NAME(SystemTimeToFileTime)",
+        "MUSA_NAME(FileTimeToLocalFileTime)",
+        "MUSA_NAME(LocalFileTimeToFileTime)",
+        "MUSA_NAME(GetTimeZoneInformation)",
+        "MUSA_NAME(GetDynamicTimeZoneInformation)",
+        "MUSA_NAME(SystemTimeToTzSpecificLocalTime)"
+      ],
+      "totalLines": 416,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/KernelBase.Thread.cpp": {
+      "filePath": "Musa.Core/Thunks/KernelBase.Thread.cpp",
+      "contentHash": "63ed7871365c60014a05ad8d0d487f30a10760e520a78692788d9a54284f1ce2",
+      "functions": [
+        {
+          "name": "WINAPI MUSA_NAME(ExitThread)",
+          "params": [
+            "ExitCode"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "WINAPI MUSA_NAME(GetCurrentThread)",
+          "params": [],
+          "returnType": "HANDLE",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "WINAPI MUSA_NAME(GetCurrentThreadId)",
+          "params": [],
+          "returnType": "DWORD",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "MUSA_NAME(OpenThread)",
+          "params": [
+            "DesiredAccess",
+            "InheritHandle",
+            "ThreadId"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 23
+        },
+        {
+          "name": "MUSA_NAME(SetThreadPriority)",
+          "params": [
+            "ThreadHandle",
+            "Priority"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 26
+        },
+        {
+          "name": "MUSA_NAME(GetThreadPriority)",
+          "params": [
+            "ThreadHandle"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 23
+        },
+        {
+          "name": "MUSA_NAME(SetThreadPriorityBoost)",
+          "params": [
+            "ThreadHandle",
+            "DisablePriorityBoost"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 18
+        },
+        {
+          "name": "MUSA_NAME(GetThreadPriorityBoost)",
+          "params": [
+            "ThreadHandle",
+            "DisablePriorityBoost"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 19
+        },
+        {
+          "name": "MUSA_NAME(TerminateThread)",
+          "params": [
+            "ThreadHandle",
+            "ExitCode"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "MUSA_NAME(GetExitCodeThread)",
+          "params": [
+            "ThreadHandle",
+            "ExitCode"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 19
+        },
+        {
+          "name": "MUSA_NAME(SuspendThread)",
+          "params": [
+            "ThreadHandle"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 16
+        },
+        {
+          "name": "MUSA_NAME(ResumeThread)",
+          "params": [
+            "ThreadHandle"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 16
+        },
+        {
+          "name": "MUSA_NAME(SetThreadToken)",
+          "params": [
+            "ThreadHandle",
+            "HANDLE"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 21
+        },
+        {
+          "name": "MUSA_NAME(OpenThreadToken)",
+          "params": [
+            "ThreadHandle",
+            "DesiredAccess",
+            "OpenAsSelf",
+            "TokenHandle"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 18
+        },
+        {
+          "name": "MUSA_NAME(GetThreadId)",
+          "params": [
+            "ThreadHandle"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 17
+        },
+        {
+          "name": "MUSA_NAME(GetCurrentThreadStackLimits)",
+          "params": [
+            "LowLimit",
+            "HighLimit"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "MUSA_NAME(GetThreadContext)",
+          "params": [
+            "ThreadHandle",
+            "Context"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "MUSA_NAME(SetThreadContext)",
+          "params": [
+            "ThreadHandle",
+            "Context"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "MUSA_NAME(GetThreadTimes)",
+          "params": [
+            "ThreadHandle",
+            "CreationTime",
+            "ExitTime",
+            "KernelTime",
+            "UserTime"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 26
+        },
+        {
+          "name": "MUSA_NAME(SetThreadIdealProcessor)",
+          "params": [
+            "ThreadHandle",
+            "IdealProcessor"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 16
+        },
+        {
+          "name": "MUSA_NAME(SetThreadIdealProcessorEx)",
+          "params": [
+            "ThreadHandle",
+            "IdealProcessor",
+            "PreviousIdealProcessor"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 23
+        },
+        {
+          "name": "MUSA_NAME(GetThreadIdealProcessorEx)",
+          "params": [
+            "ThreadHandle",
+            "IdealProcessor"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 16
+        },
+        {
+          "name": "MUSA_NAME(GetThreadIOPendingFlag)",
+          "params": [
+            "ThreadHandle",
+            "IOIsPending"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 20
+        },
+        {
+          "name": "MUSA_NAME(GetThreadInformation)",
+          "params": [
+            "ThreadHandle",
+            "ThreadInformationClass",
+            "ThreadInformation",
+            "ThreadInformationSize"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 60
+        },
+        {
+          "name": "MUSA_NAME(SetThreadInformation)",
+          "params": [
+            "ThreadHandle",
+            "ThreadInformationClass",
+            "ThreadInformation",
+            "ThreadInformationSize"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 68
+        },
+        {
+          "name": "MUSA_NAME(SetThreadDescription)",
+          "params": [
+            "ThreadHandle",
+            "ThreadDescription"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 16
+        },
+        {
+          "name": "MUSA_NAME(GetThreadDescription)",
+          "params": [
+            "ThreadHandle"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 45
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "KernelBase.Private.h",
+          "specifiers": [
+            "KernelBase.Private.h"
+          ]
+        },
+        {
+          "source": "Internal/KernelBase.Thread.h",
+          "specifiers": [
+            "Internal/KernelBase.Thread.h"
+          ]
+        }
+      ],
+      "exports": [
+        "WINAPI MUSA_NAME(ExitThread)",
+        "WINAPI MUSA_NAME(GetCurrentThread)",
+        "WINAPI MUSA_NAME(GetCurrentThreadId)",
+        "MUSA_NAME(OpenThread)",
+        "MUSA_NAME(SetThreadPriority)",
+        "MUSA_NAME(GetThreadPriority)",
+        "MUSA_NAME(SetThreadPriorityBoost)",
+        "MUSA_NAME(GetThreadPriorityBoost)",
+        "MUSA_NAME(TerminateThread)",
+        "MUSA_NAME(GetExitCodeThread)",
+        "MUSA_NAME(SuspendThread)",
+        "MUSA_NAME(ResumeThread)",
+        "MUSA_NAME(SetThreadToken)",
+        "MUSA_NAME(OpenThreadToken)",
+        "MUSA_NAME(GetThreadId)",
+        "MUSA_NAME(GetCurrentThreadStackLimits)",
+        "MUSA_NAME(GetThreadContext)",
+        "MUSA_NAME(SetThreadContext)",
+        "MUSA_NAME(GetThreadTimes)",
+        "MUSA_NAME(SetThreadIdealProcessor)",
+        "MUSA_NAME(SetThreadIdealProcessorEx)",
+        "MUSA_NAME(GetThreadIdealProcessorEx)",
+        "MUSA_NAME(GetThreadIOPendingFlag)",
+        "MUSA_NAME(GetThreadInformation)",
+        "MUSA_NAME(SetThreadInformation)",
+        "MUSA_NAME(SetThreadDescription)",
+        "MUSA_NAME(GetThreadDescription)"
+      ],
+      "totalLines": 721,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/KernelBase.Thread.Create.cpp": {
+      "filePath": "Musa.Core/Thunks/KernelBase.Thread.Create.cpp",
+      "contentHash": "f40215aef7aa6ca95cfe21547965251858da8facfe1195a9d5947e6f2379a46a",
+      "functions": [
+        {
+          "name": "WINAPI MUSA_NAME(SwitchToThread)",
+          "params": [],
+          "returnType": "BOOL",
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "MUSA_NAME(CreateThread)",
+          "params": [
+            "ThreadAttributes",
+            "StackSize",
+            "StartAddress",
+            "__drv_aliasesMem",
+            "CreationFlags",
+            "ThreadId"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "MUSA_NAME(CreateRemoteThread)",
+          "params": [
+            "Process",
+            "ThreadAttributes",
+            "StackSize",
+            "StartAddress",
+            "Parameter",
+            "CreationFlags",
+            "ThreadId"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 16
+        },
+        {
+          "name": "VEIL_DECLARE_STRUCT",
+          "params": [],
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "MUSA_NAME_PRIVATE(ThreadInitThunk)",
+          "params": [
+            "StartContext"
+          ],
+          "returnType": "void",
+          "exported": false,
+          "lineCount": 16
+        },
+        {
+          "name": "MUSA_NAME(CreateRemoteThreadEx)",
+          "params": [
+            "Process",
+            "ThreadAttributes",
+            "StackSize",
+            "StartAddress",
+            "Parameter",
+            "CreationFlags",
+            "AttributeList",
+            "ThreadId"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 71
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "KernelBase.Private.h",
+          "specifiers": [
+            "KernelBase.Private.h"
+          ]
+        },
+        {
+          "source": "Internal/KernelBase.Thread.h",
+          "specifiers": [
+            "Internal/KernelBase.Thread.h"
+          ]
+        }
+      ],
+      "exports": [
+        "WINAPI MUSA_NAME(SwitchToThread)",
+        "MUSA_NAME(CreateThread)",
+        "MUSA_NAME(CreateRemoteThread)",
+        "VEIL_DECLARE_STRUCT",
+        "MUSA_NAME(CreateRemoteThreadEx)"
+      ],
+      "totalLines": 168,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/KernelBase.Thread.ProcAttr.cpp": {
+      "filePath": "Musa.Core/Thunks/KernelBase.Thread.ProcAttr.cpp",
+      "contentHash": "05bd6333056bf2335375071b414bfce1cd09e6ad65aa2c373144f2c20dae4b1f",
+      "functions": [
+        {
+          "name": "WINAPI MUSA_NAME(InitializeProcThreadAttributeList)",
+          "params": [
+            "AttributeList",
+            "AttributeCount",
+            "DWORD",
+            "Size"
+          ],
+          "returnType": "BOOL",
+          "exported": true,
+          "lineCount": 32
+        },
+        {
+          "name": "WINAPI MUSA_NAME(DeleteProcThreadAttributeList)",
+          "params": [
+            "AttributeList"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 7
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "KernelBase.Private.h",
+          "specifiers": [
+            "KernelBase.Private.h"
+          ]
+        },
+        {
+          "source": "Internal/KernelBase.Thread.h",
+          "specifiers": [
+            "Internal/KernelBase.Thread.h"
+          ]
+        }
+      ],
+      "exports": [
+        "WINAPI MUSA_NAME(InitializeProcThreadAttributeList)",
+        "WINAPI MUSA_NAME(DeleteProcThreadAttributeList)"
+      ],
+      "totalLines": 53,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/KernelBase.ThreadLocalStorage.cpp": {
+      "filePath": "Musa.Core/Thunks/KernelBase.ThreadLocalStorage.cpp",
+      "contentHash": "9e770d12bda857298f42ddd8b17bebb0cea7a4942809902d9f49cc4ffe1eafed",
+      "functions": [
+        {
+          "name": "MUSA_NAME(TlsAlloc)",
+          "params": [],
+          "returnType": "_Must_inspect_result_",
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "MUSA_NAME(TlsGetValue)",
+          "params": [
+            "TlsIndex"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "MUSA_NAME(TlsSetValue)",
+          "params": [
+            "TlsIndex",
+            "TlsValue"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "MUSA_NAME(TlsFree)",
+          "params": [
+            "TlsIndex"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 6
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "MUSA_NAME(TlsAlloc)",
+        "MUSA_NAME(TlsGetValue)",
+        "MUSA_NAME(TlsSetValue)",
+        "MUSA_NAME(TlsFree)"
+      ],
+      "totalLines": 44,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/KernelBase.Utility.cpp": {
+      "filePath": "Musa.Core/Thunks/KernelBase.Utility.cpp",
+      "contentHash": "37af20d5c8df516c4cbd62dc48f4afbd480a3f67bb90e6cb7de4d1cc8fa66b3f",
+      "functions": [
+        {
+          "name": "MUSA_NAME(EncodePointer)",
+          "params": [
+            "PVOID"
+          ],
+          "returnType": "EXTERN_C_START",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "MUSA_NAME(DecodePointer)",
+          "params": [
+            "PVOID"
+          ],
+          "returnType": "_Ret_maybenull_",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "MUSA_NAME(EncodeSystemPointer)",
+          "params": [
+            "PVOID"
+          ],
+          "returnType": "_Ret_maybenull_",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "MUSA_NAME(DecodeSystemPointer)",
+          "params": [
+            "PVOID"
+          ],
+          "returnType": "_Ret_maybenull_",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "MUSA_NAME(EncodeRemotePointer)",
+          "params": [
+            "ProcessHandle",
+            "PVOID"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "MUSA_NAME(DecodeRemotePointer)",
+          "params": [
+            "ProcessHandle",
+            "PVOID"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 10
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "KernelBase.Private.h",
+          "specifiers": [
+            "KernelBase.Private.h"
+          ]
+        },
+        {
+          "source": "Internal/KernelBase.Utility.h",
+          "specifiers": [
+            "Internal/KernelBase.Utility.h"
+          ]
+        }
+      ],
+      "exports": [
+        "MUSA_NAME(EncodePointer)",
+        "MUSA_NAME(DecodePointer)",
+        "MUSA_NAME(EncodeSystemPointer)",
+        "MUSA_NAME(DecodeSystemPointer)",
+        "MUSA_NAME(EncodeRemotePointer)",
+        "MUSA_NAME(DecodeRemotePointer)"
+      ],
+      "totalLines": 80,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Ntdll.Debug.cpp": {
+      "filePath": "Musa.Core/Thunks/Ntdll.Debug.cpp",
+      "contentHash": "43cc644999c176c9152c6873ac081450fe629fbc78f472afe43626f511fa6b33",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 184,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Ntdll.Error.cpp": {
+      "filePath": "Musa.Core/Thunks/Ntdll.Error.cpp",
+      "contentHash": "fcaae28b86620568a928380fb007ef936a74993843e2629a54429cc2602cd121",
+      "functions": [
+        {
+          "name": "MUSA_NAME(RtlGetLastWin32Error)",
+          "params": [],
+          "returnType": "LONG",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "MUSA_NAME(RtlSetLastWin32Error)",
+          "params": [
+            "Win32Error"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "MUSA_NAME(RtlRestoreLastWin32Error)",
+          "params": [
+            "Win32Error"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "MUSA_NAME(RtlGetLastNtStatus)",
+          "params": [],
+          "returnType": "NTSTATUS",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "MUSA_NAME(RtlSetLastNtStatus)",
+          "params": [
+            "Status"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "MUSA_NAME(RtlSetLastWin32ErrorAndNtStatusFromNtStatus)",
+          "params": [
+            "Status"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "MUSA_NAME(RtlSetUnhandledExceptionFilter)",
+          "params": [
+            "UnhandledExceptionFilter"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "MUSA_NAME(RtlUnhandledExceptionFilter)",
+          "params": [
+            "ExceptionPointers"
+          ],
+          "returnType": "LONG",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "MUSA_NAME(RtlGetThreadErrorMode)",
+          "params": [],
+          "returnType": "ULONG",
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "MUSA_NAME(RtlSetThreadErrorMode)",
+          "params": [
+            "NewMode",
+            "OldMode"
+          ],
+          "returnType": "NTSTATUS",
+          "exported": true,
+          "lineCount": 16
+        },
+        {
+          "name": "MUSA_NAME(RtlAddVectoredExceptionHandler)",
+          "params": [
+            "ULONG",
+            "Handler"
+          ],
+          "returnType": "PVOID",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "MUSA_NAME(RtlRemoveVectoredExceptionHandler)",
+          "params": [
+            "Handle"
+          ],
+          "returnType": "ULONG",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "MUSA_NAME(RtlAddVectoredContinueHandler)",
+          "params": [
+            "ULONG",
+            "Handler"
+          ],
+          "returnType": "PVOID",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "MUSA_NAME(RtlRemoveVectoredContinueHandler)",
+          "params": [
+            "Handle"
+          ],
+          "returnType": "ULONG",
+          "exported": true,
+          "lineCount": 6
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "Musa.Core/Musa.Core.SystemEnvironmentBlock.Thread.h",
+          "specifiers": [
+            "Musa.Core/Musa.Core.SystemEnvironmentBlock.Thread.h"
+          ]
+        }
+      ],
+      "exports": [
+        "MUSA_NAME(RtlGetLastWin32Error)",
+        "MUSA_NAME(RtlSetLastWin32Error)",
+        "MUSA_NAME(RtlRestoreLastWin32Error)",
+        "MUSA_NAME(RtlGetLastNtStatus)",
+        "MUSA_NAME(RtlSetLastNtStatus)",
+        "MUSA_NAME(RtlSetLastWin32ErrorAndNtStatusFromNtStatus)",
+        "MUSA_NAME(RtlSetUnhandledExceptionFilter)",
+        "MUSA_NAME(RtlUnhandledExceptionFilter)",
+        "MUSA_NAME(RtlGetThreadErrorMode)",
+        "MUSA_NAME(RtlSetThreadErrorMode)",
+        "MUSA_NAME(RtlAddVectoredExceptionHandler)",
+        "MUSA_NAME(RtlRemoveVectoredExceptionHandler)",
+        "MUSA_NAME(RtlAddVectoredContinueHandler)",
+        "MUSA_NAME(RtlRemoveVectoredContinueHandler)"
+      ],
+      "totalLines": 172,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Ntdll.FiberLocalStorage.cpp": {
+      "filePath": "Musa.Core/Thunks/Ntdll.FiberLocalStorage.cpp",
+      "contentHash": "bd46266dd80c83805373625a52f2814e95326e27a9675e4b76e23b8e1c5d615c",
+      "functions": [
+        {
+          "name": "MUSA_NAME(RtlProcessFlsData)",
+          "params": [
+            "FlsData",
+            "ULONG"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "MUSA_NAME(RtlFlsAlloc)",
+          "params": [
+            "Callback",
+            "FlsIndex"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 67
+        },
+        {
+          "name": "MUSA_NAME(RtlFlsFree)",
+          "params": [
+            "FlsIndex"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 60
+        },
+        {
+          "name": "MUSA_NAME(RtlFlsGetValue)",
+          "params": [
+            "FlsIndex"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 39
+        },
+        {
+          "name": "MUSA_NAME(RtlFlsSetValue)",
+          "params": [
+            "FlsIndex",
+            "FlsData"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 66
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "Musa.Core/Musa.Core.SystemEnvironmentBlock.Fls.h",
+          "specifiers": [
+            "Musa.Core/Musa.Core.SystemEnvironmentBlock.Fls.h"
+          ]
+        },
+        {
+          "source": "Musa.Core/Musa.Core.SystemEnvironmentBlock.Thread.h",
+          "specifiers": [
+            "Musa.Core/Musa.Core.SystemEnvironmentBlock.Thread.h"
+          ]
+        },
+        {
+          "source": "Internal/Ntdll.FiberLocalStorage.h",
+          "specifiers": [
+            "Internal/Ntdll.FiberLocalStorage.h"
+          ]
+        }
+      ],
+      "exports": [
+        "MUSA_NAME(RtlProcessFlsData)",
+        "MUSA_NAME(RtlFlsAlloc)",
+        "MUSA_NAME(RtlFlsFree)",
+        "MUSA_NAME(RtlFlsGetValue)",
+        "MUSA_NAME(RtlFlsSetValue)"
+      ],
+      "totalLines": 286,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Ntdll.Heap.Core.cpp": {
+      "filePath": "Musa.Core/Thunks/Ntdll.Heap.Core.cpp",
+      "contentHash": "acb79b96df11784b6db865645b52fb0a1aac59b3680651f380449f3348ae1c4b",
+      "functions": [
+        {
+          "name": "MUSA_NAME(RtlProcessHeap)",
+          "params": [],
+          "returnType": "MUSA_API",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "MUSA_NAME(RtlDestroyHeap)",
+          "params": [
+            "_Post_invalid_"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 53
+        },
+        {
+          "name": "MUSA_NAME(RtlGetProcessHeaps)",
+          "params": [
+            "NumberOfHeaps"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 31
+        },
+        {
+          "name": "MUSA_NAME(RtlEnumProcessHeaps)",
+          "params": [
+            "EnumRoutine",
+            "Parameter"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 25
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h",
+          "specifiers": [
+            "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h"
+          ]
+        },
+        {
+          "source": "Musa.Core/Musa.Utilities.h",
+          "specifiers": [
+            "Musa.Core/Musa.Utilities.h"
+          ]
+        },
+        {
+          "source": "Internal/Ntdll.Heap.h",
+          "specifiers": [
+            "Internal/Ntdll.Heap.h"
+          ]
+        }
+      ],
+      "exports": [
+        "MUSA_NAME(RtlProcessHeap)",
+        "MUSA_NAME(RtlDestroyHeap)",
+        "MUSA_NAME(RtlGetProcessHeaps)",
+        "MUSA_NAME(RtlEnumProcessHeaps)"
+      ],
+      "totalLines": 271,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Ntdll.Heap.cpp": {
+      "filePath": "Musa.Core/Thunks/Ntdll.Heap.cpp",
+      "contentHash": "c6ebb4413d70fbfea912183232dbee55c258766ac75a32ab3deb9484a214e63e",
+      "functions": [
+        {
+          "name": "MUSA_NAME(RtlAllocateHeap)",
+          "params": [
+            "HeapHandle",
+            "ULONG",
+            "SIZE_T"
+          ],
+          "returnType": "PVOID",
+          "exported": true,
+          "lineCount": 99
+        },
+        {
+          "name": "MUSA_NAME(RtlReAllocateHeap)",
+          "params": [
+            "HeapHandle",
+            "ULONG",
+            "BaseAddress",
+            "SIZE_T"
+          ],
+          "returnType": "PVOID",
+          "exported": true,
+          "lineCount": 64
+        },
+        {
+          "name": "MUSA_NAME(RtlFreeHeap)",
+          "params": [
+            "HeapHandle",
+            "ULONG",
+            "BaseAddress"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 59
+        },
+        {
+          "name": "MUSA_NAME(RtlSizeHeap)",
+          "params": [
+            "HeapHandle",
+            "ULONG",
+            "BaseAddress"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 46
+        },
+        {
+          "name": "MUSA_NAME(RtlZeroHeap)",
+          "params": [
+            "HeapHandle",
+            "ULONG"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "MUSA_NAME(RtlProtectHeap)",
+          "params": [
+            "HeapHandle",
+            "MakeReadOnly"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "MUSA_NAME(RtlLockHeap)",
+          "params": [
+            "HeapHandle"
+          ],
+          "returnType": "BOOLEAN",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "MUSA_NAME(RtlUnlockHeap)",
+          "params": [
+            "HeapHandle"
+          ],
+          "returnType": "BOOLEAN",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "MUSA_NAME(RtlExtendHeap)",
+          "params": [
+            "HeapHandle",
+            "ULONG",
+            "PVOID",
+            "SIZE_T"
+          ],
+          "returnType": "NTSTATUS",
+          "exported": true,
+          "lineCount": 14
+        },
+        {
+          "name": "MUSA_NAME(RtlCompactHeap)",
+          "params": [
+            "HeapHandle",
+            "ULONG"
+          ],
+          "returnType": "SIZE_T",
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "MUSA_NAME(RtlValidateHeap)",
+          "params": [
+            "HeapHandle",
+            "ULONG",
+            "BaseAddress"
+          ],
+          "returnType": "BOOLEAN",
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "MUSA_NAME(RtlValidateProcessHeaps)",
+          "params": [],
+          "returnType": "BOOLEAN",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "MUSA_NAME(RtlQueryHeapInformation)",
+          "params": [
+            "HeapHandle",
+            "HeapInformationClass",
+            "HeapInformation",
+            "HeapInformationLength",
+            "ReturnLength"
+          ],
+          "returnType": "NTSTATUS",
+          "exported": true,
+          "lineCount": 49
+        },
+        {
+          "name": "MUSA_NAME(RtlSetHeapInformation)",
+          "params": [
+            "HeapHandle",
+            "HeapInformationClass",
+            "HeapInformation",
+            "HeapInformationLength"
+          ],
+          "returnType": "NTSTATUS",
+          "exported": true,
+          "lineCount": 42
+        },
+        {
+          "name": "MUSA_NAME(RtlWalkHeap)",
+          "params": [
+            "HeapHandle",
+            "PRTL_HEAP_WALK_ENTRY"
+          ],
+          "returnType": "NTSTATUS",
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "MUSA_NAME(RtlDetectHeapLeaks)",
+          "params": [],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "MUSA_NAME(RtlFlushHeaps)",
+          "params": [],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 6
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h",
+          "specifiers": [
+            "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h"
+          ]
+        },
+        {
+          "source": "Musa.Core/Musa.Utilities.h",
+          "specifiers": [
+            "Musa.Core/Musa.Utilities.h"
+          ]
+        },
+        {
+          "source": "Internal/Ntdll.Heap.h",
+          "specifiers": [
+            "Internal/Ntdll.Heap.h"
+          ]
+        }
+      ],
+      "exports": [
+        "MUSA_NAME(RtlAllocateHeap)",
+        "MUSA_NAME(RtlReAllocateHeap)",
+        "MUSA_NAME(RtlFreeHeap)",
+        "MUSA_NAME(RtlSizeHeap)",
+        "MUSA_NAME(RtlZeroHeap)",
+        "MUSA_NAME(RtlProtectHeap)",
+        "MUSA_NAME(RtlLockHeap)",
+        "MUSA_NAME(RtlUnlockHeap)",
+        "MUSA_NAME(RtlExtendHeap)",
+        "MUSA_NAME(RtlCompactHeap)",
+        "MUSA_NAME(RtlValidateHeap)",
+        "MUSA_NAME(RtlValidateProcessHeaps)",
+        "MUSA_NAME(RtlQueryHeapInformation)",
+        "MUSA_NAME(RtlSetHeapInformation)",
+        "MUSA_NAME(RtlWalkHeap)",
+        "MUSA_NAME(RtlDetectHeapLeaks)",
+        "MUSA_NAME(RtlFlushHeaps)"
+      ],
+      "totalLines": 534,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Ntdll.Heap.Lock.cpp": {
+      "filePath": "Musa.Core/Thunks/Ntdll.Heap.Lock.cpp",
+      "contentHash": "f6f6cdbf12a098a2baeba78d1220b16e620626afcfd4888f7006756ecd2cc57f",
+      "functions": [
+        {
+          "name": "MUSA_NAME_PRIVATE(RtlInitializeHeapLock)",
+          "params": [
+            "PHEAP"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "MUSA_NAME_PRIVATE(RtlDestroyHeapLock)",
+          "params": [
+            "PHEAP"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "MUSA_NAME_PRIVATE(RtlAcquireHeapLockExclusive)",
+          "params": [
+            "PHEAP"
+          ],
+          "returnType": "KIRQL",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "MUSA_NAME_PRIVATE(RtlReleaseHeapLockExclusive)",
+          "params": [
+            "PHEAP",
+            "KIRQL"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "MUSA_NAME_PRIVATE(RtlAcquireHeapLockShared)",
+          "params": [
+            "PHEAP"
+          ],
+          "returnType": "KIRQL",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "MUSA_NAME_PRIVATE(RtlReleaseHeapLockShared)",
+          "params": [
+            "PHEAP",
+            "KIRQL"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "MUSA_NAME_PRIVATE(RtlAppendHeap)",
+          "params": [
+            "PHEAP"
+          ],
+          "returnType": "NTSTATUS",
+          "exported": true,
+          "lineCount": 39
+        },
+        {
+          "name": "MUSA_NAME_PRIVATE(RtlRemoveHeap)",
+          "params": [
+            "PHEAP"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 28
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h",
+          "specifiers": [
+            "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h"
+          ]
+        },
+        {
+          "source": "Musa.Core/Musa.Utilities.h",
+          "specifiers": [
+            "Musa.Core/Musa.Utilities.h"
+          ]
+        },
+        {
+          "source": "Internal/Ntdll.Heap.h",
+          "specifiers": [
+            "Internal/Ntdll.Heap.h"
+          ]
+        }
+      ],
+      "exports": [
+        "MUSA_NAME_PRIVATE(RtlInitializeHeapLock)",
+        "MUSA_NAME_PRIVATE(RtlDestroyHeapLock)",
+        "MUSA_NAME_PRIVATE(RtlAcquireHeapLockExclusive)",
+        "MUSA_NAME_PRIVATE(RtlReleaseHeapLockExclusive)",
+        "MUSA_NAME_PRIVATE(RtlAcquireHeapLockShared)",
+        "MUSA_NAME_PRIVATE(RtlReleaseHeapLockShared)",
+        "MUSA_NAME_PRIVATE(RtlAppendHeap)",
+        "MUSA_NAME_PRIVATE(RtlRemoveHeap)"
+      ],
+      "totalLines": 142,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Ntdll.Image.cpp": {
+      "filePath": "Musa.Core/Thunks/Ntdll.Image.cpp",
+      "contentHash": "781b0a6b087f6f7a32dfb49113a153c0dfc945356c858186326b73b34a546d21",
+      "functions": [
+        {
+          "name": "MUSA_NAME(RtlImageRvaToSection)",
+          "params": [
+            "NtHeaders",
+            "BaseOfImage",
+            "ULONG"
+          ],
+          "returnType": "EXTERN_C_START",
+          "exported": true,
+          "lineCount": 26
+        },
+        {
+          "name": "MUSA_NAME(RtlImageRvaToVa)",
+          "params": [
+            "NtHeaders",
+            "BaseOfImage",
+            "ULONG"
+          ],
+          "returnType": "PVOID",
+          "exported": true,
+          "lineCount": 32
+        },
+        {
+          "name": "MUSA_NAME(RtlMapResourceId)",
+          "params": [
+            "LPCWSTR"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 52
+        },
+        {
+          "name": "MUSA_NAME(RtlUnmapResourceId)",
+          "params": [
+            "ULONG_PTR"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "MUSA_NAME(RtlFindResource)",
+          "params": [
+            "DllHandle",
+            "LPCWSTR",
+            "LPCWSTR",
+            "Language"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 42
+        },
+        {
+          "name": "MUSA_NAME(RtlLoadResource)",
+          "params": [
+            "ResBase",
+            "DllHandle"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 20
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "Musa.Core/Musa.Utilities.PEParser.h",
+          "specifiers": [
+            "Musa.Core/Musa.Utilities.PEParser.h"
+          ]
+        },
+        {
+          "source": "Internal/Ntdll.Image.h",
+          "specifiers": [
+            "Internal/Ntdll.Image.h"
+          ]
+        }
+      ],
+      "exports": [
+        "MUSA_NAME(RtlImageRvaToSection)",
+        "MUSA_NAME(RtlImageRvaToVa)",
+        "MUSA_NAME(RtlMapResourceId)",
+        "MUSA_NAME(RtlUnmapResourceId)",
+        "MUSA_NAME(RtlFindResource)",
+        "MUSA_NAME(RtlLoadResource)"
+      ],
+      "totalLines": 226,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Ntdll.LibraryLoader.cpp": {
+      "filePath": "Musa.Core/Thunks/Ntdll.LibraryLoader.cpp",
+      "contentHash": "d7e7c2528df655bdea2185bf4a5a9482135d130c6c0d5a4d41877d41d004a85b",
+      "functions": [
+        {
+          "name": "MUSA_NAME(LdrUnloadDll)",
+          "params": [
+            "DllHandle"
+          ],
+          "returnType": "NTSTATUS",
+          "exported": true,
+          "lineCount": 38
+        },
+        {
+          "name": "MUSA_NAME(LdrGetDllHandle)",
+          "params": [
+            "DllPath",
+            "DllCharacteristics",
+            "DllName"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "MUSA_NAME(LdrGetDllHandleEx)",
+          "params": [
+            "ULONG",
+            "DllPath",
+            "DllCharacteristics",
+            "DllName"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 66
+        },
+        {
+          "name": "MUSA_NAME(LdrGetDllHandleByMapping)",
+          "params": [
+            "BaseAddress"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "MUSA_NAME(LdrGetDllHandleByName)",
+          "params": [
+            "BaseDllName",
+            "FullDllName"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 41
+        },
+        {
+          "name": "MUSA_NAME(LdrGetDllFullName)",
+          "params": [
+            "DllHandle",
+            "FullDllName"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 37
+        },
+        {
+          "name": "MUSA_NAME(LdrAddRefDll)",
+          "params": [
+            "ULONG",
+            "DllHandle"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 48
+        },
+        {
+          "name": "MUSA_NAME(LdrLoadDataFile)",
+          "params": [
+            "DllName"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 62
+        },
+        {
+          "name": "MUSA_NAME(LdrUnloadDataFile)",
+          "params": [
+            "DllHandle"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 11
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "Musa.Core/Musa.Utilities.PEParser.h",
+          "specifiers": [
+            "Musa.Core/Musa.Utilities.PEParser.h"
+          ]
+        },
+        {
+          "source": "Internal/Ntdll.LibraryLoader.h",
+          "specifiers": [
+            "Internal/Ntdll.LibraryLoader.h"
+          ]
+        }
+      ],
+      "exports": [
+        "MUSA_NAME(LdrUnloadDll)",
+        "MUSA_NAME(LdrGetDllHandle)",
+        "MUSA_NAME(LdrGetDllHandleEx)",
+        "MUSA_NAME(LdrGetDllHandleByMapping)",
+        "MUSA_NAME(LdrGetDllHandleByName)",
+        "MUSA_NAME(LdrGetDllFullName)",
+        "MUSA_NAME(LdrAddRefDll)",
+        "MUSA_NAME(LdrLoadDataFile)",
+        "MUSA_NAME(LdrUnloadDataFile)"
+      ],
+      "totalLines": 386,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Ntdll.LibraryLoader.ProcAddr.cpp": {
+      "filePath": "Musa.Core/Thunks/Ntdll.LibraryLoader.ProcAddr.cpp",
+      "contentHash": "74a5f25774eb87f421d503068a3381e601349a3c406befe2efd5058a391c3c85",
+      "functions": [
+        {
+          "name": "MUSA_NAME(LdrGetProcedureAddress)",
+          "params": [
+            "DllHandle",
+            "ProcedureName",
+            "ProcedureNumber"
+          ],
+          "returnType": "NTSTATUS",
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "MUSA_NAME(LdrGetProcedureAddressEx)",
+          "params": [
+            "DllHandle",
+            "ProcedureName",
+            "ProcedureNumber",
+            "ULONG"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "MUSA_NAME(LdrGetProcedureAddressForCaller)",
+          "params": [
+            "DllHandle",
+            "ProcedureName",
+            "ProcedureNumber",
+            "ULONG"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 52
+        },
+        {
+          "name": "MUSA_NAME(LdrGetKnownDllSectionHandle)",
+          "params": [
+            "DllName",
+            "KnownDlls32",
+            "Section"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 70
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "Musa.Core/Musa.Utilities.PEParser.h",
+          "specifiers": [
+            "Musa.Core/Musa.Utilities.PEParser.h"
+          ]
+        },
+        {
+          "source": "Internal/Ntdll.LibraryLoader.h",
+          "specifiers": [
+            "Internal/Ntdll.LibraryLoader.h"
+          ]
+        }
+      ],
+      "exports": [
+        "MUSA_NAME(LdrGetProcedureAddress)",
+        "MUSA_NAME(LdrGetProcedureAddressEx)",
+        "MUSA_NAME(LdrGetProcedureAddressForCaller)",
+        "MUSA_NAME(LdrGetKnownDllSectionHandle)"
+      ],
+      "totalLines": 180,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Ntdll.Path.cpp": {
+      "filePath": "Musa.Core/Thunks/Ntdll.Path.cpp",
+      "contentHash": "c50fe02d2b780c2aac95059a7066b24a05779611fc4b73d42985a1a08204fea1",
+      "functions": [
+        {
+          "name": "RtlpDetermineDosPathNameType",
+          "params": [
+            "Path"
+          ],
+          "returnType": "int",
+          "exported": false,
+          "lineCount": 28
+        },
+        {
+          "name": "MUSA_NAME(RtlDosPathNameToNtPathName_U_WithStatus)",
+          "params": [
+            "DosPathName",
+            "NtPathName",
+            "RelativeName"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 132
+        },
+        {
+          "name": "MUSA_NAME(RtlDosPathNameToNtPathName_U)",
+          "params": [
+            "DosPathName",
+            "NtPathName",
+            "RelativeName"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "MUSA_NAME(RtlGetCurrentDirectory_U)",
+          "params": [
+            "BufferLength"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 19
+        },
+        {
+          "name": "MUSA_NAME(RtlSetCurrentDirectory_U)",
+          "params": [
+            "PathName"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 19
+        },
+        {
+          "name": "MUSA_NAME(RtlGetFullPathName_UEx)",
+          "params": [
+            "FileName",
+            "BufferLength"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 74
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h",
+          "specifiers": [
+            "Musa.Core/Musa.Core.SystemEnvironmentBlock.Process.h"
+          ]
+        },
+        {
+          "source": "Internal/Ntdll.Path.h",
+          "specifiers": [
+            "Internal/Ntdll.Path.h"
+          ]
+        },
+        {
+          "source": "Internal/Ntdll.Heap.h",
+          "specifiers": [
+            "Internal/Ntdll.Heap.h"
+          ]
+        }
+      ],
+      "exports": [
+        "MUSA_NAME(RtlDosPathNameToNtPathName_U_WithStatus)",
+        "MUSA_NAME(RtlDosPathNameToNtPathName_U)",
+        "MUSA_NAME(RtlGetCurrentDirectory_U)",
+        "MUSA_NAME(RtlSetCurrentDirectory_U)",
+        "MUSA_NAME(RtlGetFullPathName_UEx)"
+      ],
+      "totalLines": 329,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Ntdll.PerformanceCounter.cpp": {
+      "filePath": "Musa.Core/Thunks/Ntdll.PerformanceCounter.cpp",
+      "contentHash": "c6d2a950fae4e10a0f78a254612a3ca547f7f71b309e9a068619e07c58648e57",
+      "functions": [
+        {
+          "name": "MUSA_NAME(RtlQueryPerformanceCounter)",
+          "params": [
+            "PerformanceCount"
+          ],
+          "returnType": "EXTERN_C_START",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "MUSA_NAME(RtlQueryPerformanceFrequency)",
+          "params": [
+            "Frequency"
+          ],
+          "returnType": "LOGICAL",
+          "exported": true,
+          "lineCount": 7
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "MUSA_NAME(RtlQueryPerformanceCounter)",
+        "MUSA_NAME(RtlQueryPerformanceFrequency)"
+      ],
+      "totalLines": 24,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Ntdll.Pool.cpp": {
+      "filePath": "Musa.Core/Thunks/Ntdll.Pool.cpp",
+      "contentHash": "4612cf810d012c7f19da9f55feebc29acd28b258e86276f735f11826265ddc5b",
+      "functions": [
+        {
+          "name": "MUSA_NAME(RtlCreateMemoryBlockLookaside)",
+          "params": [
+            "ULONG",
+            "InitialSize",
+            "MinimumBlockSize",
+            "MaximumBlockSize"
+          ],
+          "returnType": "EXTERN_C_START",
+          "exported": true,
+          "lineCount": 52
+        },
+        {
+          "name": "MUSA_NAME(RtlDestroyMemoryBlockLookaside)",
+          "params": [
+            "MemoryBlockLookaside"
+          ],
+          "returnType": "NTSTATUS",
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "MUSA_NAME(RtlAllocateMemoryBlockLookaside)",
+          "params": [
+            "MemoryBlockLookaside",
+            "BlockSize"
+          ],
+          "returnType": "NTSTATUS",
+          "exported": true,
+          "lineCount": 19
+        },
+        {
+          "name": "MUSA_NAME(RtlFreeMemoryBlockLookaside)",
+          "params": [
+            "MemoryBlockLookaside",
+            "PVOID"
+          ],
+          "returnType": "NTSTATUS",
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "MUSA_NAME(RtlExtendMemoryBlockLookaside)",
+          "params": [
+            "MemoryBlockLookaside",
+            "Increment"
+          ],
+          "returnType": "NTSTATUS",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "MUSA_NAME(RtlResetMemoryBlockLookaside)",
+          "params": [
+            "MemoryBlockLookaside"
+          ],
+          "returnType": "NTSTATUS",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "MUSA_NAME(RtlLockMemoryBlockLookaside)",
+          "params": [
+            "MemoryBlockLookaside"
+          ],
+          "returnType": "NTSTATUS",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "MUSA_NAME(RtlUnlockMemoryBlockLookaside)",
+          "params": [
+            "MemoryBlockLookaside"
+          ],
+          "returnType": "NTSTATUS",
+          "exported": true,
+          "lineCount": 7
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "MUSA_NAME(RtlCreateMemoryBlockLookaside)",
+        "MUSA_NAME(RtlDestroyMemoryBlockLookaside)",
+        "MUSA_NAME(RtlAllocateMemoryBlockLookaside)",
+        "MUSA_NAME(RtlFreeMemoryBlockLookaside)",
+        "MUSA_NAME(RtlExtendMemoryBlockLookaside)",
+        "MUSA_NAME(RtlResetMemoryBlockLookaside)",
+        "MUSA_NAME(RtlLockMemoryBlockLookaside)",
+        "MUSA_NAME(RtlUnlockMemoryBlockLookaside)"
+      ],
+      "totalLines": 151,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Ntdll.RealTime.cpp": {
+      "filePath": "Musa.Core/Thunks/Ntdll.RealTime.cpp",
+      "contentHash": "8baf7963223d0e60331a7b7c8cdfb2c5c77baafeddef1532c141ea7c9057ffd0",
+      "functions": [
+        {
+          "name": "MUSA_NAME(RtlGetSystemTimePrecise)",
+          "params": [],
+          "returnType": "EXTERN_C_START",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "MUSA_NAME(RtlGetInterruptTime)",
+          "params": [
+            "InterruptTime"
+          ],
+          "returnType": "BOOLEAN",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "MUSA_NAME(RtlGetInterruptTimePrecise)",
+          "params": [
+            "PerformanceCount"
+          ],
+          "returnType": "LARGE_INTEGER",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "MUSA_NAME(RtlQueryUnbiasedInterruptTime)",
+          "params": [
+            "InterruptTime"
+          ],
+          "returnType": "BOOLEAN",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "MUSA_NAME(RtlQueryAuxiliaryCounterFrequency)",
+          "params": [
+            "AuxiliaryCounterFrequency"
+          ],
+          "returnType": "NTSTATUS",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "MUSA_NAME(RtlConvertAuxiliaryCounterToPerformanceCounter)",
+          "params": [
+            "AuxiliaryCounterValue",
+            "PerformanceCounterValue",
+            "ConversionError"
+          ],
+          "returnType": "NTSTATUS",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "MUSA_NAME(RtlConvertPerformanceCounterToAuxiliaryCounter)",
+          "params": [
+            "PerformanceCounterValue",
+            "AuxiliaryCounterValue",
+            "ConversionError"
+          ],
+          "returnType": "NTSTATUS",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "MUSA_NAME(RtlGetTickCount)",
+          "params": [],
+          "returnType": "ULONG",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "MUSA_NAME(RtlGetTickCount64)",
+          "params": [],
+          "returnType": "LARGE_INTEGER",
+          "exported": true,
+          "lineCount": 4
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "MUSA_NAME(RtlGetSystemTimePrecise)",
+        "MUSA_NAME(RtlGetInterruptTime)",
+        "MUSA_NAME(RtlGetInterruptTimePrecise)",
+        "MUSA_NAME(RtlQueryUnbiasedInterruptTime)",
+        "MUSA_NAME(RtlQueryAuxiliaryCounterFrequency)",
+        "MUSA_NAME(RtlConvertAuxiliaryCounterToPerformanceCounter)",
+        "MUSA_NAME(RtlConvertPerformanceCounterToAuxiliaryCounter)",
+        "MUSA_NAME(RtlGetTickCount)",
+        "MUSA_NAME(RtlGetTickCount64)"
+      ],
+      "totalLines": 107,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Ntdll.Synchronize.ConditionVariable.cpp": {
+      "filePath": "Musa.Core/Thunks/Ntdll.Synchronize.ConditionVariable.cpp",
+      "contentHash": "82f52701735f1db20da8e37444b054be89c4a4ddd96db178aa967d76d7393f12",
+      "functions": [
+        {
+          "name": "MUSA_NAME(RtlInitializeConditionVariable)",
+          "params": [
+            "ConditionVariable"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "MUSA_NAME(RtlSleepConditionVariableCS)",
+          "params": [
+            "ConditionVariable",
+            "CriticalSection",
+            "Timeout"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 20
+        },
+        {
+          "name": "MUSA_NAME(RtlSleepConditionVariableSRW)",
+          "params": [
+            "ConditionVariable",
+            "SRWLock",
+            "Timeout",
+            "ULONG"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 29
+        },
+        {
+          "name": "MUSA_NAME(RtlWakeConditionVariable)",
+          "params": [
+            "ConditionVariable"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "MUSA_NAME(RtlWakeAllConditionVariable)",
+          "params": [
+            "ConditionVariable"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 17
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "Internal/Ntdll.Synchronize.h",
+          "specifiers": [
+            "Internal/Ntdll.Synchronize.h"
+          ]
+        }
+      ],
+      "exports": [
+        "MUSA_NAME(RtlInitializeConditionVariable)",
+        "MUSA_NAME(RtlSleepConditionVariableCS)",
+        "MUSA_NAME(RtlSleepConditionVariableSRW)",
+        "MUSA_NAME(RtlWakeConditionVariable)",
+        "MUSA_NAME(RtlWakeAllConditionVariable)"
+      ],
+      "totalLines": 122,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Ntdll.Synchronize.CriticalSection.cpp": {
+      "filePath": "Musa.Core/Thunks/Ntdll.Synchronize.CriticalSection.cpp",
+      "contentHash": "fb15b4c86786bc3d4a28bffc595224dc2ab89d81fb516dfc61b9f6f9de99c483",
+      "functions": [
+        {
+          "name": "MUSA_NAME(RtlInitializeCriticalSection)",
+          "params": [
+            "CriticalSection"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "MUSA_NAME(RtlInitializeCriticalSectionAndSpinCount)",
+          "params": [
+            "CriticalSection",
+            "SpinCount"
+          ],
+          "returnType": "NTSTATUS",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "MUSA_NAME(RtlInitializeCriticalSectionEx)",
+          "params": [
+            "CriticalSection",
+            "SpinCount",
+            "ULONG"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 29
+        },
+        {
+          "name": "MUSA_NAME(RtlDeleteCriticalSection)",
+          "params": [
+            "CriticalSection"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 17
+        },
+        {
+          "name": "MUSA_NAME(RtlEnterCriticalSection)",
+          "params": [
+            "CriticalSection"
+          ],
+          "returnType": "NTSTATUS",
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "MUSA_NAME(RtlLeaveCriticalSection)",
+          "params": [
+            "CriticalSection"
+          ],
+          "returnType": "NTSTATUS",
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "MUSA_NAME(RtlTryEnterCriticalSection)",
+          "params": [
+            "CriticalSection"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 14
+        },
+        {
+          "name": "MUSA_NAME(RtlIsCriticalSectionLocked)",
+          "params": [
+            "CriticalSection"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "MUSA_NAME(RtlSetCriticalSectionSpinCount)",
+          "params": [
+            "CriticalSection",
+            "SpinCount"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 7
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "Internal/Ntdll.Synchronize.h",
+          "specifiers": [
+            "Internal/Ntdll.Synchronize.h"
+          ]
+        }
+      ],
+      "exports": [
+        "MUSA_NAME(RtlInitializeCriticalSection)",
+        "MUSA_NAME(RtlInitializeCriticalSectionAndSpinCount)",
+        "MUSA_NAME(RtlInitializeCriticalSectionEx)",
+        "MUSA_NAME(RtlDeleteCriticalSection)",
+        "MUSA_NAME(RtlEnterCriticalSection)",
+        "MUSA_NAME(RtlLeaveCriticalSection)",
+        "MUSA_NAME(RtlTryEnterCriticalSection)",
+        "MUSA_NAME(RtlIsCriticalSectionLocked)",
+        "MUSA_NAME(RtlSetCriticalSectionSpinCount)"
+      ],
+      "totalLines": 166,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Ntdll.Synchronize.SRWLock.cpp": {
+      "filePath": "Musa.Core/Thunks/Ntdll.Synchronize.SRWLock.cpp",
+      "contentHash": "d72a74b71d8b795c45ee5a780066ce6aa46d30fc16360dc9ca868a3adc363f60",
+      "functions": [
+        {
+          "name": "MUSA_NAME(RtlInitializeSRWLock)",
+          "params": [
+            "SRWLock"
+          ],
+          "returnType": "WINAPI",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "MUSA_NAME(RtlAcquireSRWLockExclusive)",
+          "params": [
+            "SRWLock"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "MUSA_NAME(RtlAcquireSRWLockShared)",
+          "params": [
+            "SRWLock"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "MUSA_NAME(RtlReleaseSRWLockExclusive)",
+          "params": [
+            "SRWLock"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "MUSA_NAME(RtlReleaseSRWLockShared)",
+          "params": [
+            "SRWLock"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "MUSA_NAME(RtlTryAcquireSRWLockExclusive)",
+          "params": [
+            "SRWLock"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 14
+        },
+        {
+          "name": "MUSA_NAME(RtlTryAcquireSRWLockShared)",
+          "params": [
+            "SRWLock"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 14
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "Internal/Ntdll.Synchronize.h",
+          "specifiers": [
+            "Internal/Ntdll.Synchronize.h"
+          ]
+        }
+      ],
+      "exports": [
+        "MUSA_NAME(RtlInitializeSRWLock)",
+        "MUSA_NAME(RtlAcquireSRWLockExclusive)",
+        "MUSA_NAME(RtlAcquireSRWLockShared)",
+        "MUSA_NAME(RtlReleaseSRWLockExclusive)",
+        "MUSA_NAME(RtlReleaseSRWLockShared)",
+        "MUSA_NAME(RtlTryAcquireSRWLockExclusive)",
+        "MUSA_NAME(RtlTryAcquireSRWLockShared)"
+      ],
+      "totalLines": 125,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Ntdll.System.cpp": {
+      "filePath": "Musa.Core/Thunks/Ntdll.System.cpp",
+      "contentHash": "11cb82c951dc737b15d02101e0694524e6ae3a28d82f1aaf0c544e1ab9b88793",
+      "functions": [
+        {
+          "name": "WINAPI MUSA_NAME(RtlIsProcessorFeaturePresent)",
+          "params": [
+            "ProcessorFeature"
+          ],
+          "returnType": "BOOLEAN",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "MUSA_NAME(RtlLocateExtendedFeature)",
+          "params": [
+            "ContextEx",
+            "FeatureId",
+            "Length"
+          ],
+          "returnType": "PVOID",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "MUSA_NAME(RtlLocateExtendedFeature2)",
+          "params": [
+            "ContextEx",
+            "FeatureId",
+            "XStateConfig",
+            "Length"
+          ],
+          "returnType": "PVOID",
+          "exported": true,
+          "lineCount": 92
+        },
+        {
+          "name": "MUSA_NAME(RtlGetEnabledExtendedFeatures)",
+          "params": [
+            "FeatureMask"
+          ],
+          "returnType": "ULONG64",
+          "exported": true,
+          "lineCount": 43
+        },
+        {
+          "name": "WINAPI MUSA_NAME(RtlGetCurrentProcessorNumber)",
+          "params": [],
+          "returnType": "ULONG",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "WINAPI MUSA_NAME(RtlGetCurrentProcessorNumberEx)",
+          "params": [
+            "ProcessorNumber"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 4
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "WINAPI MUSA_NAME(RtlIsProcessorFeaturePresent)",
+        "MUSA_NAME(RtlLocateExtendedFeature)",
+        "MUSA_NAME(RtlLocateExtendedFeature2)",
+        "MUSA_NAME(RtlGetEnabledExtendedFeatures)",
+        "WINAPI MUSA_NAME(RtlGetCurrentProcessorNumber)",
+        "WINAPI MUSA_NAME(RtlGetCurrentProcessorNumberEx)"
+      ],
+      "totalLines": 181,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Ntdll.Thread.cpp": {
+      "filePath": "Musa.Core/Thunks/Ntdll.Thread.cpp",
+      "contentHash": "bc7f503277b7441f94841070e604cb067841c88cd77f2f8bce3e2aedd2e1be0d",
+      "functions": [
+        {
+          "name": "MUSA_NAME(RtlExitUserThread)",
+          "params": [
+            "ExitStatus"
+          ],
+          "returnType": "VOID",
+          "exported": true,
+          "lineCount": 6
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "Internal/Ntdll.Thread.h",
+          "specifiers": [
+            "Internal/Ntdll.Thread.h"
+          ]
+        }
+      ],
+      "exports": [
+        "MUSA_NAME(RtlExitUserThread)"
+      ],
+      "totalLines": 20,
+      "hasStructuralAnalysis": true
+    },
+    "Musa.Core/Thunks/Ntdll.Utility.cpp": {
+      "filePath": "Musa.Core/Thunks/Ntdll.Utility.cpp",
+      "contentHash": "40181b952be1d8582a7b5d288037d963f9648ae3e59b882e35ef7a6d119bdfb2",
+      "functions": [
+        {
+          "name": "MUSA_NAME(RtlEncodePointer)",
+          "params": [
+            "PVOID"
+          ],
+          "returnType": "PVOID",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "MUSA_NAME(RtlDecodePointer)",
+          "params": [
+            "PVOID"
+          ],
+          "returnType": "PVOID",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "MUSA_NAME(RtlEncodeSystemPointer)",
+          "params": [
+            "PVOID"
+          ],
+          "returnType": "PVOID",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "MUSA_NAME(RtlDecodeSystemPointer)",
+          "params": [
+            "PVOID"
+          ],
+          "returnType": "PVOID",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "MUSA_NAME(RtlEncodeRemotePointer)",
+          "params": [
+            "ProcessHandle",
+            "PVOID"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 18
+        },
+        {
+          "name": "MUSA_NAME(RtlDecodeRemotePointer)",
+          "params": [
+            "ProcessHandle",
+            "PVOID"
+          ],
+          "returnType": "NTAPI",
+          "exported": true,
+          "lineCount": 18
+        },
+        {
+          "name": "MUSA_NAME(RtlGenRandom)",
+          "params": [
+            "RandomBuffer",
+            "RandomBufferLength"
+          ],
+          "returnType": "BOOLEAN",
+          "exported": true,
+          "lineCount": 13
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "Internal/Ntdll.Utility.h",
+          "specifiers": [
+            "Internal/Ntdll.Utility.h"
+          ]
+        },
+        {
+          "source": "Musa.Core/Musa.Utilities.h",
+          "specifiers": [
+            "Musa.Core/Musa.Utilities.h"
+          ]
+        },
+        {
+          "source": "bcrypt.h",
+          "specifiers": [
+            "bcrypt.h"
+          ]
+        }
+      ],
+      "exports": [
+        "MUSA_NAME(RtlEncodePointer)",
+        "MUSA_NAME(RtlDecodePointer)",
+        "MUSA_NAME(RtlEncodeSystemPointer)",
+        "MUSA_NAME(RtlDecodeSystemPointer)",
+        "MUSA_NAME(RtlEncodeRemotePointer)",
+        "MUSA_NAME(RtlDecodeRemotePointer)",
+        "MUSA_NAME(RtlGenRandom)"
+      ],
+      "totalLines": 105,
+      "hasStructuralAnalysis": true
+    },
+    "Publish/Config/Musa.Core.Config.props": {
+      "filePath": "Publish/Config/Musa.Core.Config.props",
+      "contentHash": "c38c32f847346a1ad6e2e9b6ef983e867add5c2a0527d0cfb013573b614bba61",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 23,
+      "hasStructuralAnalysis": false
+    },
+    "Publish/Config/Musa.Core.Config.targets": {
+      "filePath": "Publish/Config/Musa.Core.Config.targets",
+      "contentHash": "5e7b567a36144e4f2e253c8e7666dba5b6bfa0e97f3bf881f1639c116c7aefb1",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 17,
+      "hasStructuralAnalysis": false
+    },
+    "Publish/README.md": {
+      "filePath": "Publish/README.md",
+      "contentHash": "996ec788452ef5b821b3b8167d6b66948b0af4dfbe53bc217f3e533e4e55c77f",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 115,
+      "hasStructuralAnalysis": true
+    },
+    "README.md": {
+      "filePath": "README.md",
+      "contentHash": "996ec788452ef5b821b3b8167d6b66948b0af4dfbe53bc217f3e533e4e55c77f",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 115,
+      "hasStructuralAnalysis": true
+    },
+    "README.zh-CN.md": {
+      "filePath": "README.zh-CN.md",
+      "contentHash": "4fad36aa34b38df931419906fc80853092fc13340b62179f53708552b5aedf44",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 127,
+      "hasStructuralAnalysis": true
+    }
+  }
+}
