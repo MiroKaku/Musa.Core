@@ -1502,7 +1502,6 @@ namespace Main
                     L"C:\\Windows\\Temp\\MusaCore_copy2_src.tmp",
                     L"C:\\Windows\\Temp\\MusaCore_copy2_dst.tmp",
                     &Params);
-                MusaLOG("[DIAG] CopyFile2 returned HRESULT = 0x%08X", Hr);
                 KTEST_EXPECT(SUCCEEDED(Hr),
                     "File_CopyFile2_BasicCopy_Succeeds");
 
