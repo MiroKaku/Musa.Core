@@ -1,4 +1,4 @@
-﻿#include "KernelBase.Private.h"
+#include "KernelBase.Private.h"
 #include "Internal/KernelBase.System.h"
 
 #ifdef ALLOC_PRAGMA
@@ -12,6 +12,8 @@
 #pragma alloc_text(PAGE, MUSA_NAME(GetTimeZoneInformation))
 #pragma alloc_text(PAGE, MUSA_NAME(GetDynamicTimeZoneInformation))
 
+
+#pragma alloc_text(PAGE, MUSA_NAME(CompareFileTime))
 #pragma alloc_text(PAGE, MUSA_NAME(SystemTimeToTzSpecificLocalTime))
 #endif
 
@@ -410,6 +412,39 @@ BOOL WINAPI MUSA_NAME(SystemTimeToTzSpecificLocalTime)(
     }
     return TRUE;
 }
+
+/**
+ * Compares two 64-bit file times.
+ *
+ * @param lpFileTime1 First FILETIME.
+ * @param lpFileTime2 Second FILETIME.
+ * @return -1 if lpFileTime1 < lpFileTime2, 0 if equal, 1 if lpFileTime1 > lpFileTime2.
+ */
+_IRQL_requires_max_(PASSIVE_LEVEL)
+LONG WINAPI MUSA_NAME(CompareFileTime)(
+    _In_ const FILETIME* lpFileTime1,
+    _In_ const FILETIME* lpFileTime2
+)
+{
+    PAGED_CODE();
+
+    ULARGE_INTEGER t1;
+    t1.LowPart  = lpFileTime1->dwLowDateTime;
+    t1.HighPart = lpFileTime1->dwHighDateTime;
+
+    ULARGE_INTEGER t2;
+    t2.LowPart  = lpFileTime2->dwLowDateTime;
+    t2.HighPart = lpFileTime2->dwHighDateTime;
+
+    if (t1.QuadPart < t2.QuadPart)
+        return -1;
+    if (t1.QuadPart > t2.QuadPart)
+        return 1;
+    return 0;
+}
+
+MUSA_IAT_SYMBOL(CompareFileTime, 8);
+
 
 MUSA_IAT_SYMBOL(SystemTimeToTzSpecificLocalTime, 12);
 EXTERN_C_END

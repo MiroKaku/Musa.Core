@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 EXTERN_C_START
 
@@ -73,6 +73,13 @@ BOOL WINAPI MUSA_NAME(LocalFileTimeToFileTime)(
     _In_ const FILETIME* lpLocalFileTime,
     _Out_ LPFILETIME lpFileTime
     );
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+LONG WINAPI MUSA_NAME(CompareFileTime)(
+    _In_ const FILETIME* lpFileTime1,
+    _In_ const FILETIME* lpFileTime2
+    );
+
 _IRQL_requires_max_(PASSIVE_LEVEL)
 DWORD WINAPI MUSA_NAME(GetTimeZoneInformation)(
     _Out_ LPTIME_ZONE_INFORMATION lpTimeZoneInformation

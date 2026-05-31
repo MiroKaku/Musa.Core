@@ -24,10 +24,12 @@
 #pragma alloc_text(PAGE, MUSA_NAME(CreateNamedPipeW))
 
 #pragma alloc_text(PAGE, MUSA_NAME(SetEndOfFile))
+#pragma alloc_text(PAGE, MUSA_NAME(GetFileTime))
 #pragma alloc_text(PAGE, MUSA_NAME(GetFileSizeEx))
 #pragma alloc_text(PAGE, MUSA_NAME(GetFileInformationByHandle))
 #pragma alloc_text(PAGE, MUSA_NAME(GetDriveTypeW))
 #pragma alloc_text(PAGE, MUSA_NAME(FindFirstFileExW))
+#pragma alloc_text(PAGE, MUSA_NAME(SetFileTime))
 #pragma alloc_text(PAGE, MUSA_NAME(FindClose))
 #endif
 
@@ -1181,6 +1183,7 @@ DWORD WINAPI MUSA_NAME(GetFullPathNameW)(
     return static_cast<DWORD>(wcslen(lpBuffer));
 }
 
+MUSA_IAT_SYMBOL(GetFullPathNameW, 16);
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
 BOOL WINAPI MUSA_NAME(SetEndOfFile)(
@@ -1421,5 +1424,93 @@ HANDLE WINAPI MUSA_NAME(CreateNamedPipeW)(
 
 MUSA_IAT_SYMBOL(CreateNamedPipeW, 32);
 
-MUSA_IAT_SYMBOL(GetFullPathNameW, 16);
+
+/**
+ * SetFileTime - Sets the date and time that the specified file was created,
+ * last accessed, or last modified.
+ *
+ * @param hFile            Handle to the file.
+ * @param lpCreationTime   File creation time (optional, NULL to leave unchanged).
+ * @param lpLastAccessTime File last access time (optional, NULL to leave unchanged).
+ * @param lpLastWriteTime  File last write time (optional, NULL to leave unchanged).
+ * @return                 TRUE on success, FALSE on failure.
+ *
+ * Maps to ZwSetInformationFile(FileBasicInformation) -- matches kernelbase.dll.
+ */
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(SetFileTime)(
+    _In_ HANDLE                 hFile,
+    _In_opt_ const FILETIME*    lpCreationTime,
+    _In_opt_ const FILETIME*    lpLastAccessTime,
+    _In_opt_ const FILETIME*    lpLastWriteTime
+)
+{
+    PAGED_CODE();
+    FILE_BASIC_INFORMATION FileInfo{};
+    IO_STATUS_BLOCK Iosb{};
+
+
+    if (lpCreationTime)
+        RtlCopyMemory(&FileInfo.CreationTime, lpCreationTime, sizeof(FILETIME));
+    if (lpLastAccessTime)
+        RtlCopyMemory(&FileInfo.LastAccessTime, lpLastAccessTime, sizeof(FILETIME));
+    if (lpLastWriteTime)
+        RtlCopyMemory(&FileInfo.LastWriteTime, lpLastWriteTime, sizeof(FILETIME));
+
+    NTSTATUS Status = ZwSetInformationFile(
+        hFile, &Iosb, &FileInfo, sizeof(FileInfo), FileBasicInformation);
+
+    if (NT_SUCCESS(Status))
+        return TRUE;
+
+    BaseSetLastNTError(Status);
+    return FALSE;
+}
+
+
+/**
+ * Retrieves the date and time that a file was created, last accessed, and
+ * last modified.
+ *
+ * @param hFile            Handle to the file.
+ * @param lpCreationTime   Receives creation time (optional, NULL to ignore).
+ * @param lpLastAccessTime Receives last access time (optional, NULL to ignore).
+ * @param lpLastWriteTime  Receives last write time (optional, NULL to ignore).
+ * @return                 TRUE on success, FALSE on failure.
+ *
+ * Maps to ZwQueryInformationFile(FileBasicInformation).
+ */
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(GetFileTime)(
+    _In_ HANDLE             hFile,
+    _Out_opt_ LPFILETIME    lpCreationTime,
+    _Out_opt_ LPFILETIME    lpLastAccessTime,
+    _Out_opt_ LPFILETIME    lpLastWriteTime
+)
+{
+    PAGED_CODE();
+
+    FILE_BASIC_INFORMATION FileInfo{};
+    IO_STATUS_BLOCK Iosb{};
+
+    NTSTATUS Status = ZwQueryInformationFile(
+        hFile, &Iosb, &FileInfo, sizeof(FileInfo), FileBasicInformation);
+    if (!NT_SUCCESS(Status)) {
+        BaseSetLastNTError(Status);
+        return FALSE;
+    }
+
+    if (lpCreationTime)
+        RtlCopyMemory(lpCreationTime, &FileInfo.CreationTime, sizeof(FILETIME));
+    if (lpLastAccessTime)
+        RtlCopyMemory(lpLastAccessTime, &FileInfo.LastAccessTime, sizeof(FILETIME));
+    if (lpLastWriteTime)
+        RtlCopyMemory(lpLastWriteTime, &FileInfo.LastWriteTime, sizeof(FILETIME));
+    return TRUE;
+}
+
+MUSA_IAT_SYMBOL(GetFileTime, 16);
+
+MUSA_IAT_SYMBOL(SetFileTime, 16);
+
 EXTERN_C_END

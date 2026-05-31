@@ -135,7 +135,21 @@ DWORD WINAPI MUSA_NAME(GetFullPathNameW)(
     _Out_opt_ LPWSTR* lpFilePart
     );
 
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(SetFileTime)(
+    _In_ HANDLE                 hFile,
+    _In_opt_ const FILETIME*    lpCreationTime,
+    _In_opt_ const FILETIME*    lpLastAccessTime,
+    _In_opt_ const FILETIME*    lpLastWriteTime
+    );
 
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(GetFileTime)(
+    _In_ HANDLE             hFile,
+    _Out_opt_ LPFILETIME    lpCreationTime,
+    _Out_opt_ LPFILETIME    lpLastAccessTime,
+    _Out_opt_ LPFILETIME    lpLastWriteTime
+    );
 _IRQL_requires_max_(PASSIVE_LEVEL)
 BOOL WINAPI MUSA_NAME(SetEndOfFile)(
     _In_ HANDLE hFile
