@@ -620,17 +620,62 @@ namespace Main
         }
 
         {
-            // Get file attributes of an existing file
+            HANDLE hFile = CreateFileW(
+                L"C:\\Windows\\Temp\\MusaCore_attrex_test.tmp",
+                GENERIC_WRITE,
+                FILE_SHARE_READ | FILE_SHARE_DELETE,
+                nullptr, CREATE_ALWAYS,
+                FILE_ATTRIBUTE_TEMPORARY,
+                nullptr);
+            if (hFile != INVALID_HANDLE_VALUE) {
+                const char Data[] = "GetFileAttributesExW test";
+                DWORD Written = 0;
+                WriteFile(hFile, Data, sizeof(Data), &Written, nullptr);
+                CloseHandle(hFile);
+
+                WIN32_FILE_ATTRIBUTE_DATA AttrData{};
+                BOOL Result = GetFileAttributesExW(
+                    L"C:\\Windows\\Temp\\MusaCore_attrex_test.tmp",
+                    GetFileExInfoStandard,
+                    &AttrData);
+                KTEST_EXPECT(Result,
+                    "FileIO_GetFileAttributesExW_Succeeds");
+                if (Result) {
+                    KTEST_EXPECT((AttrData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0,
+                        "FileIO_GetFileAttributesExW_NotDirectory");
+                    KTEST_EXPECT(AttrData.nFileSizeLow == sizeof(Data) && AttrData.nFileSizeHigh == 0,
+                        "FileIO_GetFileAttributesExW_FileSizeCorrect");
+                    if (AttrData.nFileSizeLow != sizeof(Data)) {
+                        MusaLOG("[DIAG] GetFileAttributesExW nFileSizeLow=%u expected=%u",
+                            AttrData.nFileSizeLow, (unsigned)sizeof(Data));
+                    }
+                }
+                DeleteFileW(L"C:\\Windows\\Temp\\MusaCore_attrex_test.tmp");
+            }
+        }
+        {
+            WIN32_FILE_ATTRIBUTE_DATA AttrData{};
+            BOOL Result = GetFileAttributesExW(
+                L"C:\\Windows\\Temp",
+                GetFileExInfoStandard,
+                &AttrData);
+            KTEST_EXPECT(Result && (AttrData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0,
+                "FileIO_GetFileAttributesExW_Directory");
+        }
+
+        {
             WIN32_FILE_ATTRIBUTE_DATA AttrData{};
             BOOL Result = GetFileAttributesExW(
                 L"C:\\Windows\\System32\\ntoskrnl.exe",
                 GetFileExInfoStandard,
                 &AttrData);
             KTEST_EXPECT(Result,
-                "FileIO_GetFileAttributesExW_Succeeds");
+                "FileIO_GetFileAttributesExW_Ntoskrnl_Succeeds");
             if (Result) {
                 KTEST_EXPECT((AttrData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0,
-                    "FileIO_GetFileAttributesExW_NotDirectory");
+                    "FileIO_GetFileAttributesExW_Ntoskrnl_NotDirectory");
+                KTEST_EXPECT(AttrData.nFileSizeLow != 0 || AttrData.nFileSizeHigh != 0,
+                    "FileIO_GetFileAttributesExW_Ntoskrnl_HasSize");
             }
         }
 
