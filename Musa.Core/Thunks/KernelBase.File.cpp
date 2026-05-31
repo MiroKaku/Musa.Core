@@ -2292,7 +2292,7 @@ HANDLE WINAPI MUSA_NAME(FindFirstFileW)(
 )
 {
     PAGED_CODE();
-    return MUSA_NAME(FindFirstFileExW)(lpFileName, FindExInfoStandard, lpFindFileData,
+    return FindFirstFileExW(lpFileName, FindExInfoStandard, lpFindFileData,
         FindExSearchNameMatch, nullptr, 0);
 }
 MUSA_IAT_SYMBOL(FindFirstFileW, 8);
