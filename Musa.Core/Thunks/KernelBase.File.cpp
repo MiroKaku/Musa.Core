@@ -1321,6 +1321,8 @@ DWORD WINAPI MUSA_NAME(GetFullPathNameW)(
     _Out_opt_ LPWSTR* lpFilePart
 )
 {
+    PAGED_CODE();
+
     RTL_PATH_TYPE PathType = RtlPathTypeUnknown;
     NTSTATUS Status = MUSA_NAME(RtlGetFullPathName_UEx)(
         const_cast<PWSTR>(lpFileName),

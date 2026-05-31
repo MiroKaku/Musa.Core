@@ -1718,6 +1718,207 @@ namespace Main
                 "File_DeviceIoControl_InvalidHandle_Fails");
         }
 
+
+        // --- FindFirstFileExW / FindNextFileW / FindClose ---
+
+        // Set up test directory and files
+        static const WCHAR kTestDir[] = L"C:\\Windows\\Temp\\MusaCore_FindTest";
+        CreateDirectoryW(kTestDir, nullptr);
+
+        // Create test files
+        HANDLE hFile = CreateFileW(L"C:\\Windows\\Temp\\MusaCore_FindTest\\a.txt",
+            GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+        if (hFile != INVALID_HANDLE_VALUE) CloseHandle(hFile);
+        hFile = CreateFileW(L"C:\\Windows\\Temp\\MusaCore_FindTest\\b.dat",
+            GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+        if (hFile != INVALID_HANDLE_VALUE) CloseHandle(hFile);
+        hFile = CreateFileW(L"C:\\Windows\\Temp\\MusaCore_FindTest\\c.txt",
+            GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+        if (hFile != INVALID_HANDLE_VALUE) CloseHandle(hFile);
+        CreateDirectoryW(L"C:\\Windows\\Temp\\MusaCore_FindTest\\subdir", nullptr);
+
+        // Test 1: FindFirstFileExW -- basic wildcard (*.txt)
+        {
+            WIN32_FIND_DATAW FindData{};
+            HANDLE hFind = FindFirstFileExW(
+                L"C:\\Windows\\Temp\\MusaCore_FindTest\\*.txt",
+                FindExInfoStandard, &FindData,
+                FindExSearchNameMatch, nullptr, 0);
+            KTEST_EXPECT(hFind != INVALID_HANDLE_VALUE,
+                "FindFirstFile_WildcardTxt_Opens");
+            if (hFind != INVALID_HANDLE_VALUE) {
+                KTEST_EXPECT(wcscmp(FindData.cFileName, L".") != 0,
+                    "FindFirstFile_WildcardTxt_NoDot");
+                KTEST_EXPECT(wcscmp(FindData.cFileName, L"..") != 0,
+                    "FindFirstFile_WildcardTxt_NoDotDot");
+                KTEST_EXPECT(wcsstr(FindData.cFileName, L".txt") != nullptr,
+                    "FindFirstFile_WildcardTxt_TxtMatch");
+                FindClose(hFind);
+            }
+        }
+
+        // Test 2: FindFirstFileExW -- all files (\*)
+        {
+            WIN32_FIND_DATAW FindData{};
+            HANDLE hFind = FindFirstFileExW(
+                L"C:\\Windows\\Temp\\MusaCore_FindTest\\*",
+                FindExInfoStandard, &FindData,
+                FindExSearchNameMatch, nullptr, 0);
+            KTEST_EXPECT(hFind != INVALID_HANDLE_VALUE,
+                "FindFirstFile_WildcardAll_Opens");
+            if (hFind != INVALID_HANDLE_VALUE) {
+                KTEST_EXPECT(wcscmp(FindData.cFileName, L".") != 0,
+                    "FindFirstFile_WildcardAll_NoDot");
+                KTEST_EXPECT(wcscmp(FindData.cFileName, L"..") != 0,
+                    "FindFirstFile_WildcardAll_NoDotDot");
+                FindClose(hFind);
+            }
+        }
+
+        // Test 3: FindExInfoBasic
+        {
+            WIN32_FIND_DATAW FindData{};
+            HANDLE hFind = FindFirstFileExW(
+                L"C:\\Windows\\Temp\\MusaCore_FindTest\\*",
+                FindExInfoBasic, &FindData,
+                FindExSearchNameMatch, nullptr, 0);
+            KTEST_EXPECT(hFind != INVALID_HANDLE_VALUE,
+                "FindFirstFile_InfoBasic_Opens");
+            if (hFind != INVALID_HANDLE_VALUE) {
+                KTEST_EXPECT(FindData.cFileName[0] != L'\0',
+                    "FindFirstFile_InfoBasic_HasName");
+                FindClose(hFind);
+            }
+        }
+
+        // Test 4: FindExSearchLimitToDirectories
+        {
+            WIN32_FIND_DATAW FindData{};
+            HANDLE hFind = FindFirstFileExW(
+                L"C:\\Windows\\Temp\\MusaCore_FindTest\\*",
+                FindExInfoStandard, &FindData,
+                FindExSearchLimitToDirectories, nullptr, 0);
+            KTEST_EXPECT(hFind != INVALID_HANDLE_VALUE,
+                "FindFirstFile_LimitToDirs_Opens");
+            if (hFind != INVALID_HANDLE_VALUE) {
+                // Enumerate all matches -- should only see directories
+                BOOL hasMatch = TRUE;
+                bool foundSubdir = false;
+                bool foundFile = false;
+                while (hasMatch) {
+                    if (FindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+                        if (wcscmp(FindData.cFileName, L"subdir") == 0) foundSubdir = true;
+                    } else {
+                        foundFile = true;
+                    }
+                    hasMatch = FindNextFileW(hFind, &FindData);
+                }
+                KTEST_EXPECT(foundSubdir, "FindFirstFile_LimitToDirs_FoundSubdir");
+                KTEST_EXPECT(!foundFile, "FindFirstFile_LimitToDirs_NoFiles");
+                // GetLastError should be ERROR_NO_MORE_FILES
+                KTEST_EXPECT(GetLastError() == ERROR_NO_MORE_FILES,
+                    "FindFirstFile_LimitToDirs_NoMoreFiles");
+                FindClose(hFind);
+            }
+        }
+
+        // Test 5: FindNextFileW -- iterate all entries
+        {
+            WIN32_FIND_DATAW FindData{};
+            HANDLE hFind = FindFirstFileExW(
+                L"C:\\Windows\\Temp\\MusaCore_FindTest\\*",
+                FindExInfoStandard, &FindData,
+                FindExSearchNameMatch, nullptr, 0);
+            KTEST_EXPECT(hFind != INVALID_HANDLE_VALUE,
+                "FindNextFile_Iterate_Opens");
+            if (hFind != INVALID_HANDLE_VALUE) {
+                int count = 1;
+                while (FindNextFileW(hFind, &FindData))
+                    ++count;
+                KTEST_EXPECT(count >= 4, // a.txt, b.dat, c.txt, subdir
+                    "FindNextFile_Iterate_Count");
+                KTEST_EXPECT(GetLastError() == ERROR_NO_MORE_FILES,
+                    "FindNextFile_Iterate_NoMoreFiles");
+                FindClose(hFind);
+            }
+        }
+
+        // Test 6: FindNextFileW -- invalid handle
+        {
+            WIN32_FIND_DATAW FindData{};
+            BOOL result = FindNextFileW(INVALID_HANDLE_VALUE, &FindData);
+            KTEST_EXPECT(!result,
+                "FindNextFile_InvalidHandle_Fails");
+        }
+
+        // Test 7: FindFirstFileExW -- invalid params
+        {
+            HANDLE hFind = FindFirstFileExW(nullptr,
+                FindExInfoStandard, nullptr,
+                FindExSearchNameMatch, nullptr, 0);
+            KTEST_EXPECT(hFind == INVALID_HANDLE_VALUE,
+                "FindFirstFile_NullParams_Fails");
+        }
+
+        // Test 8: FindFirstFileExW -- ? wildcard
+        {
+            WIN32_FIND_DATAW FindData{};
+            HANDLE hFind = FindFirstFileExW(
+                L"C:\\Windows\\Temp\\MusaCore_FindTest\\?.txt",
+                FindExInfoStandard, &FindData,
+                FindExSearchNameMatch, nullptr, 0);
+            KTEST_EXPECT(hFind != INVALID_HANDLE_VALUE,
+                "FindFirstFile_QuestionWildcard_Opens");
+            if (hFind != INVALID_HANDLE_VALUE) {
+                bool foundA = false, foundC = false;
+                BOOL hasMatch = TRUE;
+                while (hasMatch) {
+                    if (wcscmp(FindData.cFileName, L"a.txt") == 0) foundA = true;
+                    if (wcscmp(FindData.cFileName, L"c.txt") == 0) foundC = true;
+                    hasMatch = FindNextFileW(hFind, &FindData);
+                }
+                KTEST_EXPECT(foundA && foundC,
+                    "FindFirstFile_QuestionWildcard_Matches");
+                FindClose(hFind);
+            }
+        }
+
+        // Test 9: FindClose -- valid handle
+        {
+            WIN32_FIND_DATAW FindData{};
+            HANDLE hFind = FindFirstFileExW(
+                L"C:\\Windows\\Temp\\MusaCore_FindTest\\*",
+                FindExInfoStandard, &FindData,
+                FindExSearchNameMatch, nullptr, 0);
+            KTEST_EXPECT(hFind != INVALID_HANDLE_VALUE,
+                "FindClose_ValidHandle_Opens");
+            if (hFind != INVALID_HANDLE_VALUE) {
+                KTEST_EXPECT(FindClose(hFind),
+                    "FindClose_ValidHandle_Succeeds");
+            }
+        }
+
+        // Test 10: FindClose -- invalid handle
+        {
+            BOOL result = FindClose(INVALID_HANDLE_VALUE);
+            KTEST_EXPECT(!result,
+                "FindClose_InvalidHandle_Fails");
+        }
+
+        // Test 11: FindClose -- NULL handle
+        {
+            BOOL result = FindClose(nullptr);
+            KTEST_EXPECT(!result,
+                "FindClose_NullHandle_Fails");
+        }
+
+        // Cleanup
+        DeleteFileW(L"C:\\Windows\\Temp\\MusaCore_FindTest\\a.txt");
+        DeleteFileW(L"C:\\Windows\\Temp\\MusaCore_FindTest\\b.dat");
+        DeleteFileW(L"C:\\Windows\\Temp\\MusaCore_FindTest\\c.txt");
+        RemoveDirectoryW(L"C:\\Windows\\Temp\\MusaCore_FindTest\\subdir");
+        RemoveDirectoryW(L"C:\\Windows\\Temp\\MusaCore_FindTest");
+
         // --- Results ---
 
         MusaLOG("=== Results: %lu/%lu passed ===",
