@@ -629,18 +629,18 @@ BOOL WINAPI MUSA_NAME(GetFileAttributesExW)(
 
     OBJECT_ATTRIBUTES ObjAttrs;
     InitializeObjectAttributes(&ObjAttrs, &NtPath, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
-    FILE_BASIC_INFORMATION BasicInfo;
-    Status = ZwQueryAttributesFile(&ObjAttrs, &BasicInfo);
+    FILE_NETWORK_OPEN_INFORMATION NetInfo{};
+    Status = ZwQueryFullAttributesFile(&ObjAttrs, &NetInfo);
     RtlFreeUnicodeString(&NtPath);
 
     if (NT_SUCCESS(Status)) {
         WIN32_FILE_ATTRIBUTE_DATA* OutData = static_cast<WIN32_FILE_ATTRIBUTE_DATA*>(lpFileInformation);
-        OutData->dwFileAttributes = BasicInfo.FileAttributes;
-        OutData->ftCreationTime = reinterpret_cast<FILETIME&>(BasicInfo.CreationTime);
-        OutData->ftLastAccessTime = reinterpret_cast<FILETIME&>(BasicInfo.LastAccessTime);
-        OutData->ftLastWriteTime = reinterpret_cast<FILETIME&>(BasicInfo.LastWriteTime);
-        OutData->nFileSizeHigh = 0;
-        OutData->nFileSizeLow = 0;
+        OutData->dwFileAttributes = NetInfo.FileAttributes;
+        OutData->ftCreationTime = reinterpret_cast<FILETIME&>(NetInfo.CreationTime);
+        OutData->ftLastAccessTime = reinterpret_cast<FILETIME&>(NetInfo.LastAccessTime);
+        OutData->ftLastWriteTime = reinterpret_cast<FILETIME&>(NetInfo.LastWriteTime);
+        OutData->nFileSizeHigh = NetInfo.EndOfFile.HighPart;
+        OutData->nFileSizeLow = NetInfo.EndOfFile.LowPart;
         return TRUE;
     }
 
@@ -1113,6 +1113,12 @@ HANDLE WINAPI MUSA_NAME(FindFirstFileExW)(
         wcscat_s(SearchPath, L"*");
     }
 
+    // Strip the wildcard suffix to get the parent directory path
+    PWCHAR Wildcard = wcsrchr(SearchPath, L'\\');
+    if (Wildcard && wcschr(Wildcard, L'*') != nullptr) {
+        *Wildcard = L'\0';  // Truncate at the last backslash
+    }
+
     UNICODE_STRING NtPath{};
     NTSTATUS Status = RtlDosPathNameToNtPathName_U_WithStatus(SearchPath, &NtPath, nullptr, nullptr);
     if (!NT_SUCCESS(Status)) {
@@ -1120,11 +1126,12 @@ HANDLE WINAPI MUSA_NAME(FindFirstFileExW)(
         return INVALID_HANDLE_VALUE;
     }
 
-    // Strip the wildcard suffix to get the directory path
+    // Restore the wildcard for directory query filter
+    if (Wildcard) *Wildcard = L'\\';
+
     // Open the parent directory
     OBJECT_ATTRIBUTES ObjAttrs;
     InitializeObjectAttributes(&ObjAttrs, &NtPath, OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE, nullptr, nullptr);
-
     HANDLE DirHandle = nullptr;
     IO_STATUS_BLOCK Iosb{};
     ULONG CreateOptions = FILE_DIRECTORY_FILE | FILE_SYNCHRONOUS_IO_NONALERT;
@@ -2116,7 +2123,7 @@ MUSA_IAT_SYMBOL(GetDiskFreeSpaceExW, 16);
 /**
  * CopyFile2 - Copies an existing file to a new file with extended parameters.
  *
- * Maps to ZwCreateFile + ZwReadFile/ZwWriteFile copy loop.
+ * Uses CreateFileW, ReadFile, WriteFile, CloseHandle.
  * Progress callback and transaction support are not implemented in kernel mode.
  */
 _IRQL_requires_max_(PASSIVE_LEVEL)
@@ -2141,85 +2148,51 @@ HRESULT WINAPI MUSA_NAME(CopyFile2)(
     if (!pwszExistingFileName || !pwszNewFileName)
         return HRESULT_FROM_WIN32(ERROR_INVALID_PARAMETER);
 
-    // COPY_FILE_REQUEST_COMPRESSED_TRAFFIC is not supported
-    if (dwCopyFlags & COPY_FILE_REQUEST_COMPRESSED_TRAFFIC)
+    if (dwCopyFlags & 0x40000000)
         return HRESULT_FROM_WIN32(ERROR_INVALID_PARAMETER);
 
-    // Convert source path
-    UNICODE_STRING NtSource{};
-    NTSTATUS Status = RtlDosPathNameToNtPathName_U_WithStatus(pwszExistingFileName, &NtSource, nullptr, nullptr);
-    if (!NT_SUCCESS(Status))
-        return HRESULT_FROM_NT(Status);
-
-    // Convert dest path
-    UNICODE_STRING NtDest{};
-    Status = RtlDosPathNameToNtPathName_U_WithStatus(pwszNewFileName, &NtDest, nullptr, nullptr);
-    if (!NT_SUCCESS(Status)) {
-        RtlFreeUnicodeString(&NtSource);
-        return HRESULT_FROM_NT(Status);
-    }
-
     // Open source file
-    OBJECT_ATTRIBUTES SrcAttr;
-    InitializeObjectAttributes(&SrcAttr, &NtSource, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
-    IO_STATUS_BLOCK Iosb{};
-    HANDLE hSource = nullptr;
-
-    ULONG SrcOptions = FILE_SYNCHRONOUS_IO_NONALERT;
+    DWORD SrcFlags = FILE_ATTRIBUTE_NORMAL;
     if (dwCopyFlags & COPY_FILE_NO_BUFFERING)
-        SrcOptions |= FILE_NO_INTERMEDIATE_BUFFERING;
+        SrcFlags |= FILE_FLAG_NO_BUFFERING;
 
-    Status = ZwCreateFile(&hSource,
-        GENERIC_READ | SYNCHRONIZE,
-        &SrcAttr, &Iosb, nullptr,
-        FILE_ATTRIBUTE_NORMAL,
+    HANDLE hSource = CreateFileW(pwszExistingFileName,
+        GENERIC_READ,
         FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-        FILE_OPEN,
-        SrcOptions, nullptr, 0);
+        nullptr, OPEN_EXISTING,
+        SrcFlags, nullptr);
 
-    if (!NT_SUCCESS(Status)) {
-        RtlFreeUnicodeString(&NtSource);
-        RtlFreeUnicodeString(&NtDest);
-        return HRESULT_FROM_NT(Status);
-    }
+    if (hSource == INVALID_HANDLE_VALUE)
+        return HRESULT_FROM_WIN32(GetLastError());
 
     // Open/create destination file
-    OBJECT_ATTRIBUTES DstAttr;
-    InitializeObjectAttributes(&DstAttr, &NtDest, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
-    HANDLE hDest = nullptr;
-
-    ULONG CreateDisposition = (dwCopyFlags & COPY_FILE_FAIL_IF_EXISTS)
-        ? FILE_CREATE : FILE_OVERWRITE_IF;
-    ULONG DstOptions = FILE_SYNCHRONOUS_IO_NONALERT;
+    DWORD CreateDisposition = (dwCopyFlags & COPY_FILE_FAIL_IF_EXISTS)
+        ? CREATE_NEW : CREATE_ALWAYS;
+    DWORD DstFlags = FILE_ATTRIBUTE_NORMAL;
     if (dwCopyFlags & COPY_FILE_NO_BUFFERING)
-        DstOptions |= FILE_NO_INTERMEDIATE_BUFFERING;
+        DstFlags |= FILE_FLAG_NO_BUFFERING;
 
-    Status = ZwCreateFile(&hDest,
-        GENERIC_WRITE | SYNCHRONIZE,
-        &DstAttr, &Iosb, nullptr,
-        FILE_ATTRIBUTE_NORMAL,
+    HANDLE hDest = CreateFileW(pwszNewFileName,
+        GENERIC_WRITE,
         FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-        CreateDisposition,
-        DstOptions, nullptr, 0);
+        nullptr, CreateDisposition,
+        DstFlags, nullptr);
 
-    RtlFreeUnicodeString(&NtSource);
-    RtlFreeUnicodeString(&NtDest);
-
-    if (!NT_SUCCESS(Status)) {
-        ZwClose(hSource);
-        return HRESULT_FROM_NT(Status);
+    if (hDest == INVALID_HANDLE_VALUE) {
+        DWORD Err = GetLastError();
+        CloseHandle(hSource);
+        return HRESULT_FROM_WIN32(Err);
     }
 
-    // Allocate copy buffer
-    const ULONG ChunkSize = 64 * 1024;
+    // Copy loop
+    const DWORD ChunkSize = 64 * 1024;
     PVOID CopyBuf = RtlAllocateHeap(RtlProcessHeap(), 0, ChunkSize);
     if (!CopyBuf) {
-        ZwClose(hSource);
-        ZwClose(hDest);
+        CloseHandle(hSource);
+        CloseHandle(hDest);
         return HRESULT_FROM_WIN32(ERROR_NOT_ENOUGH_MEMORY);
     }
 
-    // Read/write copy loop
     HRESULT HResult = S_OK;
     while (TRUE) {
         if (pfCancel && *pfCancel) {
@@ -2227,55 +2200,32 @@ HRESULT WINAPI MUSA_NAME(CopyFile2)(
             break;
         }
 
-        IO_STATUS_BLOCK RdIosb{};
-        Status = ZwReadFile(hSource, nullptr, nullptr, nullptr, &RdIosb,
-            CopyBuf, ChunkSize, nullptr, nullptr);
-        if (!NT_SUCCESS(Status) && Status != STATUS_END_OF_FILE) {
-            HResult = HRESULT_FROM_NT(Status);
+        DWORD BytesRead = 0;
+        if (!ReadFile(hSource, CopyBuf, ChunkSize, &BytesRead, nullptr)) {
+            HResult = HRESULT_FROM_WIN32(GetLastError());
             break;
         }
 
-        if (RdIosb.Information == 0)
+        if (BytesRead == 0)
             break;
 
-        IO_STATUS_BLOCK WrIosb{};
-        Status = ZwWriteFile(hDest, nullptr, nullptr, nullptr, &WrIosb,
-            CopyBuf, (ULONG)RdIosb.Information, nullptr, nullptr);
-        if (!NT_SUCCESS(Status)) {
-            HResult = HRESULT_FROM_NT(Status);
+        DWORD BytesWritten = 0;
+        if (!WriteFile(hDest, CopyBuf, BytesRead, &BytesWritten, nullptr) || BytesWritten != BytesRead) {
+            HResult = HRESULT_FROM_WIN32(GetLastError());
             break;
         }
     }
-
     RtlFreeHeap(RtlProcessHeap(), 0, CopyBuf);
 
-    if (SUCCEEDED(HResult)) {
-        // Copy file attributes/times from source to destination
-        FILE_BASIC_INFORMATION SrcBasicInfo{};
-        Status = ZwQueryInformationFile(hSource, &Iosb, &SrcBasicInfo,
-            sizeof(SrcBasicInfo), FileBasicInformation);
-        if (NT_SUCCESS(Status)) {
-            SrcBasicInfo.FileAttributes &= ~FILE_ATTRIBUTE_NORMAL;
-            ZwSetInformationFile(hDest, &Iosb, &SrcBasicInfo,
-                sizeof(SrcBasicInfo), FileBasicInformation);
-        }
-    }
 
-    ZwClose(hSource);
-
+    CloseHandle(hSource);
     if (FAILED(HResult)) {
-#pragma push_macro("DeleteFile")
-#undef DeleteFile
-        FILE_DISPOSITION_INFORMATION Disposition{};
-        Disposition.DeleteFile = TRUE;
-        ZwSetInformationFile(hDest, &Iosb, &Disposition,
-            sizeof(Disposition), FileDispositionInformation);
-#pragma pop_macro("DeleteFile")
-        ZwClose(hDest);
+        CloseHandle(hDest);
+        DeleteFileW(pwszNewFileName);
         return HResult;
     }
 
-    ZwClose(hDest);
+    CloseHandle(hDest);
     return S_OK;
 }
 MUSA_IAT_SYMBOL(CopyFile2, 12);
@@ -2317,7 +2267,7 @@ BOOL WINAPI MUSA_NAME(DeviceIoControl)(
     PAGED_CODE();
 
     BOOL IsFsControl = (HIWORD(dwIoControlCode) == FILE_DEVICE_FILE_SYSTEM);
-    NTSTATUS Status;
+    NTSTATUS Status = STATUS_UNSUCCESSFUL;
 
     if (lpOverlapped) {
         lpOverlapped->Internal = STATUS_PENDING;

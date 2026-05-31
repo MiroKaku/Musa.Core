@@ -1457,16 +1457,30 @@ namespace Main
                     L"C:\\Windows\\Temp\\MusaCore_copy2_src.tmp",
                     L"C:\\Windows\\Temp\\MusaCore_copy2_dst.tmp",
                     &Params);
+                MusaLOG("[DIAG] CopyFile2 returned HRESULT = 0x%08X", Hr);
                 KTEST_EXPECT(SUCCEEDED(Hr),
                     "File_CopyFile2_BasicCopy_Succeeds");
 
                 if (SUCCEEDED(Hr)) {
-                    WIN32_FILE_ATTRIBUTE_DATA DestAttrs{};
-                    KTEST_EXPECT(GetFileAttributesExW(L"C:\\Windows\\Temp\\MusaCore_copy2_dst.tmp",
-                        GetFileExInfoStandard, &DestAttrs),
+                    HANDLE hDest = CreateFileW(
+                        L"C:\\Windows\\Temp\\MusaCore_copy2_dst.tmp",
+                        GENERIC_READ,
+                        FILE_SHARE_READ | FILE_SHARE_DELETE,
+                        nullptr, OPEN_EXISTING,
+                        FILE_ATTRIBUTE_NORMAL,
+                        nullptr);
+                    KTEST_EXPECT(hDest != INVALID_HANDLE_VALUE,
                         "File_CopyFile2_DestExists");
-                    KTEST_EXPECT(DestAttrs.nFileSizeLow == sizeof(Data),
-                        "File_CopyFile2_DestSizeCorrect");
+                    if (hDest != INVALID_HANDLE_VALUE) {
+                        LARGE_INTEGER FileSize{};
+                        KTEST_EXPECT(GetFileSizeEx(hDest, &FileSize) && FileSize.QuadPart == sizeof(Data),
+                            "File_CopyFile2_DestSizeCorrect");
+                        if (FileSize.QuadPart != sizeof(Data)) {
+                            MusaLOG("[DIAG] CopyFile2_DestSize: expected %u, got %I64u",
+                                (unsigned)sizeof(Data), FileSize.QuadPart);
+                        }
+                        CloseHandle(hDest);
+                    }
                     DeleteFileW(L"C:\\Windows\\Temp\\MusaCore_copy2_dst.tmp");
                 }
                 DeleteFileW(L"C:\\Windows\\Temp\\MusaCore_copy2_src.tmp");
@@ -1556,6 +1570,9 @@ namespace Main
             HANDLE hFind = FindFirstFileW(L"C:\\Windows\\Temp\\*", &FindData);
             KTEST_EXPECT(hFind != INVALID_HANDLE_VALUE,
                 "File_FindFirstFileW_TempStars_Succeeds");
+            if (hFind == INVALID_HANDLE_VALUE) {
+                MusaLOG("[DIAG] FindFirstFileW failed, GetLastError = %lu", GetLastError());
+            }
             if (hFind != INVALID_HANDLE_VALUE) {
                 KTEST_EXPECT(FindData.cFileName[0] != L'\0',
                     "File_FindFirstFileW_ReturnsName");
@@ -1634,14 +1651,20 @@ namespace Main
                 nullptr, OPEN_EXISTING,
                 0, nullptr);
             if (hVol != INVALID_HANDLE_VALUE) {
-                BYTE OutBuf[64]{};
+                NTFS_VOLUME_DATA_BUFFER VolData{};
                 DWORD BytesRet = 0;
-                // FSCTL_GET_NTFS_VOLUME_DATA = 0x90064, device type = 9 (FS)
-                BOOL Result = DeviceIoControl(hVol, 0x90064,
-                    nullptr, 0, OutBuf, sizeof(OutBuf), &BytesRet, nullptr);
-                KTEST_EXPECT(Result && BytesRet >= sizeof(NTFS_VOLUME_DATA_BUFFER),
+                BOOL Result = DeviceIoControl(hVol, FSCTL_GET_NTFS_VOLUME_DATA,
+                    nullptr, 0, &VolData, sizeof(VolData), &BytesRet, nullptr);
+                KTEST_EXPECT(Result,
                     "File_DeviceIoControl_FsCtl_Succeeds");
+                if (!Result) {
+                    MusaLOG("[DIAG] DeviceIoControl: Result=%d, BytesRet=%lu, GetLastError=%lu",
+                        Result, BytesRet, GetLastError());
+                }
                 CloseHandle(hVol);
+            } else {
+                MusaLOG("[DIAG] DeviceIoControl: CreateFileW(\\\\.\\C:) failed, GetLastError=%lu",
+                    GetLastError());
             }
         }
         {
