@@ -420,7 +420,7 @@ HANDLE WINAPI MUSA_NAME(CreateFileW)(
         CreateOptions |= FILE_DIRECTORY_FILE;
         if (dwDesiredAccess == 0)
             dwDesiredAccess = FILE_READ_ATTRIBUTES | FILE_READ_DATA;
-    } else {
+    } else if (!(dwFlagsAndAttributes & FILE_FLAG_BACKUP_SEMANTICS)) {
         CreateOptions |= FILE_NON_DIRECTORY_FILE;
     }
 
@@ -1232,24 +1232,22 @@ HANDLE WINAPI MUSA_NAME(FindFirstFileExW)(
     if (Pattern[0] == L'\0') wcscpy_s(Pattern, L"*");
 
 
-    // Open directory via CreateFileW thunk
-    // Use Win32 flags (CreateFileW translates to NT CreateOptions internally)
-    DWORD DirFlags = FILE_ATTRIBUTE_DIRECTORY;
-    if (dwAdditionalFlags & FIND_FIRST_EX_LARGE_FETCH)
-        DirFlags |= FILE_FLAG_BACKUP_SEMANTICS;
 
+    // Open directory via CreateFileW thunk.
+    // FILE_FLAG_BACKUP_SEMANTICS is required to open a directory handle.
     HANDLE DirHandle = CreateFileW(
         DirPath,
         FILE_LIST_DIRECTORY | SYNCHRONIZE,
         FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
         nullptr,
         OPEN_EXISTING,
-        DirFlags,
+        FILE_FLAG_BACKUP_SEMANTICS,
         nullptr);
 
     if (DirHandle == INVALID_HANDLE_VALUE) {
         return INVALID_HANDLE_VALUE;
     }
+
 
     // Allocate find context
     auto* Ctx = static_cast<FIND_CONTEXT*>(LocalAlloc(LMEM_ZEROINIT, sizeof(FIND_CONTEXT)));
