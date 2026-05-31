@@ -191,4 +191,49 @@ HANDLE WINAPI MUSA_NAME(CreateNamedPipeW)(
     _In_opt_ LPSECURITY_ATTRIBUTES lpSecurityAttributes
     );
 
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+HANDLE WINAPI MUSA_NAME(CreateFile2)(
+    _In_ LPCWSTR lpFileName,
+    _In_ DWORD dwDesiredAccess,
+    _In_ DWORD dwShareMode,
+    _In_ DWORD dwCreationDisposition,
+    _In_opt_ LPCREATEFILE2_EXTENDED_PARAMETERS pCreateExParams
+    );
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+DWORD WINAPI MUSA_NAME(GetFileAttributesW)(
+    _In_ LPCWSTR lpFileName
+    );
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(GetFileInformationByHandleEx)(
+    _In_ HANDLE hFile,
+    _In_ FILE_INFO_BY_HANDLE_CLASS FileInformationClass,
+    _Out_writes_bytes_to_opt_(dwBufferSize, dwBufferSize) LPVOID lpFileInformation,
+    _In_ DWORD dwBufferSize
+    );
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(SetFileInformationByHandle)(
+    _In_ HANDLE hFile,
+    _In_ FILE_INFO_BY_HANDLE_CLASS FileInformationClass,
+    _In_reads_bytes_(dwBufferSize) LPVOID lpFileInformation,
+    _In_ DWORD dwBufferSize
+    );
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOLEAN WINAPI MUSA_NAME(CreateSymbolicLinkW)(
+    _In_ LPCWSTR lpSymlinkFileName,
+    _In_ LPCWSTR lpTargetFileName,
+    _In_ DWORD dwFlags
+    );
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+DWORD WINAPI MUSA_NAME(GetFinalPathNameByHandleW)(
+    _In_ HANDLE hFile,
+    _Out_writes_to_opt_(cchFilePath, return + 1) LPWSTR lpszFilePath,
+    _In_ DWORD cchFilePath,
+    _In_ DWORD dwFlags
+    );
 EXTERN_C_END

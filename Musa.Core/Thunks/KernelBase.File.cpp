@@ -31,6 +31,13 @@
 #pragma alloc_text(PAGE, MUSA_NAME(FindFirstFileExW))
 #pragma alloc_text(PAGE, MUSA_NAME(SetFileTime))
 #pragma alloc_text(PAGE, MUSA_NAME(FindClose))
+
+#pragma alloc_text(PAGE, MUSA_NAME(GetFileAttributesW))
+#pragma alloc_text(PAGE, MUSA_NAME(CreateFile2))
+#pragma alloc_text(PAGE, MUSA_NAME(GetFileInformationByHandleEx))
+#pragma alloc_text(PAGE, MUSA_NAME(SetFileInformationByHandle))
+#pragma alloc_text(PAGE, MUSA_NAME(CreateSymbolicLinkW))
+#pragma alloc_text(PAGE, MUSA_NAME(GetFinalPathNameByHandleW))
 #endif
 
 
@@ -454,6 +461,46 @@ HANDLE WINAPI MUSA_NAME(CreateFileW)(
 MUSA_IAT_SYMBOL(CreateFileW, 28);
 
 /**
+ * CreateFile2 - Creates or opens a file or I/O device with extended parameters.
+ *
+ * Maps to ZwCreateFile, extracting dwFileAttributes and dwFileFlags from
+ * CREATEFILE2_EXTENDED_PARAMETERS, merging them into the flags/attributes.
+ */
+_IRQL_requires_max_(PASSIVE_LEVEL)
+HANDLE WINAPI MUSA_NAME(CreateFile2)(
+    _In_ LPCWSTR lpFileName,
+    _In_ DWORD dwDesiredAccess,
+    _In_ DWORD dwShareMode,
+    _In_ DWORD dwCreationDisposition,
+    _In_opt_ LPCREATEFILE2_EXTENDED_PARAMETERS pCreateExParams
+)
+{
+    PAGED_CODE();
+    DWORD dwFlagsAndAttributes = 0;
+    LPSECURITY_ATTRIBUTES lpSecurityAttributes = nullptr;
+    HANDLE hTemplateFile = nullptr;
+    if (pCreateExParams) {
+        if (pCreateExParams->dwSize < sizeof(CREATEFILE2_EXTENDED_PARAMETERS)) {
+            BaseSetLastNTError(STATUS_INVALID_PARAMETER);
+            return INVALID_HANDLE_VALUE;
+        }
+        dwFlagsAndAttributes = pCreateExParams->dwFileAttributes | pCreateExParams->dwFileFlags;
+        lpSecurityAttributes = pCreateExParams->lpSecurityAttributes;
+        hTemplateFile = pCreateExParams->hTemplateFile;
+    }
+
+    return CreateFileW(
+        lpFileName,
+        dwDesiredAccess,
+        dwShareMode,
+        lpSecurityAttributes,
+        dwCreationDisposition,
+        dwFlagsAndAttributes,
+        hTemplateFile);
+}
+MUSA_IAT_SYMBOL(CreateFile2, 20);
+
+/**
  * SetFilePointerEx - Moves the file pointer of the specified file.
  *
  * Maps to ZwSetInformationFile(FilePositionInformation).
@@ -636,6 +683,42 @@ BOOL WINAPI MUSA_NAME(DeleteFileW)(
     BaseSetLastNTError(Status);
     return FALSE;
 }
+
+/**
+ * GetFileAttributesW - Retrieves file system attributes for a specified file or directory.
+ *
+ * Maps to ZwQueryAttributesFile.
+ */
+_IRQL_requires_max_(PASSIVE_LEVEL)
+DWORD WINAPI MUSA_NAME(GetFileAttributesW)(
+    _In_ LPCWSTR lpFileName
+)
+{
+    PAGED_CODE();
+
+    if (lpFileName == nullptr) {
+        BaseSetLastNTError(STATUS_INVALID_PARAMETER);
+        return INVALID_FILE_ATTRIBUTES;
+    }
+
+    UNICODE_STRING NtPath{};
+    NTSTATUS Status = RtlDosPathNameToNtPathName_U_WithStatus(lpFileName, &NtPath, nullptr, nullptr);
+    if (!NT_SUCCESS(Status)) {
+        BaseSetLastNTError(Status);
+        return INVALID_FILE_ATTRIBUTES;
+    }
+    OBJECT_ATTRIBUTES ObjAttrs;
+    InitializeObjectAttributes(&ObjAttrs, &NtPath, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
+    FILE_BASIC_INFORMATION BasicInfo{};
+    Status = ZwQueryAttributesFile(&ObjAttrs, &BasicInfo);
+    RtlFreeUnicodeString(&NtPath);
+    if (NT_SUCCESS(Status)) {
+        return BasicInfo.FileAttributes;
+    }
+    BaseSetLastNTError(Status);
+    return INVALID_FILE_ATTRIBUTES;
+}
+MUSA_IAT_SYMBOL(GetFileAttributesW, 4);
 
 MUSA_IAT_SYMBOL(DeleteFileW, 4);
 
@@ -1513,4 +1596,426 @@ MUSA_IAT_SYMBOL(GetFileTime, 16);
 
 MUSA_IAT_SYMBOL(SetFileTime, 16);
 
+/**
+ * GetFileInformationByHandleEx - Retrieves file information for a specified file.
+ *
+ * Maps to ZwQueryInformationFile, ZwQueryDirectoryFile, or ZwQueryVolumeInformationFile
+ * depending on the FileInformationClass.
+ */
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(GetFileInformationByHandleEx)(
+    _In_ HANDLE hFile,
+    _In_ FILE_INFO_BY_HANDLE_CLASS FileInformationClass,
+    _Out_writes_bytes_to_opt_(dwBufferSize, dwBufferSize) LPVOID lpFileInformation,
+    _In_ DWORD dwBufferSize
+)
+{
+    PAGED_CODE();
+    if (!lpFileInformation || !dwBufferSize) {
+        BaseSetLastNTError(STATUS_INVALID_PARAMETER);
+        return FALSE;
+    }
+    FILE_INFORMATION_CLASS NtClass;
+    DWORD MinSize;
+    BOOLEAN IsDirectoryQuery = FALSE;
+    BOOLEAN RestartScan = FALSE;
+    switch (FileInformationClass) {
+    case FileBasicInfo:
+        NtClass = FileBasicInformation;
+        MinSize = sizeof(FILE_BASIC_INFORMATION);
+        break;
+    case FileStandardInfo:
+        NtClass = FileStandardInformation;
+        MinSize = sizeof(FILE_STANDARD_INFORMATION);
+        break;
+    case FileNameInfo:
+        NtClass = FileNameInformation;
+        MinSize = sizeof(FILE_NAME_INFORMATION);
+        break;
+    case FileStreamInfo:
+        NtClass = FileStreamInformation;
+        MinSize = sizeof(FILE_STREAM_INFORMATION);
+        break;
+    case FileCompressionInfo:
+        NtClass = FileCompressionInformation;
+        MinSize = sizeof(FILE_COMPRESSION_INFORMATION);
+        break;
+    case FileAttributeTagInfo:
+        NtClass = FileAttributeTagInformation;
+        MinSize = sizeof(FILE_ATTRIBUTE_TAG_INFORMATION);
+        break;
+    case FileRemoteProtocolInfo:
+        NtClass = FileRemoteProtocolInformation;
+        MinSize = sizeof(FILE_REMOTE_PROTOCOL_INFORMATION);
+        break;
+    case FileNormalizedNameInfo:
+        NtClass = FileNormalizedNameInformation;
+        MinSize = sizeof(FILE_NAME_INFORMATION);
+        break;
+    case FileIdBothDirectoryInfo:
+        NtClass = FileIdBothDirectoryInformation;
+        MinSize = sizeof(FILE_ID_BOTH_DIR_INFORMATION);
+        IsDirectoryQuery = TRUE;
+        break;
+    case FileIdBothDirectoryRestartInfo:
+        NtClass = FileIdBothDirectoryInformation;
+        MinSize = sizeof(FILE_ID_BOTH_DIR_INFORMATION);
+        IsDirectoryQuery = TRUE;
+        RestartScan = TRUE;
+        break;
+    case FileFullDirectoryInfo:
+        NtClass = FileFullDirectoryInformation;
+        MinSize = sizeof(FILE_FULL_DIR_INFORMATION);
+        IsDirectoryQuery = TRUE;
+        break;
+    case FileFullDirectoryRestartInfo:
+        NtClass = FileFullDirectoryInformation;
+        MinSize = sizeof(FILE_FULL_DIR_INFORMATION);
+        IsDirectoryQuery = TRUE;
+        RestartScan = TRUE;
+        break;
+    case FileIdInfo:
+        NtClass = FileIdBothDirectoryInformation;
+        MinSize = sizeof(FILE_ID_BOTH_DIR_INFORMATION);
+        IsDirectoryQuery = TRUE;
+        break;
+    case FileIdExtdDirectoryInfo:
+        NtClass = FileIdBothDirectoryInformation;
+        MinSize = sizeof(FILE_ID_BOTH_DIR_INFORMATION);
+        IsDirectoryQuery = TRUE;
+        RestartScan = TRUE;
+        break;
+    case FileDispositionInfoEx:
+        {
+            IO_STATUS_BLOCK Iosb{};
+            NTSTATUS VolStatus = ZwQueryVolumeInformationFile(
+                hFile, &Iosb, lpFileInformation, dwBufferSize, FileFsVolumeInformation);
+            if (!NT_SUCCESS(VolStatus)) {
+                BaseSetLastNTError(VolStatus);
+                return FALSE;
+            }
+            return TRUE;
+        }
+    default:
+        BaseSetLastNTError(STATUS_INVALID_PARAMETER);
+        return FALSE;
+    }
+    if (dwBufferSize < MinSize) {
+        BaseSetLastNTError(STATUS_BUFFER_TOO_SMALL);
+        return FALSE;
+    }
+    IO_STATUS_BLOCK Iosb{};
+    NTSTATUS Status;
+    if (IsDirectoryQuery) {
+        Status = ZwQueryDirectoryFile(
+            hFile, nullptr, nullptr, nullptr, &Iosb,
+            lpFileInformation, dwBufferSize, NtClass,
+            FALSE, nullptr, RestartScan);
+        if (Status == STATUS_NO_MORE_FILES) {
+            Status = ZwWaitForSingleObject(hFile, FALSE, nullptr);
+            if (NT_SUCCESS(Status))
+                Status = Iosb.Status;
+        }
+    } else {
+        Status = ZwQueryInformationFile(
+            hFile, &Iosb, lpFileInformation, dwBufferSize, NtClass);
+    }
+    if (!NT_SUCCESS(Status)) {
+        BaseSetLastNTError(Status);
+        return FALSE;
+    }
+    if (FileInformationClass == FileStreamInfo && !Iosb.Information) {
+        BaseSetLastNTError(STATUS_BUFFER_OVERFLOW);
+        return FALSE;
+    }
+    return TRUE;
+}
+MUSA_IAT_SYMBOL(GetFileInformationByHandleEx, 16);
+/**
+ * SetFileInformationByHandle - Sets file information for a specified file.
+ *
+ * Maps to ZwSetInformationFile. FileRenameInfo is not supported in kernel mode.
+ */
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(SetFileInformationByHandle)(
+    _In_ HANDLE hFile,
+    _In_ FILE_INFO_BY_HANDLE_CLASS FileInformationClass,
+    _In_reads_bytes_(dwBufferSize) LPVOID lpFileInformation,
+    _In_ DWORD dwBufferSize
+)
+{
+    PAGED_CODE();
+    if (!lpFileInformation || !dwBufferSize) {
+        BaseSetLastNTError(STATUS_INVALID_PARAMETER);
+        return FALSE;
+    }
+    FILE_INFORMATION_CLASS NtClass;
+    DWORD MinSize;
+    switch (FileInformationClass) {
+    case FileBasicInfo:
+        NtClass = FileBasicInformation;
+        MinSize = sizeof(FILE_BASIC_INFORMATION);
+        break;
+    case FileDispositionInfo:
+        NtClass = FileDispositionInformation;
+        MinSize = sizeof(FILE_DISPOSITION_INFORMATION);
+        break;
+    case FileAllocationInfo:
+        NtClass = FileAllocationInformation;
+        MinSize = sizeof(FILE_ALLOCATION_INFORMATION);
+        break;
+    case FileEndOfFileInfo:
+        NtClass = FileEndOfFileInformation;
+        MinSize = sizeof(FILE_END_OF_FILE_INFORMATION);
+        break;
+    case FileIoPriorityHintInfo:
+        NtClass = FileIoPriorityHintInformation;
+        MinSize = sizeof(FILE_IO_PRIORITY_HINT_INFORMATION);
+        if (static_cast<ULONG>(static_cast<PFILE_IO_PRIORITY_HINT_INFORMATION>(lpFileInformation)->PriorityHint) >= static_cast<ULONG>(MaximumIoPriorityHintType)) {
+            BaseSetLastNTError(STATUS_INVALID_PARAMETER);
+            return FALSE;
+        }
+        break;
+    case FileRenameInfo:
+    case FileRenameInfoEx:
+        BaseSetLastNTError(STATUS_NOT_SUPPORTED);
+        return FALSE;
+    default:
+        BaseSetLastNTError(STATUS_INVALID_PARAMETER);
+        return FALSE;
+    }
+    if (dwBufferSize < MinSize) {
+        BaseSetLastNTError(STATUS_BUFFER_TOO_SMALL);
+        return FALSE;
+    }
+    IO_STATUS_BLOCK Iosb{};
+    NTSTATUS Status = ZwSetInformationFile(
+        hFile, &Iosb, lpFileInformation, dwBufferSize, NtClass);
+    if (NT_SUCCESS(Status))
+        return TRUE;
+    BaseSetLastNTError(Status);
+    return FALSE;
+}
+MUSA_IAT_SYMBOL(SetFileInformationByHandle, 16);
+
+/**
+ * CreateSymbolicLinkW - Creates a symbolic link.
+ *
+ * Maps to ZwCreateFile + ZwFsControlFile(FSCTL_SET_REPARSE_POINT).
+ * Privilege acquisition is not needed in kernel mode.
+ */
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOLEAN WINAPI MUSA_NAME(CreateSymbolicLinkW)(
+    _In_ LPCWSTR lpSymlinkFileName,
+    _In_ LPCWSTR lpTargetFileName,
+    _In_ DWORD dwFlags
+)
+{
+    PAGED_CODE();
+    if (!lpSymlinkFileName || !lpTargetFileName) {
+        BaseSetLastNTError(STATUS_INVALID_PARAMETER);
+        return FALSE;
+    }
+    if ((dwFlags & ~(SYMBOLIC_LINK_FLAG_DIRECTORY | SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE)) != 0) {
+        BaseSetLastNTError(STATUS_INVALID_PARAMETER);
+        return FALSE;
+    }
+    // Build the substitute name (NT path) for the target
+    UNICODE_STRING NtTarget{};
+    WCHAR* SubstituteName = nullptr;
+    USHORT SubstituteNameLen = 0;
+    NTSTATUS Status = RtlDosPathNameToNtPathName_U_WithStatus(lpTargetFileName, &NtTarget, nullptr, nullptr);
+    if (NT_SUCCESS(Status)) {
+        SubstituteName = NtTarget.Buffer;
+        SubstituteNameLen = NtTarget.Length;
+    }
+    // Compute reparse buffer size
+    USHORT TargetLen = (USHORT)(wcslen(lpTargetFileName) * sizeof(WCHAR));
+    USHORT SubNameBytes = SubstituteNameLen;
+    ULONG BufSize = sizeof(REPARSE_DATA_BUFFER) + SubNameBytes + TargetLen + (2 * sizeof(WCHAR));
+    auto ReparseBuf = static_cast<PREPARSE_DATA_BUFFER>(RtlAllocateHeap(RtlProcessHeap(), 0, BufSize));
+    if (!ReparseBuf) {
+        if (NtTarget.Buffer) RtlFreeUnicodeString(&NtTarget);
+        BaseSetLastNTError(STATUS_NO_MEMORY);
+        return FALSE;
+    }
+    RtlZeroMemory(ReparseBuf, BufSize);
+    ReparseBuf->ReparseTag = IO_REPARSE_TAG_SYMLINK;
+    ReparseBuf->ReparseDataLength = (USHORT)(BufSize - sizeof(ULONG) - 2 * sizeof(USHORT));
+    PWCHAR PathBuf = ReparseBuf->SymbolicLinkReparseBuffer.PathBuffer;
+    ReparseBuf->SymbolicLinkReparseBuffer.SubstituteNameOffset = 0;
+    ReparseBuf->SymbolicLinkReparseBuffer.SubstituteNameLength = SubNameBytes;
+    if (SubstituteName && SubNameBytes)
+        RtlCopyMemory(PathBuf, SubstituteName, SubNameBytes);
+    ReparseBuf->SymbolicLinkReparseBuffer.PrintNameOffset = SubNameBytes + sizeof(WCHAR);
+    ReparseBuf->SymbolicLinkReparseBuffer.PrintNameLength = TargetLen;
+    RtlCopyMemory((PUCHAR)PathBuf + SubNameBytes + sizeof(WCHAR), lpTargetFileName, TargetLen);
+    if (NtTarget.Buffer)
+        RtlFreeUnicodeString(&NtTarget);
+    // Convert symlink name to NT path
+    UNICODE_STRING NtLink{};
+    Status = RtlDosPathNameToNtPathName_U_WithStatus(lpSymlinkFileName, &NtLink, nullptr, nullptr);
+    if (!NT_SUCCESS(Status)) {
+        RtlFreeHeap(RtlProcessHeap(), 0, ReparseBuf);
+        BaseSetLastNTError(Status);
+        return FALSE;
+    }
+    OBJECT_ATTRIBUTES ObjAttr;
+    InitializeObjectAttributes(&ObjAttr, &NtLink,
+        OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE,
+        nullptr, nullptr);
+    IO_STATUS_BLOCK Iosb{};
+    HANDLE FileHandle = nullptr;
+    ULONG CreateOptions = FILE_SYNCHRONOUS_IO_NONALERT
+                        | FILE_OPEN_FOR_BACKUP_INTENT
+                        | FILE_OPEN_REPARSE_POINT;
+    if (dwFlags & SYMBOLIC_LINK_FLAG_DIRECTORY)
+        CreateOptions |= FILE_DIRECTORY_FILE;
+    else
+        CreateOptions |= FILE_NON_DIRECTORY_FILE;
+    Status = ZwCreateFile(
+        &FileHandle,
+        GENERIC_WRITE | DELETE | SYNCHRONIZE,
+        &ObjAttr,
+        &Iosb,
+        nullptr,
+        FILE_ATTRIBUTE_NORMAL,
+        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+        FILE_CREATE,
+        CreateOptions,
+        nullptr,
+        0);
+    RtlFreeUnicodeString(&NtLink);
+    if (!NT_SUCCESS(Status)) {
+        RtlFreeHeap(RtlProcessHeap(), 0, ReparseBuf);
+        BaseSetLastNTError(Status);
+        return FALSE;
+    }
+    Status = ZwFsControlFile(
+        FileHandle,
+        nullptr,
+        nullptr,
+        nullptr,
+        &Iosb,
+        FSCTL_SET_REPARSE_POINT,
+        ReparseBuf,
+        BufSize,
+        nullptr,
+        0);
+    if (!NT_SUCCESS(Status)) {
+        BaseSetLastNTError(Status);
+#pragma push_macro("DeleteFile")
+#undef DeleteFile
+        FILE_DISPOSITION_INFORMATION Disposition{};
+        Disposition.DeleteFile = TRUE;
+        ZwSetInformationFile(FileHandle, &Iosb, &Disposition, sizeof(Disposition), FileDispositionInformation);
+#pragma pop_macro("DeleteFile")
+    }
+    ZwClose(FileHandle);
+    RtlFreeHeap(RtlProcessHeap(), 0, ReparseBuf);
+    return NT_SUCCESS(Status);
+}
+MUSA_IAT_SYMBOL(CreateSymbolicLinkW, 12);
+/**
+ * GetFinalPathNameByHandleW - Retrieves the final path for a file handle.
+ *
+ * Maps to ZwQueryObject(ObjectNameInformation) + ZwQueryInformationFile(FileNameInformation).
+ * Only VOLUME_NAME_NT is fully supported; VOLUME_NAME_DOS and VOLUME_NAME_GUID
+ * require volume mount-point enumeration not available in kernel mode.
+ */
+_IRQL_requires_max_(PASSIVE_LEVEL)
+DWORD WINAPI MUSA_NAME(GetFinalPathNameByHandleW)(
+    _In_ HANDLE hFile,
+    _Out_writes_to_opt_(cchFilePath, return + 1) LPWSTR lpszFilePath,
+    _In_ DWORD cchFilePath,
+    _In_ DWORD dwFlags
+)
+{
+    PAGED_CODE();
+    if (hFile == INVALID_HANDLE_VALUE || hFile == nullptr) {
+        BaseSetLastNTError(STATUS_INVALID_HANDLE);
+        return 0;
+    }
+    DWORD VolFlags = dwFlags & (FILE_NAME_NORMALIZED | VOLUME_NAME_DOS | VOLUME_NAME_GUID | VOLUME_NAME_NT);
+    // Only VOLUME_NAME_NT (flag 0 or explicit) is supported
+    if (VolFlags != 0 && VolFlags != VOLUME_NAME_NT) {
+        BaseSetLastNTError(STATUS_NOT_SUPPORTED);
+        return 0;
+    }
+    // Phase 1: Query object name
+    ULONG ObjBufSize = 512;
+    PVOID ObjBuf = nullptr;
+    NTSTATUS Status;
+    ULONG ReturnLength;
+    for (;;) {
+        if (ObjBuf)
+            RtlFreeHeap(RtlProcessHeap(), 0, ObjBuf);
+        ObjBuf = RtlAllocateHeap(RtlProcessHeap(), 0, ObjBufSize);
+        if (!ObjBuf) {
+            BaseSetLastNTError(STATUS_NO_MEMORY);
+            return 0;
+        }
+        Status = ZwQueryObject(hFile, ObjectNameInformation, ObjBuf, ObjBufSize, &ReturnLength);
+        if (Status != STATUS_INFO_LENGTH_MISMATCH)
+            break;
+        ObjBufSize = ReturnLength + 64;
+    }
+    if (!NT_SUCCESS(Status)) {
+        if (ObjBuf) RtlFreeHeap(RtlProcessHeap(), 0, ObjBuf);
+        BaseSetLastNTError(Status);
+        return 0;
+    }
+    auto ObjNameInfo = static_cast<POBJECT_NAME_INFORMATION>(ObjBuf);
+    UNICODE_STRING ObjName = ObjNameInfo->Name;
+    // Phase 2: Query file name information
+    ULONG FileNameBufSize = 512;
+    PVOID FileNameBuf = nullptr;
+    IO_STATUS_BLOCK Iosb{};
+    for (;;) {
+        if (FileNameBuf)
+            RtlFreeHeap(RtlProcessHeap(), 0, FileNameBuf);
+        FileNameBuf = RtlAllocateHeap(RtlProcessHeap(), 0, FileNameBufSize);
+        if (!FileNameBuf) {
+            RtlFreeHeap(RtlProcessHeap(), 0, ObjBuf);
+            BaseSetLastNTError(STATUS_NO_MEMORY);
+            return 0;
+        }
+        Status = ZwQueryInformationFile(hFile, &Iosb, FileNameBuf, FileNameBufSize, FileNameInformation);
+        if (Status != STATUS_BUFFER_OVERFLOW)
+            break;
+        FileNameBufSize += 512;
+    }
+    if (!NT_SUCCESS(Status) && Status != STATUS_BUFFER_OVERFLOW) {
+        RtlFreeHeap(RtlProcessHeap(), 0, FileNameBuf);
+        RtlFreeHeap(RtlProcessHeap(), 0, ObjBuf);
+        BaseSetLastNTError(Status);
+        return 0;
+    }
+    auto FileNameInfo = static_cast<PFILE_NAME_INFORMATION>(FileNameBuf);
+    USHORT FileNameLen = static_cast<USHORT>(FileNameInfo->FileNameLength);
+    PWCHAR FileName = FileNameInfo->FileName;
+    // Strip the file name portion from the object name to get the device/volume path
+    SIZE_T ObjNameChars = ObjName.Length / sizeof(WCHAR);
+    SIZE_T FileNameChars = FileNameLen / sizeof(WCHAR);
+    SIZE_T VolPathChars = 0;
+    if (ObjNameChars > FileNameChars) {
+        VolPathChars = ObjNameChars - FileNameChars;
+    }
+    DWORD RequiredChars = (DWORD)(VolPathChars + FileNameChars + 1);
+    DWORD Result = RequiredChars;
+    if (RequiredChars <= cchFilePath && lpszFilePath) {
+        // Copy volume/device path portion
+        if (VolPathChars)
+            RtlCopyMemory(lpszFilePath, ObjName.Buffer, VolPathChars * sizeof(WCHAR));
+        // Copy file name portion
+        RtlCopyMemory(lpszFilePath + VolPathChars, FileName, FileNameLen);
+        lpszFilePath[RequiredChars - 1] = L'\0';
+    } else if (cchFilePath > 0 && lpszFilePath) {
+        *lpszFilePath = L'\0';
+    }
+    RtlFreeHeap(RtlProcessHeap(), 0, FileNameBuf);
+    RtlFreeHeap(RtlProcessHeap(), 0, ObjBuf);
+    return Result;
+}
+MUSA_IAT_SYMBOL(GetFinalPathNameByHandleW, 16);
 EXTERN_C_END

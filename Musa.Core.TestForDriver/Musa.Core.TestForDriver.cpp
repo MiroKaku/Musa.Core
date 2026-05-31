@@ -1135,6 +1135,273 @@ namespace Main
             KTEST_EXPECT(Local.wYear >= 2026,
                 "Time_SystemTimeToTzSpecificLocalTime_NullTime_PlausibleYear");
         }
+
+        // --- GetFileAttributesW ---
+
+        {
+            HANDLE hFile = CreateFileW(
+                L"C:\\Windows\\Temp\\MusaCore_attrib_test.tmp",
+                GENERIC_READ | GENERIC_WRITE,
+                FILE_SHARE_READ | FILE_SHARE_DELETE,
+                nullptr, CREATE_ALWAYS,
+                FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE,
+                nullptr);
+            if (hFile != INVALID_HANDLE_VALUE) {
+                DWORD Attrs = GetFileAttributesW(L"C:\\Windows\\Temp\\MusaCore_attrib_test.tmp");
+                KTEST_EXPECT(Attrs != INVALID_FILE_ATTRIBUTES,
+                    "File_GetFileAttributesW_TempFile_Succeeds");
+                KTEST_EXPECT((Attrs & FILE_ATTRIBUTE_DIRECTORY) == 0,
+                    "File_GetFileAttributesW_NotDirectory");
+                CloseHandle(hFile);
+            }
+        }
+
+        {
+            DWORD Attrs = GetFileAttributesW(L"C:\\Windows\\Temp");
+            KTEST_EXPECT(Attrs != INVALID_FILE_ATTRIBUTES,
+                "File_GetFileAttributesW_Directory_Succeeds");
+            KTEST_EXPECT((Attrs & FILE_ATTRIBUTE_DIRECTORY) != 0,
+                "File_GetFileAttributesW_IsDirectory");
+        }
+
+        {
+            DWORD Attrs = GetFileAttributesW(nullptr);
+            KTEST_EXPECT(Attrs == INVALID_FILE_ATTRIBUTES,
+                "File_GetFileAttributesW_NullPath_Fails");
+        }
+
+        {
+            DWORD Attrs = GetFileAttributesW(L"C:\\Windows\\System32\\ntoskrnl.exe");
+            KTEST_EXPECT(Attrs != INVALID_FILE_ATTRIBUTES,
+                "File_GetFileAttributesW_SystemFile_Succeeds");
+            KTEST_EXPECT(Attrs != 0,
+                "File_GetFileAttributesW_SystemFile_HasAttrs");
+        }
+        // --- CreateFile2 ---
+
+        {
+            CREATEFILE2_EXTENDED_PARAMETERS ExParams{};
+            ExParams.dwSize = sizeof(ExParams);
+            ExParams.dwFileAttributes = FILE_ATTRIBUTE_TEMPORARY;
+            ExParams.dwFileFlags = FILE_FLAG_DELETE_ON_CLOSE;
+
+            HANDLE hFile = CreateFile2(
+                L"C:\\Windows\\Temp\\MusaCore_cf2_test.tmp",
+                GENERIC_READ | GENERIC_WRITE,
+                FILE_SHARE_READ | FILE_SHARE_DELETE,
+                CREATE_ALWAYS,
+                &ExParams);
+            KTEST_EXPECT(hFile != INVALID_HANDLE_VALUE,
+                "File_CreateFile2_CreatesFile");
+
+            if (hFile != INVALID_HANDLE_VALUE) {
+                const char Data[] = "CreateFile2";
+                DWORD Written = 0;
+                KTEST_EXPECT(WriteFile(hFile, Data, sizeof(Data), &Written, nullptr),
+                    "File_CreateFile2_WriteSucceeds");
+
+                CloseHandle(hFile);
+
+            }
+        }
+
+        // --- GetFileInformationByHandleEx ---
+
+        {
+            HANDLE hFile = CreateFileW(
+                L"C:\\Windows\\Temp\\MusaCore_gfibhex_test.tmp",
+                GENERIC_READ | GENERIC_WRITE,
+                FILE_SHARE_READ | FILE_SHARE_DELETE,
+                nullptr, CREATE_ALWAYS,
+                FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE,
+                nullptr);
+
+            if (hFile != INVALID_HANDLE_VALUE) {
+                const char Data[] = "GFIBHEX";
+                DWORD Written = 0;
+                WriteFile(hFile, Data, sizeof(Data), &Written, nullptr);
+
+                // FileBasicInfo
+                FILE_BASIC_INFORMATION BasicInfo{};
+                KTEST_EXPECT(GetFileInformationByHandleEx(hFile, FileBasicInfo, &BasicInfo, sizeof(BasicInfo)),
+                    "File_GetFileInformationByHandleEx_BasicInfo_Succeeds");
+                KTEST_EXPECT((BasicInfo.FileAttributes & FILE_ATTRIBUTE_TEMPORARY) != 0,
+                    "File_GetFileInformationByHandleEx_BasicInfo_HasTempAttr");
+
+                // FileStandardInfo
+                FILE_STANDARD_INFORMATION StdInfo{};
+                KTEST_EXPECT(GetFileInformationByHandleEx(hFile, FileStandardInfo, &StdInfo, sizeof(StdInfo)),
+                    "File_GetFileInformationByHandleEx_StandardInfo_Succeeds");
+                KTEST_EXPECT(StdInfo.EndOfFile.QuadPart == sizeof(Data),
+                    "File_GetFileInformationByHandleEx_StandardInfo_CorrectSize");
+                KTEST_EXPECT(StdInfo.NumberOfLinks >= 1,
+                    "File_GetFileInformationByHandleEx_StandardInfo_HasLinks");
+
+                // FileNameInfo
+                __declspec(align(8)) UCHAR NameBuf[512]{};
+                PFILE_NAME_INFORMATION NameInfo = reinterpret_cast<PFILE_NAME_INFORMATION>(NameBuf);
+                KTEST_EXPECT(GetFileInformationByHandleEx(hFile, FileNameInfo, NameInfo, sizeof(NameBuf)),
+                    "File_GetFileInformationByHandleEx_NameInfo_Succeeds");
+                KTEST_EXPECT(NameInfo->FileNameLength > 0,
+                    "File_GetFileInformationByHandleEx_NameInfo_NonEmpty");
+
+                CloseHandle(hFile);
+            }
+        }
+
+        // --- SetFileInformationByHandle ---
+
+        {
+            HANDLE hFile = CreateFileW(
+                L"C:\\Windows\\Temp\\MusaCore_sfibh_test.tmp",
+                GENERIC_READ | GENERIC_WRITE,
+                FILE_SHARE_READ | FILE_SHARE_DELETE,
+                nullptr, CREATE_ALWAYS,
+                FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE,
+                nullptr);
+
+            if (hFile != INVALID_HANDLE_VALUE) {
+                // FileBasicInfo - set times
+                FILE_BASIC_INFORMATION SetInfo{};
+                SetInfo.CreationTime.QuadPart = 0x1000000000000000LL;
+                SetInfo.LastAccessTime.QuadPart = 0x1000000000000000LL;
+                SetInfo.LastWriteTime.QuadPart = 0x1000000000000000LL;
+                SetInfo.ChangeTime.QuadPart = 0;
+                KTEST_EXPECT(SetFileInformationByHandle(hFile, FileBasicInfo, &SetInfo, sizeof(SetInfo)),
+                    "File_SetFileInformationByHandle_BasicInfo_Succeeds");
+
+                // Verify
+                FILE_BASIC_INFORMATION GetInfo{};
+                GetFileInformationByHandleEx(hFile, FileBasicInfo, &GetInfo, sizeof(GetInfo));
+                KTEST_EXPECT(GetInfo.CreationTime.QuadPart == 0x1000000000000000LL,
+                    "File_SetFileInformationByHandle_BasicInfo_Verified");
+
+                // FileDispositionInfo - mark for deletion
+#pragma push_macro("DeleteFile")
+#undef DeleteFile
+                FILE_DISPOSITION_INFORMATION DispInfo{};
+                DispInfo.DeleteFile = TRUE;
+                KTEST_EXPECT(SetFileInformationByHandle(hFile, FileDispositionInfo, &DispInfo, sizeof(DispInfo)),
+                    "File_SetFileInformationByHandle_DispositionInfo_Succeeds");
+#pragma pop_macro("DeleteFile")
+
+
+                CloseHandle(hFile);
+            }
+        }
+
+        // --- CreateSymbolicLinkW ---
+
+        {
+            HANDLE hTarget = CreateFileW(
+                L"C:\\Windows\\Temp\\MusaCore_symlink_target.tmp",
+                GENERIC_READ | GENERIC_WRITE,
+                FILE_SHARE_READ | FILE_SHARE_DELETE,
+                nullptr, CREATE_ALWAYS,
+                FILE_ATTRIBUTE_TEMPORARY,
+                nullptr);
+            if (hTarget != INVALID_HANDLE_VALUE) {
+                // Write some data so it's a real file
+                DWORD Written = 0;
+                WriteFile(hTarget, "symlink_target", 14, &Written, nullptr);
+                CloseHandle(hTarget);
+
+                // Clean up leftover symlink from previous run
+                HANDLE hCleanup = CreateFileW(
+                    L"C:\\Windows\\Temp\\MusaCore_symlink_test.lnk",
+                    DELETE,
+                    0, nullptr, OPEN_EXISTING,
+                    FILE_FLAG_DELETE_ON_CLOSE | FILE_FLAG_OPEN_REPARSE_POINT,
+                    nullptr);
+                if (hCleanup != INVALID_HANDLE_VALUE) CloseHandle(hCleanup);
+
+                BOOLEAN Result = CreateSymbolicLinkW(
+                    L"C:\\Windows\\Temp\\MusaCore_symlink_test.lnk",
+                    L"C:\\Windows\\Temp\\MusaCore_symlink_target.tmp",
+                    0);
+                KTEST_EXPECT(Result,
+                    "File_CreateSymbolicLinkW_FileSymlink_Succeeds");
+
+                if (Result) {
+                    // Verify by opening the symlink (target no longer has DELETE_ON_CLOSE)
+                    HANDLE hLink = CreateFileW(
+                        L"C:\\Windows\\Temp\\MusaCore_symlink_test.lnk",
+                        GENERIC_READ,
+                        FILE_SHARE_READ | FILE_SHARE_DELETE,
+                        nullptr, OPEN_EXISTING,
+                        FILE_ATTRIBUTE_NORMAL,
+                        nullptr);
+                    KTEST_EXPECT(hLink != INVALID_HANDLE_VALUE,
+                        "File_CreateSymbolicLinkW_CanOpenLink");
+                    if (hLink != INVALID_HANDLE_VALUE) {
+                        CloseHandle(hLink);
+                    }
+                    DeleteFileW(L"C:\\Windows\\Temp\\MusaCore_symlink_test.lnk");
+                }
+                DeleteFileW(L"C:\\Windows\\Temp\\MusaCore_symlink_target.tmp");
+            }
+        }
+
+        {
+            // Directory symlink
+            // Clean up leftover directory symlink from previous run
+            {
+                HANDLE hCleanup = CreateFileW(
+                    L"C:\\Windows\\Temp\\MusaCore_dirsym_test",
+                    DELETE,
+                    0, nullptr, OPEN_EXISTING,
+                    FILE_ATTRIBUTE_DIRECTORY | FILE_FLAG_DELETE_ON_CLOSE | FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS,
+                    nullptr);
+                if (hCleanup != INVALID_HANDLE_VALUE) {
+                    CloseHandle(hCleanup);
+                }
+            }
+            BOOLEAN Result = CreateSymbolicLinkW(
+                L"C:\\Windows\\Temp\\MusaCore_dirsym_test",
+                L"C:\\Windows\\Temp",
+                SYMBOLIC_LINK_FLAG_DIRECTORY);
+            if (Result) {
+                RemoveDirectoryW(L"C:\\Windows\\Temp\\MusaCore_dirsym_test");
+            }
+        }
+
+        // --- GetFinalPathNameByHandleW ---
+
+        {
+            HANDLE hFile = CreateFileW(
+                L"C:\\Windows\\Temp\\MusaCore_gfpnbh_test.tmp",
+                GENERIC_READ | GENERIC_WRITE,
+                FILE_SHARE_READ | FILE_SHARE_DELETE,
+                nullptr, CREATE_ALWAYS,
+                FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE,
+                nullptr);
+
+            if (hFile != INVALID_HANDLE_VALUE) {
+                WCHAR PathBuf[MAX_PATH]{};
+                DWORD Result = GetFinalPathNameByHandleW(hFile, PathBuf, MAX_PATH, VOLUME_NAME_NT);
+                KTEST_EXPECT(Result > 0 && Result <= MAX_PATH,
+                    "File_GetFinalPathNameByHandleW_VolNameNt_Succeeds");
+                if (Result > 0) {
+                    KTEST_EXPECT(wcsstr(PathBuf, L"MusaCore_gfpnbh_test.tmp") != nullptr,
+                        "File_GetFinalPathNameByHandleW_ContainsFileName");
+                }
+
+                // Buffer too small
+                WCHAR SmallBuf[4]{};
+                DWORD SmallResult = GetFinalPathNameByHandleW(hFile, SmallBuf, 4, VOLUME_NAME_NT);
+                KTEST_EXPECT(SmallResult >= Result,
+                    "File_GetFinalPathNameByHandleW_ReturnsRequiredSize");
+
+                CloseHandle(hFile);
+            }
+        }
+
+        {
+            // Invalid handle
+            DWORD Result = GetFinalPathNameByHandleW(INVALID_HANDLE_VALUE, nullptr, 0, 0);
+            KTEST_EXPECT(Result == 0,
+                "File_GetFinalPathNameByHandleW_InvalidHandle_ReturnsZero");
+        }
         // --- Results ---
 
         MusaLOG("=== Results: %lu/%lu passed ===",
