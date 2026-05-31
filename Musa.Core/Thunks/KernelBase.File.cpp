@@ -1143,7 +1143,7 @@ static BOOL QueryNextMatch(_Inout_ FIND_CONTEXT* Ctx, _Out_ LPWIN32_FIND_DATAW F
     for (;;) {
         IO_STATUS_BLOCK Iosb{};
         NTSTATUS Status = ZwQueryDirectoryFile(Ctx->DirHandle, nullptr, nullptr, nullptr, &Iosb,
-            Buffer, sizeof(Buffer), FileBothDirectoryInformation, FALSE, nullptr, FALSE);
+            Buffer, sizeof(Buffer), FileBothDirectoryInformation, TRUE, nullptr, FALSE);
         if (Status == STATUS_NO_MORE_FILES) {
             BaseSetLastNTError(STATUS_NO_MORE_FILES);
             return FALSE;
