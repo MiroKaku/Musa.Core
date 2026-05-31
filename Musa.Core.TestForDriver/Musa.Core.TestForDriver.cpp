@@ -1402,6 +1402,255 @@ namespace Main
             KTEST_EXPECT(Result == 0,
                 "File_GetFinalPathNameByHandleW_InvalidHandle_ReturnsZero");
         }
+        // --- GetDiskFreeSpaceExW ---
+
+        {
+            ULARGE_INTEGER FreeAvailable, TotalBytes, TotalFree;
+            BOOL Result = GetDiskFreeSpaceExW(L"C:\\", &FreeAvailable, &TotalBytes, &TotalFree);
+            KTEST_EXPECT(Result,
+                "File_GetDiskFreeSpaceExW_Root_Succeeds");
+            KTEST_EXPECT(TotalBytes.QuadPart > 0,
+                "File_GetDiskFreeSpaceExW_TotalBytes_Positive");
+            KTEST_EXPECT(TotalFree.QuadPart > 0,
+                "File_GetDiskFreeSpaceExW_TotalFree_Positive");
+        }
+        {
+            ULARGE_INTEGER FreeAvailable, TotalBytes, TotalFree;
+            BOOL Result = GetDiskFreeSpaceExW(nullptr, &FreeAvailable, &TotalBytes, &TotalFree);
+            KTEST_EXPECT(Result,
+                "File_GetDiskFreeSpaceExW_NullPath_Succeeds");
+        }
+        {
+            ULARGE_INTEGER FreeAvailable, TotalBytes, TotalFree;
+            BOOL Result = GetDiskFreeSpaceExW(L"C:\\Windows\\Temp", &FreeAvailable, &TotalBytes, &TotalFree);
+            KTEST_EXPECT(Result,
+                "File_GetDiskFreeSpaceExW_TempDir_Succeeds");
+        }
+        {
+            BOOL Result = GetDiskFreeSpaceExW(L"X:\\NonExistent\\", nullptr, nullptr, nullptr);
+            KTEST_EXPECT(!Result,
+                "File_GetDiskFreeSpaceExW_InvalidPath_Fails");
+        }
+
+        // --- CopyFile2 ---
+
+        {
+            // Basic copy
+            HANDLE hSource = CreateFileW(
+                L"C:\\Windows\\Temp\\MusaCore_copy2_src.tmp",
+                GENERIC_WRITE,
+                FILE_SHARE_READ | FILE_SHARE_DELETE,
+                nullptr, CREATE_ALWAYS,
+                FILE_ATTRIBUTE_TEMPORARY,
+                nullptr);
+            if (hSource != INVALID_HANDLE_VALUE) {
+                const char Data[] = "CopyFile2 test data string";
+                DWORD Written = 0;
+                WriteFile(hSource, Data, sizeof(Data), &Written, nullptr);
+                CloseHandle(hSource);
+
+                DeleteFileW(L"C:\\Windows\\Temp\\MusaCore_copy2_dst.tmp");
+
+                COPYFILE2_EXTENDED_PARAMETERS Params{};
+                Params.dwSize = sizeof(Params);
+                HRESULT Hr = CopyFile2(
+                    L"C:\\Windows\\Temp\\MusaCore_copy2_src.tmp",
+                    L"C:\\Windows\\Temp\\MusaCore_copy2_dst.tmp",
+                    &Params);
+                KTEST_EXPECT(SUCCEEDED(Hr),
+                    "File_CopyFile2_BasicCopy_Succeeds");
+
+                if (SUCCEEDED(Hr)) {
+                    WIN32_FILE_ATTRIBUTE_DATA DestAttrs{};
+                    KTEST_EXPECT(GetFileAttributesExW(L"C:\\Windows\\Temp\\MusaCore_copy2_dst.tmp",
+                        GetFileExInfoStandard, &DestAttrs),
+                        "File_CopyFile2_DestExists");
+                    KTEST_EXPECT(DestAttrs.nFileSizeLow == sizeof(Data),
+                        "File_CopyFile2_DestSizeCorrect");
+                    DeleteFileW(L"C:\\Windows\\Temp\\MusaCore_copy2_dst.tmp");
+                }
+                DeleteFileW(L"C:\\Windows\\Temp\\MusaCore_copy2_src.tmp");
+            }
+        }
+        {
+            // FAIL_IF_EXISTS -- dest already exists
+            HANDLE hDest = CreateFileW(
+                L"C:\\Windows\\Temp\\MusaCore_copy2_exist.tmp",
+                GENERIC_WRITE,
+                FILE_SHARE_READ | FILE_SHARE_DELETE,
+                nullptr, CREATE_ALWAYS,
+                FILE_ATTRIBUTE_TEMPORARY,
+                nullptr);
+            if (hDest != INVALID_HANDLE_VALUE) {
+                CloseHandle(hDest);
+
+                HANDLE hSource = CreateFileW(
+                    L"C:\\Windows\\Temp\\MusaCore_copy2_src2.tmp",
+                    GENERIC_WRITE,
+                    FILE_SHARE_READ | FILE_SHARE_DELETE,
+                    nullptr, CREATE_ALWAYS,
+                    FILE_ATTRIBUTE_TEMPORARY,
+                    nullptr);
+                if (hSource != INVALID_HANDLE_VALUE) {
+                    DWORD Written = 0;
+                    WriteFile(hSource, "x", 1, &Written, nullptr);
+                    CloseHandle(hSource);
+
+                    COPYFILE2_EXTENDED_PARAMETERS Params{};
+                    Params.dwSize = sizeof(Params);
+                    Params.dwCopyFlags = COPY_FILE_FAIL_IF_EXISTS;
+                    HRESULT Hr = CopyFile2(
+                        L"C:\\Windows\\Temp\\MusaCore_copy2_src2.tmp",
+                        L"C:\\Windows\\Temp\\MusaCore_copy2_exist.tmp",
+                        &Params);
+                    KTEST_EXPECT(FAILED(Hr),
+                        "File_CopyFile2_FailIfExists_Fails");
+                    DeleteFileW(L"C:\\Windows\\Temp\\MusaCore_copy2_src2.tmp");
+                }
+                DeleteFileW(L"C:\\Windows\\Temp\\MusaCore_copy2_exist.tmp");
+            }
+        }
+        {
+            // Non-existent source
+            COPYFILE2_EXTENDED_PARAMETERS Params{};
+            Params.dwSize = sizeof(Params);
+            HRESULT Hr = CopyFile2(
+                L"C:\\Windows\\Temp\\MusaCore_copy2_noexist.tmp",
+                L"C:\\Windows\\Temp\\MusaCore_copy2_dst3.tmp",
+                &Params);
+            KTEST_EXPECT(FAILED(Hr),
+                "File_CopyFile2_NonExistentSource_Fails");
+        }
+        {
+            // Null extended parameters
+            HANDLE hSource = CreateFileW(
+                L"C:\\Windows\\Temp\\MusaCore_copy2_src4.tmp",
+                GENERIC_WRITE,
+                FILE_SHARE_READ | FILE_SHARE_DELETE,
+                nullptr, CREATE_ALWAYS,
+                FILE_ATTRIBUTE_TEMPORARY,
+                nullptr);
+            if (hSource != INVALID_HANDLE_VALUE) {
+                DWORD Written = 0;
+                WriteFile(hSource, "copy2", 5, &Written, nullptr);
+                CloseHandle(hSource);
+
+                DeleteFileW(L"C:\\Windows\\Temp\\MusaCore_copy2_dst4.tmp");
+
+                HRESULT Hr = CopyFile2(
+                    L"C:\\Windows\\Temp\\MusaCore_copy2_src4.tmp",
+                    L"C:\\Windows\\Temp\\MusaCore_copy2_dst4.tmp",
+                    nullptr);
+                KTEST_EXPECT(SUCCEEDED(Hr),
+                    "File_CopyFile2_NullParams_Succeeds");
+
+                DeleteFileW(L"C:\\Windows\\Temp\\MusaCore_copy2_dst4.tmp");
+                DeleteFileW(L"C:\\Windows\\Temp\\MusaCore_copy2_src4.tmp");
+            }
+        }
+
+        // --- FindFirstFileW ---
+
+        {
+            WIN32_FIND_DATAW FindData{};
+            HANDLE hFind = FindFirstFileW(L"C:\\Windows\\Temp\\*", &FindData);
+            KTEST_EXPECT(hFind != INVALID_HANDLE_VALUE,
+                "File_FindFirstFileW_TempStars_Succeeds");
+            if (hFind != INVALID_HANDLE_VALUE) {
+                KTEST_EXPECT(FindData.cFileName[0] != L'\0',
+                    "File_FindFirstFileW_ReturnsName");
+                FindClose(hFind);
+            }
+        }
+
+        // --- CreateHardLinkW ---
+
+        {
+            HANDLE hFile = CreateFileW(
+                L"C:\\Windows\\Temp\\MusaCore_hlink_src.tmp",
+                GENERIC_WRITE,
+                FILE_SHARE_READ | FILE_SHARE_DELETE,
+                nullptr, CREATE_ALWAYS,
+                FILE_ATTRIBUTE_TEMPORARY,
+                nullptr);
+            if (hFile != INVALID_HANDLE_VALUE) {
+                DWORD Written = 0;
+                WriteFile(hFile, "hardlink", 8, &Written, nullptr);
+                CloseHandle(hFile);
+
+                DeleteFileW(L"C:\\Windows\\Temp\\MusaCore_hlink_dst.tmp");
+
+                BOOL Result = CreateHardLinkW(
+                    L"C:\\Windows\\Temp\\MusaCore_hlink_dst.tmp",
+                    L"C:\\Windows\\Temp\\MusaCore_hlink_src.tmp",
+                    nullptr);
+                KTEST_EXPECT(Result,
+                    "File_CreateHardLinkW_Succeeds");
+
+                if (Result) {
+                    DeleteFileW(L"C:\\Windows\\Temp\\MusaCore_hlink_dst.tmp");
+                }
+                DeleteFileW(L"C:\\Windows\\Temp\\MusaCore_hlink_src.tmp");
+            }
+        }
+        {
+            BOOL Result = CreateHardLinkW(L"C:\\Windows\\Temp\\MusaCore_hlink_xx.tmp",
+                L"C:\\Windows\\Temp\\nonexistent_file.tmp", nullptr);
+            KTEST_EXPECT(!Result,
+                "File_CreateHardLinkW_NonExistentSource_Fails");
+        }
+
+        // --- CreateDirectoryExW ---
+
+        {
+            BOOL Result = CreateDirectoryExW(
+                L"C:\\Windows\\Temp",
+                L"C:\\Windows\\Temp\\MusaCore_templated_dir",
+                nullptr);
+            KTEST_EXPECT(Result,
+                "File_CreateDirectoryExW_Succeeds");
+            if (Result) {
+                RemoveDirectoryW(L"C:\\Windows\\Temp\\MusaCore_templated_dir");
+            }
+        }
+        {
+            BOOL Result = CreateDirectoryExW(nullptr,
+                L"C:\\Windows\\Temp\\MusaCore_notemplated_dir", nullptr);
+            KTEST_EXPECT(Result,
+                "File_CreateDirectoryExW_NullTemplate_Succeeds");
+            if (Result) {
+                RemoveDirectoryW(L"C:\\Windows\\Temp\\MusaCore_notemplated_dir");
+            }
+        }
+
+        // --- DeviceIoControl ---
+
+        {
+            // Open a volume handle to test basic IOCTL
+            HANDLE hVol = CreateFileW(
+                L"\\\\.\\C:",
+                GENERIC_READ,
+                FILE_SHARE_READ | FILE_SHARE_WRITE,
+                nullptr, OPEN_EXISTING,
+                0, nullptr);
+            if (hVol != INVALID_HANDLE_VALUE) {
+                BYTE OutBuf[64]{};
+                DWORD BytesRet = 0;
+                // FSCTL_GET_NTFS_VOLUME_DATA = 0x90064, device type = 9 (FS)
+                BOOL Result = DeviceIoControl(hVol, 0x90064,
+                    nullptr, 0, OutBuf, sizeof(OutBuf), &BytesRet, nullptr);
+                KTEST_EXPECT(Result && BytesRet >= sizeof(NTFS_VOLUME_DATA_BUFFER),
+                    "File_DeviceIoControl_FsCtl_Succeeds");
+                CloseHandle(hVol);
+            }
+        }
+        {
+            BOOL Result = DeviceIoControl(INVALID_HANDLE_VALUE, 0,
+                nullptr, 0, nullptr, 0, nullptr, nullptr);
+            KTEST_EXPECT(!Result,
+                "File_DeviceIoControl_InvalidHandle_Fails");
+        }
+
         // --- Results ---
 
         MusaLOG("=== Results: %lu/%lu passed ===",

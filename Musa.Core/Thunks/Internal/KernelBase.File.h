@@ -236,4 +236,51 @@ DWORD WINAPI MUSA_NAME(GetFinalPathNameByHandleW)(
     _In_ DWORD cchFilePath,
     _In_ DWORD dwFlags
     );
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(GetDiskFreeSpaceExW)(
+    _In_opt_ LPCWSTR lpDirectoryName,
+    _Out_opt_ PULARGE_INTEGER lpFreeBytesAvailableToCaller,
+    _Out_opt_ PULARGE_INTEGER lpTotalNumberOfBytes,
+    _Out_opt_ PULARGE_INTEGER lpTotalNumberOfFreeBytes
+    );
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+HRESULT WINAPI MUSA_NAME(CopyFile2)(
+    _In_ LPCWSTR pwszExistingFileName,
+    _In_ LPCWSTR pwszNewFileName,
+    _In_opt_ COPYFILE2_EXTENDED_PARAMETERS *pExtendedParameters
+    );
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+HANDLE WINAPI MUSA_NAME(FindFirstFileW)(
+    _In_ LPCWSTR lpFileName,
+    _Out_ LPWIN32_FIND_DATAW lpFindFileData
+    );
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(DeviceIoControl)(
+    _In_ HANDLE hDevice,
+    _In_ DWORD dwIoControlCode,
+    _In_reads_bytes_opt_(nInBufferSize) LPVOID lpInBuffer,
+    _In_ DWORD nInBufferSize,
+    _Out_writes_bytes_opt_(nOutBufferSize) LPVOID lpOutBuffer,
+    _In_ DWORD nOutBufferSize,
+    _Out_opt_ LPDWORD lpBytesReturned,
+    _Inout_opt_ LPOVERLAPPED lpOverlapped
+    );
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(CreateHardLinkW)(
+    _In_ LPCWSTR lpFileName,
+    _In_ LPCWSTR lpExistingFileName,
+    _In_opt_ LPSECURITY_ATTRIBUTES lpSecurityAttributes
+    );
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(CreateDirectoryExW)(
+    _In_ LPCWSTR lpTemplateDirectory,
+    _In_ LPCWSTR lpNewDirectory,
+    _In_opt_ LPSECURITY_ATTRIBUTES lpSecurityAttributes
+    );
 EXTERN_C_END

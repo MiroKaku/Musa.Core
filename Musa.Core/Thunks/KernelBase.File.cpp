@@ -38,8 +38,13 @@
 #pragma alloc_text(PAGE, MUSA_NAME(SetFileInformationByHandle))
 #pragma alloc_text(PAGE, MUSA_NAME(CreateSymbolicLinkW))
 #pragma alloc_text(PAGE, MUSA_NAME(GetFinalPathNameByHandleW))
+#pragma alloc_text(PAGE, MUSA_NAME(GetDiskFreeSpaceExW))
+#pragma alloc_text(PAGE, MUSA_NAME(CopyFile2))
+#pragma alloc_text(PAGE, MUSA_NAME(FindFirstFileW))
+#pragma alloc_text(PAGE, MUSA_NAME(DeviceIoControl))
+#pragma alloc_text(PAGE, MUSA_NAME(CreateHardLinkW))
+#pragma alloc_text(PAGE, MUSA_NAME(CreateDirectoryExW))
 #endif
-
 
 
 EXTERN_C_START
@@ -2018,4 +2023,527 @@ DWORD WINAPI MUSA_NAME(GetFinalPathNameByHandleW)(
     return Result;
 }
 MUSA_IAT_SYMBOL(GetFinalPathNameByHandleW, 16);
+
+/**
+ * GetDiskFreeSpaceExW - Retrieves information about the amount of space available on a disk volume.
+ *
+ * Maps to ZwOpenFile + ZwQueryVolumeInformationFile(FileFsFullSizeInformation/FileFsSizeInformation).
+ */
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(GetDiskFreeSpaceExW)(
+    _In_opt_ LPCWSTR lpDirectoryName,
+    _Out_opt_ PULARGE_INTEGER lpFreeBytesAvailableToCaller,
+    _Out_opt_ PULARGE_INTEGER lpTotalNumberOfBytes,
+    _Out_opt_ PULARGE_INTEGER lpTotalNumberOfFreeBytes
+)
+{
+    PAGED_CODE();
+
+    PCWSTR PathName = lpDirectoryName ? lpDirectoryName : L"C:\\";
+
+    UNICODE_STRING NtPathName{};
+    if (!RtlDosPathNameToNtPathName_U(PathName, &NtPathName, nullptr, nullptr)) {
+        RtlSetLastWin32Error(ERROR_PATH_NOT_FOUND);
+        return FALSE;
+    }
+
+    PWSTR Buffer = NtPathName.Buffer;
+    OBJECT_ATTRIBUTES ObjAttr;
+    InitializeObjectAttributes(&ObjAttr, &NtPathName, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
+
+    HANDLE FileHandle = nullptr;
+    IO_STATUS_BLOCK Iosb{};
+    NTSTATUS Status = ZwOpenFile(
+        &FileHandle,
+        FILE_READ_ATTRIBUTES | SYNCHRONIZE,
+        &ObjAttr,
+        &Iosb,
+        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+        FILE_SYNCHRONOUS_IO_NONALERT | FILE_OPEN_FOR_BACKUP_INTENT);
+
+    if (!NT_SUCCESS(Status)) {
+        BaseSetLastNTError(Status);
+        if (RtlNtStatusToDosError(Status) == ERROR_FILE_NOT_FOUND)
+            RtlSetLastWin32Error(ERROR_PATH_NOT_FOUND);
+        RtlFreeHeap(RtlProcessHeap(), 0, Buffer);
+        return FALSE;
+    }
+
+    RtlFreeHeap(RtlProcessHeap(), 0, Buffer);
+
+    // Try FileFsFullSizeInformation first (provides per-caller free bytes)
+    FILE_FS_FULL_SIZE_INFORMATION FullSizeInfo{};
+    Status = ZwQueryVolumeInformationFile(FileHandle, &Iosb, &FullSizeInfo,
+        sizeof(FullSizeInfo), FileFsFullSizeInformation);
+
+
+    if (NT_SUCCESS(Status) && lpTotalNumberOfFreeBytes) {
+        ZwClose(FileHandle);
+        ULONGLONG Factor = (ULONGLONG)FullSizeInfo.SectorsPerAllocationUnit * FullSizeInfo.BytesPerSector;
+        if (lpFreeBytesAvailableToCaller)
+            lpFreeBytesAvailableToCaller->QuadPart = FullSizeInfo.CallerAvailableAllocationUnits.QuadPart * Factor;
+        if (lpTotalNumberOfBytes)
+            lpTotalNumberOfBytes->QuadPart = FullSizeInfo.TotalAllocationUnits.QuadPart * Factor;
+        if (lpTotalNumberOfFreeBytes)
+            lpTotalNumberOfFreeBytes->QuadPart = FullSizeInfo.ActualAvailableAllocationUnits.QuadPart * Factor;
+        return TRUE;
+    }
+
+    // Fall back to FileFsSizeInformation
+    FILE_FS_SIZE_INFORMATION SizeInfo{};
+    Status = ZwQueryVolumeInformationFile(FileHandle, &Iosb, &SizeInfo,
+        sizeof(SizeInfo), FileFsSizeInformation);
+    ZwClose(FileHandle);
+
+    if (NT_SUCCESS(Status)) {
+        ULONGLONG Factor = (ULONGLONG)SizeInfo.SectorsPerAllocationUnit * SizeInfo.BytesPerSector;
+        ULONGLONG FreeBytes = SizeInfo.AvailableAllocationUnits.QuadPart * Factor;
+        ULONGLONG TotalBytes = SizeInfo.TotalAllocationUnits.QuadPart * Factor;
+        if (lpFreeBytesAvailableToCaller)
+            lpFreeBytesAvailableToCaller->QuadPart = FreeBytes;
+        if (lpTotalNumberOfBytes)
+            lpTotalNumberOfBytes->QuadPart = TotalBytes;
+        if (lpTotalNumberOfFreeBytes)
+            lpTotalNumberOfFreeBytes->QuadPart = FreeBytes;
+        return TRUE;
+    }
+
+    BaseSetLastNTError(Status);
+    return FALSE;
+}
+MUSA_IAT_SYMBOL(GetDiskFreeSpaceExW, 16);
+
+/**
+ * CopyFile2 - Copies an existing file to a new file with extended parameters.
+ *
+ * Maps to ZwCreateFile + ZwReadFile/ZwWriteFile copy loop.
+ * Progress callback and transaction support are not implemented in kernel mode.
+ */
+_IRQL_requires_max_(PASSIVE_LEVEL)
+HRESULT WINAPI MUSA_NAME(CopyFile2)(
+    _In_ LPCWSTR pwszExistingFileName,
+    _In_ LPCWSTR pwszNewFileName,
+    _In_opt_ COPYFILE2_EXTENDED_PARAMETERS *pExtendedParameters
+)
+{
+    PAGED_CODE();
+
+    DWORD dwCopyFlags = 0;
+    BOOL *pfCancel = nullptr;
+
+    if (pExtendedParameters) {
+        if (pExtendedParameters->dwSize < sizeof(COPYFILE2_EXTENDED_PARAMETERS))
+            return HRESULT_FROM_WIN32(ERROR_INVALID_PARAMETER);
+        dwCopyFlags = pExtendedParameters->dwCopyFlags;
+        pfCancel = pExtendedParameters->pfCancel;
+    }
+
+    if (!pwszExistingFileName || !pwszNewFileName)
+        return HRESULT_FROM_WIN32(ERROR_INVALID_PARAMETER);
+
+    // COPY_FILE_REQUEST_COMPRESSED_TRAFFIC is not supported
+    if (dwCopyFlags & COPY_FILE_REQUEST_COMPRESSED_TRAFFIC)
+        return HRESULT_FROM_WIN32(ERROR_INVALID_PARAMETER);
+
+    // Convert source path
+    UNICODE_STRING NtSource{};
+    NTSTATUS Status = RtlDosPathNameToNtPathName_U_WithStatus(pwszExistingFileName, &NtSource, nullptr, nullptr);
+    if (!NT_SUCCESS(Status))
+        return HRESULT_FROM_NT(Status);
+
+    // Convert dest path
+    UNICODE_STRING NtDest{};
+    Status = RtlDosPathNameToNtPathName_U_WithStatus(pwszNewFileName, &NtDest, nullptr, nullptr);
+    if (!NT_SUCCESS(Status)) {
+        RtlFreeUnicodeString(&NtSource);
+        return HRESULT_FROM_NT(Status);
+    }
+
+    // Open source file
+    OBJECT_ATTRIBUTES SrcAttr;
+    InitializeObjectAttributes(&SrcAttr, &NtSource, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
+    IO_STATUS_BLOCK Iosb{};
+    HANDLE hSource = nullptr;
+
+    ULONG SrcOptions = FILE_SYNCHRONOUS_IO_NONALERT;
+    if (dwCopyFlags & COPY_FILE_NO_BUFFERING)
+        SrcOptions |= FILE_NO_INTERMEDIATE_BUFFERING;
+
+    Status = ZwCreateFile(&hSource,
+        GENERIC_READ | SYNCHRONIZE,
+        &SrcAttr, &Iosb, nullptr,
+        FILE_ATTRIBUTE_NORMAL,
+        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+        FILE_OPEN,
+        SrcOptions, nullptr, 0);
+
+    if (!NT_SUCCESS(Status)) {
+        RtlFreeUnicodeString(&NtSource);
+        RtlFreeUnicodeString(&NtDest);
+        return HRESULT_FROM_NT(Status);
+    }
+
+    // Open/create destination file
+    OBJECT_ATTRIBUTES DstAttr;
+    InitializeObjectAttributes(&DstAttr, &NtDest, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
+    HANDLE hDest = nullptr;
+
+    ULONG CreateDisposition = (dwCopyFlags & COPY_FILE_FAIL_IF_EXISTS)
+        ? FILE_CREATE : FILE_OVERWRITE_IF;
+    ULONG DstOptions = FILE_SYNCHRONOUS_IO_NONALERT;
+    if (dwCopyFlags & COPY_FILE_NO_BUFFERING)
+        DstOptions |= FILE_NO_INTERMEDIATE_BUFFERING;
+
+    Status = ZwCreateFile(&hDest,
+        GENERIC_WRITE | SYNCHRONIZE,
+        &DstAttr, &Iosb, nullptr,
+        FILE_ATTRIBUTE_NORMAL,
+        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+        CreateDisposition,
+        DstOptions, nullptr, 0);
+
+    RtlFreeUnicodeString(&NtSource);
+    RtlFreeUnicodeString(&NtDest);
+
+    if (!NT_SUCCESS(Status)) {
+        ZwClose(hSource);
+        return HRESULT_FROM_NT(Status);
+    }
+
+    // Allocate copy buffer
+    const ULONG ChunkSize = 64 * 1024;
+    PVOID CopyBuf = RtlAllocateHeap(RtlProcessHeap(), 0, ChunkSize);
+    if (!CopyBuf) {
+        ZwClose(hSource);
+        ZwClose(hDest);
+        return HRESULT_FROM_WIN32(ERROR_NOT_ENOUGH_MEMORY);
+    }
+
+    // Read/write copy loop
+    HRESULT HResult = S_OK;
+    while (TRUE) {
+        if (pfCancel && *pfCancel) {
+            HResult = HRESULT_FROM_WIN32(ERROR_REQUEST_ABORTED);
+            break;
+        }
+
+        IO_STATUS_BLOCK RdIosb{};
+        Status = ZwReadFile(hSource, nullptr, nullptr, nullptr, &RdIosb,
+            CopyBuf, ChunkSize, nullptr, nullptr);
+        if (!NT_SUCCESS(Status) && Status != STATUS_END_OF_FILE) {
+            HResult = HRESULT_FROM_NT(Status);
+            break;
+        }
+
+        if (RdIosb.Information == 0)
+            break;
+
+        IO_STATUS_BLOCK WrIosb{};
+        Status = ZwWriteFile(hDest, nullptr, nullptr, nullptr, &WrIosb,
+            CopyBuf, (ULONG)RdIosb.Information, nullptr, nullptr);
+        if (!NT_SUCCESS(Status)) {
+            HResult = HRESULT_FROM_NT(Status);
+            break;
+        }
+    }
+
+    RtlFreeHeap(RtlProcessHeap(), 0, CopyBuf);
+
+    if (SUCCEEDED(HResult)) {
+        // Copy file attributes/times from source to destination
+        FILE_BASIC_INFORMATION SrcBasicInfo{};
+        Status = ZwQueryInformationFile(hSource, &Iosb, &SrcBasicInfo,
+            sizeof(SrcBasicInfo), FileBasicInformation);
+        if (NT_SUCCESS(Status)) {
+            SrcBasicInfo.FileAttributes &= ~FILE_ATTRIBUTE_NORMAL;
+            ZwSetInformationFile(hDest, &Iosb, &SrcBasicInfo,
+                sizeof(SrcBasicInfo), FileBasicInformation);
+        }
+    }
+
+    ZwClose(hSource);
+
+    if (FAILED(HResult)) {
+#pragma push_macro("DeleteFile")
+#undef DeleteFile
+        FILE_DISPOSITION_INFORMATION Disposition{};
+        Disposition.DeleteFile = TRUE;
+        ZwSetInformationFile(hDest, &Iosb, &Disposition,
+            sizeof(Disposition), FileDispositionInformation);
+#pragma pop_macro("DeleteFile")
+        ZwClose(hDest);
+        return HResult;
+    }
+
+    ZwClose(hDest);
+    return S_OK;
+}
+MUSA_IAT_SYMBOL(CopyFile2, 12);
+
+/**
+ * FindFirstFileW - Searches a directory for a file or subdirectory.
+ *
+ * Wraps FindFirstFileExW with standard search parameters.
+ */
+_IRQL_requires_max_(PASSIVE_LEVEL)
+HANDLE WINAPI MUSA_NAME(FindFirstFileW)(
+    _In_ LPCWSTR lpFileName,
+    _Out_ LPWIN32_FIND_DATAW lpFindFileData
+)
+{
+    PAGED_CODE();
+    return MUSA_NAME(FindFirstFileExW)(lpFileName, FindExInfoStandard, lpFindFileData,
+        FindExSearchNameMatch, nullptr, 0);
+}
+MUSA_IAT_SYMBOL(FindFirstFileW, 8);
+
+/**
+ * DeviceIoControl - Sends a control code directly to a specified device driver.
+ *
+ * Maps to NtDeviceIoControlFile or NtFsControlFile depending on device type.
+ */
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(DeviceIoControl)(
+    _In_ HANDLE hDevice,
+    _In_ DWORD dwIoControlCode,
+    _In_reads_bytes_opt_(nInBufferSize) LPVOID lpInBuffer,
+    _In_ DWORD nInBufferSize,
+    _Out_writes_bytes_opt_(nOutBufferSize) LPVOID lpOutBuffer,
+    _In_ DWORD nOutBufferSize,
+    _Out_opt_ LPDWORD lpBytesReturned,
+    _Inout_opt_ LPOVERLAPPED lpOverlapped
+)
+{
+    PAGED_CODE();
+
+    BOOL IsFsControl = (HIWORD(dwIoControlCode) == FILE_DEVICE_FILE_SYSTEM);
+    NTSTATUS Status;
+
+    if (lpOverlapped) {
+        lpOverlapped->Internal = STATUS_PENDING;
+        HANDLE hEvent = lpOverlapped->hEvent;
+        PVOID ApcContext = (!((ULONG_PTR)hEvent & 1)) ? lpOverlapped : nullptr;
+
+        if (IsFsControl) {
+            Status = ZwFsControlFile(hDevice, hEvent, nullptr, ApcContext,
+                reinterpret_cast<PIO_STATUS_BLOCK>(lpOverlapped),
+                dwIoControlCode, lpInBuffer, nInBufferSize,
+                lpOutBuffer, nOutBufferSize);
+        } else {
+            Status = ZwDeviceIoControlFile(hDevice, hEvent, nullptr, ApcContext,
+                reinterpret_cast<PIO_STATUS_BLOCK>(lpOverlapped),
+                dwIoControlCode, lpInBuffer, nInBufferSize,
+                lpOutBuffer, nOutBufferSize);
+        }
+
+        if (!NT_ERROR(Status) && lpBytesReturned)
+            *lpBytesReturned = static_cast<DWORD>(lpOverlapped->InternalHigh);
+
+        if (NT_SUCCESS(Status) && Status != STATUS_PENDING)
+            return TRUE;
+
+        BaseSetLastNTError(Status);
+        return FALSE;
+    }
+
+    // Synchronous -- no overlapped
+    IO_STATUS_BLOCK Iosb{};
+
+    if (IsFsControl) {
+        Status = ZwFsControlFile(hDevice, nullptr, nullptr, nullptr,
+            &Iosb, dwIoControlCode, lpInBuffer, nInBufferSize,
+            lpOutBuffer, nOutBufferSize);
+    } else {
+        Status = ZwDeviceIoControlFile(hDevice, nullptr, nullptr, nullptr,
+            &Iosb, dwIoControlCode, lpInBuffer, nInBufferSize,
+            lpOutBuffer, nOutBufferSize);
+    }
+
+    if (Status == STATUS_PENDING) {
+        Status = ZwWaitForSingleObject(hDevice, FALSE, nullptr);
+        if (NT_SUCCESS(Status))
+            Status = Iosb.Status;
+    }
+
+    if (NT_SUCCESS(Status)) {
+        if (lpBytesReturned)
+            *lpBytesReturned = static_cast<DWORD>(Iosb.Information);
+        return TRUE;
+    }
+
+    if (!NT_ERROR(Status) && lpBytesReturned)
+        *lpBytesReturned = static_cast<DWORD>(Iosb.Information);
+    BaseSetLastNTError(Status);
+    return FALSE;
+}
+MUSA_IAT_SYMBOL(DeviceIoControl, 32);
+
+/**
+ * CreateHardLinkW - Creates a hard link between an existing file and a new file.
+ *
+ * Maps to NtOpenFile + NtSetInformationFile(FileLinkInformation).
+ */
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(CreateHardLinkW)(
+    _In_ LPCWSTR lpFileName,
+    _In_ LPCWSTR lpExistingFileName,
+    _In_opt_ LPSECURITY_ATTRIBUTES lpSecurityAttributes
+)
+{
+    PAGED_CODE();
+
+    if (!lpFileName || !lpExistingFileName) {
+        RtlSetLastWin32Error(ERROR_INVALID_PARAMETER);
+        return FALSE;
+    }
+
+    // Convert existing file to NT path
+    UNICODE_STRING NtExisting{};
+    if (!RtlDosPathNameToNtPathName_U(lpExistingFileName, &NtExisting, nullptr, nullptr)) {
+        RtlSetLastWin32Error(ERROR_PATH_NOT_FOUND);
+        return FALSE;
+    }
+
+    OBJECT_ATTRIBUTES ObjAttr;
+    InitializeObjectAttributes(&ObjAttr, &NtExisting, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
+    if (lpSecurityAttributes)
+        ObjAttr.SecurityDescriptor = lpSecurityAttributes->lpSecurityDescriptor;
+
+    HANDLE FileHandle = nullptr;
+    IO_STATUS_BLOCK Iosb{};
+    NTSTATUS Status = ZwOpenFile(&FileHandle, FILE_READ_ATTRIBUTES | SYNCHRONIZE,
+        &ObjAttr, &Iosb, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+        FILE_SYNCHRONOUS_IO_NONALERT | FILE_OPEN_FOR_BACKUP_INTENT);
+
+    if (!NT_SUCCESS(Status)) {
+        BaseSetLastNTError(Status);
+        RtlFreeHeap(RtlProcessHeap(), 0, NtExisting.Buffer);
+        return FALSE;
+    }
+
+    // Convert new link name to NT path
+    UNICODE_STRING NtLink{};
+    if (!RtlDosPathNameToNtPathName_U(lpFileName, &NtLink, nullptr, nullptr)) {
+        ZwClose(FileHandle);
+        RtlFreeHeap(RtlProcessHeap(), 0, NtExisting.Buffer);
+        RtlSetLastWin32Error(ERROR_PATH_NOT_FOUND);
+        return FALSE;
+    }
+
+    // Build FILE_LINK_INFORMATION
+    ULONG LinkInfoSize = sizeof(FILE_LINK_INFORMATION) + NtLink.Length;
+    auto LinkInfo = static_cast<PFILE_LINK_INFORMATION>(
+        RtlAllocateHeap(RtlProcessHeap(), 0, LinkInfoSize));
+    if (!LinkInfo) {
+        ZwClose(FileHandle);
+        RtlFreeHeap(RtlProcessHeap(), 0, NtExisting.Buffer);
+        RtlFreeHeap(RtlProcessHeap(), 0, NtLink.Buffer);
+        RtlSetLastWin32Error(ERROR_NOT_ENOUGH_MEMORY);
+        return FALSE;
+    }
+
+    LinkInfo->ReplaceIfExists = FALSE;
+    LinkInfo->RootDirectory = nullptr;
+    LinkInfo->FileNameLength = NtLink.Length;
+    RtlCopyMemory(LinkInfo->FileName, NtLink.Buffer, NtLink.Length);
+
+    Status = ZwSetInformationFile(FileHandle, &Iosb, LinkInfo, LinkInfoSize, FileLinkInformation);
+
+    RtlFreeHeap(RtlProcessHeap(), 0, LinkInfo);
+    RtlFreeHeap(RtlProcessHeap(), 0, NtLink.Buffer);
+    RtlFreeHeap(RtlProcessHeap(), 0, NtExisting.Buffer);
+    ZwClose(FileHandle);
+
+    if (!NT_SUCCESS(Status)) {
+        BaseSetLastNTError(Status);
+        return FALSE;
+    }
+    return TRUE;
+}
+MUSA_IAT_SYMBOL(CreateHardLinkW, 12);
+
+/**
+ * CreateDirectoryExW - Creates a new directory with attributes copied from a template.
+ *
+ * Simplified kernel-mode implementation: copies basic attributes from template.
+ * Extended attributes, alternate streams, and reparse points are not copied.
+ */
+_IRQL_requires_max_(PASSIVE_LEVEL)
+BOOL WINAPI MUSA_NAME(CreateDirectoryExW)(
+    _In_ LPCWSTR lpTemplateDirectory,
+    _In_ LPCWSTR lpNewDirectory,
+    _In_opt_ LPSECURITY_ATTRIBUTES lpSecurityAttributes
+)
+{
+    PAGED_CODE();
+
+    // Create the new directory first
+    if (!MUSA_NAME(CreateDirectoryW)(lpNewDirectory, lpSecurityAttributes))
+        return FALSE;
+
+    // If template is null or same as new, we're done
+    if (!lpTemplateDirectory || _wcsicmp(lpTemplateDirectory, lpNewDirectory) == 0)
+        return TRUE;
+
+    // Open template to copy attributes
+    UNICODE_STRING NtTemplate{};
+    if (!RtlDosPathNameToNtPathName_U(lpTemplateDirectory, &NtTemplate, nullptr, nullptr))
+        return TRUE;  // New directory already created, template failure is non-fatal
+
+    OBJECT_ATTRIBUTES ObjAttr;
+    InitializeObjectAttributes(&ObjAttr, &NtTemplate, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
+
+    HANDLE TemplateHandle = nullptr;
+    IO_STATUS_BLOCK Iosb{};
+    NTSTATUS Status = ZwOpenFile(&TemplateHandle,
+        FILE_READ_ATTRIBUTES | SYNCHRONIZE,
+        &ObjAttr, &Iosb,
+        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+        FILE_SYNCHRONOUS_IO_NONALERT | FILE_OPEN_FOR_BACKUP_INTENT | FILE_DIRECTORY_FILE);
+
+    PWSTR TemplateBuf = NtTemplate.Buffer;
+
+    if (!NT_SUCCESS(Status)) {
+        RtlFreeHeap(RtlProcessHeap(), 0, TemplateBuf);
+        return TRUE;  // Non-fatal: directory already created
+    }
+
+    // Query template attributes
+    FILE_BASIC_INFORMATION BasicInfo{};
+    Status = ZwQueryInformationFile(TemplateHandle, &Iosb, &BasicInfo,
+        sizeof(BasicInfo), FileBasicInformation);
+
+    if (NT_SUCCESS(Status)) {
+        RtlFreeHeap(RtlProcessHeap(), 0, TemplateBuf);
+
+        // Apply template attributes to new directory
+        UNICODE_STRING NtNew{};
+        if (RtlDosPathNameToNtPathName_U(lpNewDirectory, &NtNew, nullptr, nullptr)) {
+            HANDLE NewHandle = nullptr;
+            OBJECT_ATTRIBUTES NewAttr;
+            InitializeObjectAttributes(&NewAttr, &NtNew, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
+
+            Status = ZwOpenFile(&NewHandle,
+                FILE_WRITE_ATTRIBUTES | SYNCHRONIZE,
+                &NewAttr, &Iosb,
+                FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                FILE_SYNCHRONOUS_IO_NONALERT | FILE_OPEN_FOR_BACKUP_INTENT | FILE_DIRECTORY_FILE);
+
+            if (NT_SUCCESS(Status)) {
+                ZwSetInformationFile(NewHandle, &Iosb, &BasicInfo,
+                    sizeof(BasicInfo), FileBasicInformation);
+                ZwClose(NewHandle);
+            }
+
+            RtlFreeHeap(RtlProcessHeap(), 0, NtNew.Buffer);
+        }
+    } else {
+        RtlFreeHeap(RtlProcessHeap(), 0, TemplateBuf);
+    }
+
+    ZwClose(TemplateHandle);
+    return TRUE;
+}
+MUSA_IAT_SYMBOL(CreateDirectoryExW, 12);
+
 EXTERN_C_END
