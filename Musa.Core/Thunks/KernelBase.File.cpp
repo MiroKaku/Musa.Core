@@ -799,18 +799,22 @@ DWORD WINAPI MUSA_NAME(GetTempPathW)(
 {
     PAGED_CODE();
 
-    // Try TMP first, then TEMP, then default
+    // Try TMP first, then TEMP, then fallback. Expand env vars
+    // because they may contain %SystemRoot% tokens.
     static LPCWSTR Fallback = L"C:\\Windows\\Temp\\";
     LPCWSTR Candidates[] = { L"TMP", L"TEMP" };
 
     for (const auto& Name : Candidates) {
         DWORD Len = GetEnvironmentVariableW(Name, nullptr, 0);
-        if (Len > 0 && Len <= nBufferLength) {
-            Len = GetEnvironmentVariableW(Name, lpBuffer, nBufferLength);
-            if (Len > 0) {
-                return Len;
-            }
-        }
+        if (Len == 0 || Len > nBufferLength) continue;
+        Len = GetEnvironmentVariableW(Name, lpBuffer, nBufferLength);
+        if (Len == 0) continue;
+        // Expand %SystemRoot% etc.
+        wchar_t Expanded[261];
+        DWORD ExpLen = ExpandEnvironmentStringsW(lpBuffer, Expanded, 261);
+        if (ExpLen == 0 || ExpLen > nBufferLength) continue;
+        wcscpy_s(lpBuffer, nBufferLength, Expanded);
+        return ExpLen - 1;
     }
 
     // Fallback to default
@@ -1074,6 +1078,108 @@ UINT WINAPI MUSA_NAME(GetDriveTypeW)(
 
 MUSA_IAT_SYMBOL(GetDriveTypeW, 4);
 
+// Find context -- allocated by FindFirstFileExW, freed by FindClose.
+// Returned as a pseudo-handle so FindNextFileW can retrieve search state.
+struct FIND_CONTEXT {
+    HANDLE  DirHandle;            // NT directory handle from ZwOpenFile
+    WCHAR   Pattern[MAX_PATH];    // wildcard pattern (e.g. "*.txt" or "*")
+    DWORD   InfoLevel;            // FINDEX_INFO_LEVELS
+    DWORD   SearchOp;             // FINDEX_SEARCH_OPS
+    DWORD   AdditionalFlags;
+};
+
+// Simple wildcard matching for ? and * (case-insensitive).
+static BOOL MatchWildcard(_In_z_ PCWSTR Pattern, _In_z_ PCWSTR Name) {
+    while (*Pattern) {
+        if (*Pattern == L'*') {
+            Pattern++;
+            if (*Pattern == L'\0') return TRUE;
+            while (*Name) {
+                if (MatchWildcard(Pattern, Name)) return TRUE;
+                Name++;
+            }
+            return FALSE;
+        }
+        if (*Pattern == L'?') {
+            if (*Name == L'\0') return FALSE;
+            Pattern++;
+            Name++;
+            continue;
+        }
+        // Case-insensitive char match
+        WCHAR pc = *Pattern;
+        WCHAR nc = *Name;
+        if (pc >= L'A' && pc <= L'Z') pc += (L'a' - L'A');
+        if (nc >= L'A' && nc <= L'Z') nc += (L'a' - L'A');
+        if (pc != nc) return FALSE;
+        Pattern++;
+        Name++;
+    }
+    return *Name == L'\0';
+}
+
+// Fill a WIN32_FIND_DATAW from a FILE_BOTH_DIR_INFORMATION entry.
+static void FillFindData(_Out_ LPWIN32_FIND_DATAW Fd, _In_ const FILE_BOTH_DIR_INFORMATION* Info) {
+    RtlZeroMemory(Fd, sizeof(WIN32_FIND_DATAW));
+    Fd->dwFileAttributes = Info->FileAttributes;
+    Fd->ftCreationTime   = reinterpret_cast<const FILETIME&>(Info->CreationTime);
+    Fd->ftLastAccessTime = reinterpret_cast<const FILETIME&>(Info->LastAccessTime);
+    Fd->ftLastWriteTime  = reinterpret_cast<const FILETIME&>(Info->LastWriteTime);
+    Fd->nFileSizeHigh    = Info->EndOfFile.HighPart;
+    Fd->nFileSizeLow     = Info->EndOfFile.LowPart;
+    size_t nameLen = Info->FileNameLength / sizeof(WCHAR);
+    if (nameLen >= MAX_PATH) nameLen = MAX_PATH - 1;
+    memcpy(Fd->cFileName, Info->FileName, nameLen * sizeof(WCHAR));
+    Fd->cFileName[nameLen] = L'\0';
+    Fd->cAlternateFileName[0] = L'\0';
+}
+
+// Query the next directory entry that matches the context's criteria.
+// Returns TRUE and fills FindData on match, FALSE on end or error.
+static BOOL QueryNextMatch(_Inout_ FIND_CONTEXT* Ctx, _Out_ LPWIN32_FIND_DATAW FindData) {
+    // Buffer for NT query -- these structs are variable-length
+    UCHAR Buffer[sizeof(FILE_BOTH_DIR_INFORMATION) + MAX_PATH * sizeof(WCHAR)];
+
+    for (;;) {
+        IO_STATUS_BLOCK Iosb{};
+        NTSTATUS Status = ZwQueryDirectoryFile(Ctx->DirHandle, nullptr, nullptr, nullptr, &Iosb,
+            Buffer, sizeof(Buffer), FileBothDirectoryInformation, TRUE, nullptr, FALSE);
+
+        if (Status == STATUS_NO_MORE_FILES) {
+            BaseSetLastNTError(STATUS_NO_MORE_FILES);
+            return FALSE;
+        }
+        if (!NT_SUCCESS(Status)) {
+            BaseSetLastNTError(Status);
+            return FALSE;
+        }
+
+        auto* Info = reinterpret_cast<FILE_BOTH_DIR_INFORMATION*>(Buffer);
+
+        // Skip "." and ".." entries
+        if (Info->FileNameLength == 2 && Info->FileName[0] == L'.') continue;
+        if (Info->FileNameLength == 4 && Info->FileName[0] == L'.' && Info->FileName[1] == L'.') continue;
+
+        // Apply search op filter
+        if (Ctx->SearchOp == FindExSearchLimitToDirectories) {
+            if (!(Info->FileAttributes & FILE_ATTRIBUTE_DIRECTORY)) continue;
+        }
+
+        // Apply wildcard pattern filter
+        // Build a null-terminated copy of the filename for matching
+        WCHAR Name[MAX_PATH];
+        size_t nameLen = Info->FileNameLength / sizeof(WCHAR);
+        if (nameLen >= MAX_PATH) nameLen = MAX_PATH - 1;
+        memcpy(Name, Info->FileName, nameLen * sizeof(WCHAR));
+        Name[nameLen] = L'\0';
+
+        if (!MatchWildcard(Ctx->Pattern, Name)) continue;
+
+        FillFindData(FindData, Info);
+        return TRUE;
+    }
+}
+
 _IRQL_requires_max_(PASSIVE_LEVEL)
 HANDLE WINAPI MUSA_NAME(FindFirstFileExW)(
     _In_ LPCWSTR lpFileName,
@@ -1087,101 +1193,85 @@ HANDLE WINAPI MUSA_NAME(FindFirstFileExW)(
     PAGED_CODE();
     UNREFERENCED_PARAMETER(lpSearchFilter);
 
-    if (lpFileName == nullptr || lpFindFileData == nullptr) {
+    if (!lpFileName || !lpFindFileData) {
         BaseSetLastNTError(STATUS_INVALID_PARAMETER);
         return INVALID_HANDLE_VALUE;
     }
 
-    // Only support standard info level
-    if (fInfoLevelId != FindExInfoStandard || fSearchOp > FindExSearchLimitToDirectories) {
-        BaseSetLastNTError(STATUS_INVALID_PARAMETER);
-        return INVALID_HANDLE_VALUE;
+    // Parse path into directory + wildcard pattern
+    WCHAR DirPath[MAX_PATH];
+    WCHAR Pattern[MAX_PATH] = { L'\0' };
+
+    wcscpy_s(DirPath, lpFileName);
+    PWCHAR LastSlash = wcsrchr(DirPath, L'\\');
+    PWCHAR LastColon = wcsrchr(DirPath, L':');
+
+    if (LastSlash) {
+        PWCHAR Wild = LastSlash + 1;
+        while (*Wild && *Wild != L'*' && *Wild != L'?') Wild++;
+        if (!*Wild) Wild = nullptr;
+        if (Wild) {
+            // Path contains wildcard -- extract pattern
+            wcscpy_s(Pattern, LastSlash + 1);
+            *LastSlash = L'\0';
+        } else {
+            // No wildcard after slash -- treat as directory with \*
+            wcscat_s(DirPath, L"\\*");
+            wcscpy_s(Pattern, L"*");
+        }
+    } else if (LastColon && LastColon[1] == L'\0') {
+        // Bare drive letter "X:"
+        wcscat_s(DirPath, L"\\*");
+        wcscpy_s(Pattern, L"*");
+    } else {
+        // Path without backslash -- append \* (e.g. relative dir)
+        wcscat_s(DirPath, L"\\*");
+        wcscpy_s(Pattern, L"*");
     }
 
-    // Build search path with wildcard
-    WCHAR SearchPath[MAX_PATH];
-    size_t Len = wcslen(lpFileName);
-    if (Len + 4 > MAX_PATH) {
-        BaseSetLastNTError(STATUS_NAME_TOO_LONG);
-        return INVALID_HANDLE_VALUE;
-    }
-    wcscpy_s(SearchPath, lpFileName);
-    // Append * if no wildcard present
-    if (Len > 0 && SearchPath[Len - 1] != L'*' && SearchPath[Len - 1] != L'\\') {
-        wcscat_s(SearchPath, L"\\*");
-    } else if (Len > 0 && SearchPath[Len - 1] == L'\\') {
-        wcscat_s(SearchPath, L"*");
-    }
+    if (Pattern[0] == L'\0') wcscpy_s(Pattern, L"*");
 
-    // Strip the wildcard suffix to get the parent directory path
-    PWCHAR Wildcard = wcsrchr(SearchPath, L'\\');
-    if (Wildcard && wcschr(Wildcard, L'*') != nullptr) {
-        *Wildcard = L'\0';  // Truncate at the last backslash
-    }
 
-    UNICODE_STRING NtPath{};
-    NTSTATUS Status = RtlDosPathNameToNtPathName_U_WithStatus(SearchPath, &NtPath, nullptr, nullptr);
-    if (!NT_SUCCESS(Status)) {
-        BaseSetLastNTError(Status);
-        return INVALID_HANDLE_VALUE;
-    }
-
-    // Restore the wildcard for directory query filter
-    if (Wildcard) *Wildcard = L'\\';
-
-    // Open the parent directory
-    OBJECT_ATTRIBUTES ObjAttrs;
-    InitializeObjectAttributes(&ObjAttrs, &NtPath, OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE, nullptr, nullptr);
-    HANDLE DirHandle = nullptr;
-    IO_STATUS_BLOCK Iosb{};
-    ULONG CreateOptions = FILE_DIRECTORY_FILE | FILE_SYNCHRONOUS_IO_NONALERT;
+    // Open directory via CreateFileW thunk
+    // Use Win32 flags (CreateFileW translates to NT CreateOptions internally)
+    DWORD DirFlags = FILE_ATTRIBUTE_DIRECTORY;
     if (dwAdditionalFlags & FIND_FIRST_EX_LARGE_FETCH)
-        CreateOptions |= FILE_OPEN_FOR_BACKUP_INTENT;
+        DirFlags |= FILE_FLAG_BACKUP_SEMANTICS;
 
-    Status = ZwOpenFile(&DirHandle, FILE_LIST_DIRECTORY | SYNCHRONIZE, &ObjAttrs, &Iosb,
-        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, CreateOptions);
-    RtlFreeUnicodeString(&NtPath);
+    HANDLE DirHandle = CreateFileW(
+        DirPath,
+        FILE_LIST_DIRECTORY | SYNCHRONIZE,
+        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+        nullptr,
+        OPEN_EXISTING,
+        DirFlags,
+        nullptr);
 
-    if (!NT_SUCCESS(Status)) {
-        BaseSetLastNTError(Status);
+    if (DirHandle == INVALID_HANDLE_VALUE) {
         return INVALID_HANDLE_VALUE;
     }
 
-    // Use ZwQueryDirectoryFile to get the first matching file
-    FILE_BOTH_DIR_INFORMATION DirInfo{};
-    Status = ZwQueryDirectoryFile(DirHandle, nullptr, nullptr, nullptr, &Iosb,
-        &DirInfo, sizeof(DirInfo), FileBothDirectoryInformation, TRUE,
-        nullptr, TRUE);
-
-    if (!NT_SUCCESS(Status) && Status != STATUS_NO_MORE_FILES) {
-        ZwClose(DirHandle);
-        BaseSetLastNTError(Status);
+    // Allocate find context
+    auto* Ctx = static_cast<FIND_CONTEXT*>(LocalAlloc(LMEM_ZEROINIT, sizeof(FIND_CONTEXT)));
+    if (!Ctx) {
+        CloseHandle(DirHandle);
+        BaseSetLastNTError(STATUS_NO_MEMORY);
         return INVALID_HANDLE_VALUE;
     }
 
-    // Convert to WIN32_FIND_DATAW
+    Ctx->DirHandle       = DirHandle;
+    Ctx->InfoLevel       = fInfoLevelId;
+    Ctx->SearchOp        = fSearchOp;
+    Ctx->AdditionalFlags = dwAdditionalFlags;
+    wcscpy_s(Ctx->Pattern, Pattern);
+
+    // Find first match
     LPWIN32_FIND_DATAW FindData = static_cast<LPWIN32_FIND_DATAW>(lpFindFileData);
-    RtlZeroMemory(FindData, sizeof(WIN32_FIND_DATAW));
-
-    if (Status == STATUS_NO_MORE_FILES) {
-        BaseSetLastNTError(STATUS_NO_MORE_FILES);
-        return DirHandle; // Return handle even with no matches for FindClose
+    if (!QueryNextMatch(Ctx, FindData)) {
+        return reinterpret_cast<HANDLE>(Ctx);
     }
 
-    FindData->dwFileAttributes = DirInfo.FileAttributes;
-    FindData->ftCreationTime = reinterpret_cast<FILETIME&>(DirInfo.CreationTime);
-    FindData->ftLastAccessTime = reinterpret_cast<FILETIME&>(DirInfo.LastAccessTime);
-    FindData->ftLastWriteTime = reinterpret_cast<FILETIME&>(DirInfo.LastWriteTime);
-    FindData->nFileSizeHigh = DirInfo.EndOfFile.HighPart;
-    FindData->nFileSizeLow = DirInfo.EndOfFile.LowPart;
-
-    size_t NameLen = DirInfo.FileNameLength / sizeof(WCHAR);
-    if (NameLen >= MAX_PATH) NameLen = MAX_PATH - 1;
-    memcpy(FindData->cFileName, DirInfo.FileName, NameLen * sizeof(WCHAR));
-    FindData->cFileName[NameLen] = L'\0';
-    FindData->cAlternateFileName[0] = L'\0';
-
-    return DirHandle;
+    return reinterpret_cast<HANDLE>(Ctx);
 }
 
 MUSA_IAT_SYMBOL(FindFirstFileExW, 24);
@@ -1192,37 +1282,13 @@ BOOL WINAPI MUSA_NAME(FindNextFileW)(
     _Out_ LPWIN32_FIND_DATAW lpFindFileData
 )
 {
-    if (hFindFile == INVALID_HANDLE_VALUE || lpFindFileData == nullptr) {
+    if (!hFindFile || hFindFile == INVALID_HANDLE_VALUE || !lpFindFileData) {
         BaseSetLastNTError(STATUS_INVALID_PARAMETER);
         return FALSE;
     }
 
-    FILE_BOTH_DIR_INFORMATION DirInfo{};
-    IO_STATUS_BLOCK Iosb{};
-    NTSTATUS Status = ZwQueryDirectoryFile(hFindFile, nullptr, nullptr, nullptr, &Iosb,
-        &DirInfo, sizeof(DirInfo), FileBothDirectoryInformation, TRUE,
-        nullptr, FALSE);
-
-    if (!NT_SUCCESS(Status)) {
-        BaseSetLastNTError(Status);
-        return FALSE;
-    }
-
-    RtlZeroMemory(lpFindFileData, sizeof(WIN32_FIND_DATAW));
-    lpFindFileData->dwFileAttributes = DirInfo.FileAttributes;
-    lpFindFileData->ftCreationTime = reinterpret_cast<FILETIME&>(DirInfo.CreationTime);
-    lpFindFileData->ftLastAccessTime = reinterpret_cast<FILETIME&>(DirInfo.LastAccessTime);
-    lpFindFileData->ftLastWriteTime = reinterpret_cast<FILETIME&>(DirInfo.LastWriteTime);
-    lpFindFileData->nFileSizeHigh = DirInfo.EndOfFile.HighPart;
-    lpFindFileData->nFileSizeLow = DirInfo.EndOfFile.LowPart;
-
-    size_t NameLen = DirInfo.FileNameLength / sizeof(WCHAR);
-    if (NameLen >= MAX_PATH) NameLen = MAX_PATH - 1;
-    memcpy(lpFindFileData->cFileName, DirInfo.FileName, NameLen * sizeof(WCHAR));
-    lpFindFileData->cFileName[NameLen] = L'\0';
-    lpFindFileData->cAlternateFileName[0] = L'\0';
-
-    return TRUE;
+    auto* Ctx = reinterpret_cast<FIND_CONTEXT*>(hFindFile);
+    return QueryNextMatch(Ctx, lpFindFileData);
 }
 
 MUSA_IAT_SYMBOL(FindNextFileW, 8);
@@ -1233,18 +1299,15 @@ BOOL WINAPI MUSA_NAME(FindClose)(
 )
 {
     PAGED_CODE();
-    if (hFindFile == INVALID_HANDLE_VALUE || hFindFile == nullptr) {
+    if (!hFindFile || hFindFile == INVALID_HANDLE_VALUE) {
         BaseSetLastNTError(STATUS_INVALID_HANDLE);
         return FALSE;
     }
 
-    NTSTATUS Status = ZwClose(hFindFile);
-    if (NT_SUCCESS(Status)) {
-        return TRUE;
-    }
-
-    BaseSetLastNTError(Status);
-    return FALSE;
+    auto* Ctx = reinterpret_cast<FIND_CONTEXT*>(hFindFile);
+    CloseHandle(Ctx->DirHandle);
+    LocalFree(Ctx);
+    return TRUE;
 }
 
 MUSA_IAT_SYMBOL(FindClose, 4);
@@ -1258,12 +1321,10 @@ DWORD WINAPI MUSA_NAME(GetFullPathNameW)(
     _Out_opt_ LPWSTR* lpFilePart
 )
 {
-    PAGED_CODE();
-
     RTL_PATH_TYPE PathType = RtlPathTypeUnknown;
     NTSTATUS Status = MUSA_NAME(RtlGetFullPathName_UEx)(
         const_cast<PWSTR>(lpFileName),
-        nBufferLength * 2,
+        nBufferLength * sizeof(WCHAR),
         lpBuffer,
         lpFilePart,
         &PathType);
@@ -1273,12 +1334,11 @@ DWORD WINAPI MUSA_NAME(GetFullPathNameW)(
         return 0;
     }
 
-
-#pragma warning(suppress: 6387)  // SAL can't track RtlGetFullPathName_UEx filled buffer
+#pragma warning(suppress: 6387)
     return static_cast<DWORD>(wcslen(lpBuffer));
 }
 
-MUSA_IAT_SYMBOL(GetFullPathNameW, 16);
+MUSA_IAT_SYMBOL(GetFullPathNameW, 20);
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
 BOOL WINAPI MUSA_NAME(SetEndOfFile)(
@@ -1687,9 +1747,9 @@ BOOL WINAPI MUSA_NAME(GetFileInformationByHandleEx)(
         RestartScan = TRUE;
         break;
     case FileIdInfo:
-        NtClass = FileIdBothDirectoryInformation;
-        MinSize = sizeof(FILE_ID_BOTH_DIR_INFORMATION);
-        IsDirectoryQuery = TRUE;
+        // FILE_ID_INFO <-> FILE_ID_INFORMATION (identical layout: VolumeSerialNumber + FileId128)
+        NtClass = FileIdInformation;
+        MinSize = sizeof(FILE_ID_INFORMATION);
         break;
     case FileIdExtdDirectoryInfo:
         NtClass = FileIdBothDirectoryInformation;
