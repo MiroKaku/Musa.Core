@@ -1265,7 +1265,11 @@ HANDLE WINAPI MUSA_NAME(FindFirstFileExW)(
     // Find first match
     LPWIN32_FIND_DATAW FindData = static_cast<LPWIN32_FIND_DATAW>(lpFindFileData);
     if (!QueryNextMatch(Ctx, FindData)) {
-        return reinterpret_cast<HANDLE>(Ctx);
+        // No matching entry -- Win32 FindFirstFile returns INVALID_HANDLE_VALUE
+        BaseSetLastNTError(STATUS_NO_SUCH_FILE);
+        CloseHandle(DirHandle);
+        LocalFree(Ctx);
+        return INVALID_HANDLE_VALUE;
     }
 
     return reinterpret_cast<HANDLE>(Ctx);

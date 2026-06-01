@@ -1,4 +1,4 @@
-﻿# AGENTS.md — Musa.Core
+# AGENTS.md — Musa.Core
 
 ## OVERVIEW
 
@@ -51,6 +51,7 @@ docs/                       Comprehensive project documentation
 
 ### Code Style (.editorconfig enforced)
 - C/C++: UTF-8 BOM, CRLF, 4-space indent, doxygen `/** */` comments
+- **NEVER use non-ASCII characters in source files** -- compiler C4819 /WX on CP936 blocks build. Use ASCII equivalents: `--` for dashes, `->` for arrows, `"` for quotes.
 - `.rc`/`.inf`: UTF-16LE
 - `.bat`: UTF-16LE
 - Calling convention: `__stdcall` (`MUSA_API` macro)
