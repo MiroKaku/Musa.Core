@@ -2,6 +2,43 @@
 
 > [系统架构](./system-architecture.md) ｜ [部署指南](./deployment-guide.md) ｜ [构建配置](./configuration-guide.md)
 
+
+## v0.7.0 — 2026-06-06
+
+
+### Feat（新功能）
+
+- 新增文件 API thunks：
+  - `CreateFile2`, `GetFileAttributesW`, `SetFileInformationByHandle`, `GetFileInformationByHandleEx`
+  - `CreateSymbolicLinkW`, `GetFinalPathNameByHandleW`, `CreateHardLinkW`, `CreateDirectoryExW`
+  - `GetDiskFreeSpaceExW`, `CopyFile2`, `FindFirstFileW`, `FindFirstFileExW`, `FindNextFileW`, `FindClose`
+  - `DeviceIoControl`（基础实现）
+- 新增时间 API：`CompareFileTime`, `GetFileTime`, `SetFileTime`
+- 新增 `GetFullPathNameW` IAT 导出
+- 实现 XState 函数
+
+### Fix（修复）
+
+- `RtlGetFullPathName_UEx`：正确解析 DRIVE_RELATIVE 路径
+- `ZwQueryDirectoryFile`：使用 `ReturnSingleEntry=TRUE` 避免属性不一致
+- `ZwQueryDirectoryFile`：修复 `RestartScan=TRUE` 导致无限循环的问题
+- `FindFirstFileExW`：`FILE_FLAG_BACKUP_SEMANTICS` 时跳过 `FILE_NON_DIRECTORY_FILE`
+- `FindFirstFileExW`：替换 `wcspbrk` 为内联循环，修正 Win32 标志转换
+- `GetFileAttributesExW`：使用 `ZwQueryFullAttributesFile` 获取文件大小
+- `CopyFile2`：简化实现
+- `FindFirstFileW`：直接调用 `FindFirstFileExW`
+
+### Refactor（重构）
+
+- 移除 VEH（向量化异常处理）stub
+- 移除存在缺陷的未处理异常过滤器
+- 移除所有 Console API 实现
+
+### Chore
+
+- 移除源码中最后一个非 ASCII 字符，添加 C4819 规则到 AGENTS.md
+- 新增文件 API 单元测试（FindFirstFileExW/FindNextFileW/FindClose, GetFileAttributesExW）
+
 ## v0.6.0 — 2026-05-17
 
 

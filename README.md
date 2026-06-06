@@ -41,7 +41,7 @@ graph TD
 ```xml
 <ItemGroup>
   <PackageReference Include="Musa.Core">
-    <Version>0.6.0</Version>
+    <Version>0.7.0</Version>
   </PackageReference>
 </ItemGroup>
 ```
