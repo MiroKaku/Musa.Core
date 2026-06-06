@@ -269,8 +269,43 @@ NTSTATUS NTAPI MUSA_NAME(RtlGetFullPathName_UEx)(
     size_t PrefixLen = 0;
     WCHAR CwdPrefix[MAX_PATH] = {};
 
+    // For drive-relative paths (e.g., "C:." or "C:foo"), strip the drive prefix.
+    // "C:." returns the current directory verbatim; "C:foo" resolves as {cwd}\foo.
+    if (PathType == MUSA_RTL_PATH_DRIVE_RELATIVE) {
+        Source += 2;      // Skip "C:"
+        SourceLen -= 2;
+
+        // "C:." or "C:" -> return current directory as-is
+        if (SourceLen == 0 || (SourceLen == 1 && Source[0] == L'.')) {
+            if (!Peb) return STATUS_UNSUCCESSFUL;
+
+            size_t const CwdLen = wcslen(Peb->CurrentDirectory);
+            size_t const CwdBytes = (CwdLen + 1) * sizeof(WCHAR);
+            if (Buffer == nullptr || BufferLength < CwdBytes)
+                return STATUS_BUFFER_TOO_SMALL;
+
+            memcpy(Buffer, Peb->CurrentDirectory, CwdBytes);
+
+            if (InputPathType) *InputPathType = RtlPathTypeDriveAbsolute;
+            if (FilePart) {
+                *FilePart = nullptr;
+                for (size_t i = CwdLen; i > 0; --i) {
+                    if (Buffer[i - 1] == L'\\' || Buffer[i - 1] == L'/') {
+                        *FilePart = Buffer + i;
+                        break;
+                    }
+                }
+                if (*FilePart == nullptr) *FilePart = Buffer;
+            }
+            return STATUS_SUCCESS;
+        }
+
+        // "C:foo" -> treat as relative from here
+        PathType = MUSA_RTL_PATH_RELATIVE;
+    }
+
     // For relative paths, prepend current directory
-    if (PathType == MUSA_RTL_PATH_DRIVE_RELATIVE || PathType == MUSA_RTL_PATH_RELATIVE) {
+    if (PathType == MUSA_RTL_PATH_RELATIVE) {
         if (Peb) {
             wcscpy_s(CwdPrefix, MAX_PATH, Peb->CurrentDirectory);
             CwdPrefix[MAX_PATH - 2] = L'\0';
